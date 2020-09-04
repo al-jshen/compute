@@ -20,14 +20,15 @@ impl Normal {
 
 impl Distribution for Normal {
     fn sample(&self) -> f64 {
-        sample_normal(&self.rng)
+        sample_normal(&self.rng) * self.sigma + self.mu
     }
-    fn sample_iter(&self, n: usize) -> Vec<f64> {
-        (0..n)
-            .into_iter()
-            .map(|_| sample_normal(&self.rng) * self.sigma + self.mu)
-            .collect()
-    }
+    // fn sample_iter(&self, n: usize) -> Vec<f64> {
+    //     (0..n)
+    //         .into_iter()
+    //         .map(|_| self.sample())
+    //         // .map(|_| sample_normal(&self.rng) * self.sigma + self.mu)
+    //         .collect()
+    // }
 }
 
 impl Continuous for Normal {
@@ -63,6 +64,16 @@ fn sample_normal(rng: &Rng) -> f64 {
             return s * x;
         }
     }
+}
+
+#[test]
+fn maxprob() {
+    let n = self::Normal::new(5., 4.);
+    (0..20).for_each(|x| {
+        assert!(n.pdf(5.) >= n.pdf(x as f64));
+    });
+    assert!(n.pdf(5.) > n.pdf(2.));
+    assert!(n.pdf(5.) > n.pdf(6.));
 }
 
 const R: f64 = 3.44428647676;

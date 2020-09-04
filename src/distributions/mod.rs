@@ -1,8 +1,11 @@
 pub mod normal;
+pub mod uniform;
 
 pub trait Distribution {
     fn sample(&self) -> f64;
-    fn sample_iter(&self, n: usize) -> Vec<f64>;
+    fn sample_iter(&self, n: usize) -> Vec<f64> {
+        (0..n).map(|_| self.sample()).collect()
+    }
 }
 
 pub trait Continuous: Distribution {

@@ -43,7 +43,7 @@ impl Continuous for Uniform {
     ///
     /// # Remarks
     ///
-    /// Returns 0. if `x` is not in `[lower, upper]`
+    /// Returns `0.` if `x` is not in `[lower, upper]`
     fn pdf(&self, x: f64) -> f64 {
         if x < self.lower || x > self.upper {
             0.

@@ -14,7 +14,13 @@ pub struct Normal {
 
 impl Normal {
     /// Create a new Normal distribution with mean `mu` and standard deviation `sigma`.
+    ///
+    /// # Errors
+    /// Panics if `sigma < 0`.
     pub fn new(mu: f64, sigma: f64) -> Self {
+        if sigma < 0. {
+            panic!("Sigma must be non-negative.")
+        }
         Normal {
             mu,
             sigma,

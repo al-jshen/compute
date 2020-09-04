@@ -2,7 +2,7 @@ use crate::distributions::*;
 use crate::functions::beta;
 
 /// Implements the [Beta](https://en.wikipedia.org/wiki/Beta_distribution) distribution.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Beta {
     /// Shape parameter α.
     alpha: f64,
@@ -47,6 +47,9 @@ impl Beta {
         self.beta = beta;
         self.beta_gen = Gamma::new(beta, 1.);
         self
+    }
+    pub fn update(&mut self, params: &[f64; 2]) -> &mut Self {
+        self.set_alpha(params[0]).set_beta(params[1])
     }
 }
 

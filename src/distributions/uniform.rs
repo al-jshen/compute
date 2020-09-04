@@ -3,7 +3,7 @@ use fastrand::Rng;
 
 /// Implements the [Uniform](https://en.wikipedia.org/wiki/Uniform_distribution_(continuous))
 /// distribution.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Uniform {
     /// Lower bound for the Uniform distribution.
     lower: f64,
@@ -41,6 +41,9 @@ impl Uniform {
         }
         self.upper = upper;
         self
+    }
+    pub fn update(&mut self, params: &[f64; 2]) -> &mut Self {
+        self.set_lower(params[0]).set_upper(params[1])
     }
 }
 

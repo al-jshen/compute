@@ -3,7 +3,7 @@ use fastrand::Rng;
 use std::f64::consts::PI;
 
 /// Implements the [Normal](https://en.wikipedia.org/wiki/Normal_distribution) distribution.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Normal {
     /// Mean (or location) parameter.
     mu: f64,
@@ -35,6 +35,9 @@ impl Normal {
     pub fn set_sigma(&mut self, sigma: f64) -> &mut Self {
         self.sigma = sigma;
         self
+    }
+    pub fn update(&mut self, params: &[f64; 2]) -> &mut Self {
+        self.set_mu(params[0]).set_sigma(params[1])
     }
 }
 

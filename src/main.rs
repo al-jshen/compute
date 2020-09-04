@@ -3,9 +3,11 @@ mod functions;
 use distributions::*;
 
 fn main() {
-    let mut n = Normal::new(2., 6.);
+    let mut n = Normal::default();
     println!("{:?}", n);
     n.set_mu(3.).set_sigma(7.);
+    println!("{:?}", n);
+    n.update(&[2., 4.]);
     println!("{:?}", n);
     let u = Uniform::new(1., 6.);
     let g = Gamma::new(2., 4.);

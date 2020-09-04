@@ -2,7 +2,7 @@ use crate::distributions::*;
 use crate::functions::gamma;
 
 /// Implements the [Gamma](https://en.wikipedia.org/wiki/Gamma_distribution) distribution.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Gamma {
     /// Shape parameter α.
     alpha: f64,
@@ -41,6 +41,9 @@ impl Gamma {
         }
         self.beta = beta;
         self
+    }
+    pub fn update(&mut self, params: &[f64; 2]) -> &mut Self {
+        self.set_alpha(params[0]).set_beta(params[1])
     }
 }
 

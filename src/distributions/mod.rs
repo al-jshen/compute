@@ -1,6 +1,7 @@
 //! Provides a unified interface for working with probability distributions. Also implements
 //! commonly used (maximum entropy) distributions.
 
+mod beta;
 mod exponential;
 mod gamma;
 mod normal;
@@ -23,6 +24,7 @@ pub trait Continuous: Distribution {
     fn pdf(&self, x: f64) -> f64;
 }
 
+pub use self::beta::Beta;
 pub use self::exponential::Exponential;
 pub use self::gamma::Gamma;
 pub use self::normal::Normal;

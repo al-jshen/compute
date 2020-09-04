@@ -2,13 +2,18 @@ use crate::distributions::*;
 use fastrand::Rng;
 use std::f64::consts::PI;
 
+/// Implements the [Normal](https://en.wikipedia.org/wiki/Normal_distribution) distribution.
 pub struct Normal {
+    /// Mean (or location) parameter.
     mu: f64,
+    /// Standard deviation (or scale) parameter.
     sigma: f64,
+    /// Random number generator used to sample from distribution.
     rng: Rng,
 }
 
 impl Normal {
+    /// Create a new Normal distribution with mean `mu` and standard deviation `sigma`.
     pub fn new(mu: f64, sigma: f64) -> Self {
         Normal {
             mu,
@@ -19,19 +24,14 @@ impl Normal {
 }
 
 impl Distribution for Normal {
+    /// Sample from the given Normal distribution.
     fn sample(&self) -> f64 {
         sample_normal(&self.rng) * self.sigma + self.mu
     }
-    // fn sample_iter(&self, n: usize) -> Vec<f64> {
-    //     (0..n)
-    //         .into_iter()
-    //         .map(|_| self.sample())
-    //         // .map(|_| sample_normal(&self.rng) * self.sigma + self.mu)
-    //         .collect()
-    // }
 }
 
 impl Continuous for Normal {
+    /// Calculates the probability density function of the given Normal distribution at `x`.
     fn pdf(&self, x: f64) -> f64 {
         1. / (self.sigma * (2. * PI).sqrt()) * (-0.5 * ((x - self.mu) / self.sigma).powi(2)).exp()
     }

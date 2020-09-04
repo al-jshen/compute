@@ -1,14 +1,26 @@
 use crate::distributions::*;
 use fastrand::Rng;
 
+/// Implements the [Uniform](https://en.wikipedia.org/wiki/Uniform_distribution_(continuous))
+/// distribution.
 pub struct Uniform {
+    /// Lower bound for the Uniform distribution.
     lower: f64,
+    /// Upper bound for the Uniform distribution.
     upper: f64,
+    /// Random number generator used to sample from the distribution.
     rng: Rng,
 }
 
 impl Uniform {
+    /// Create a new Uniform distribution with lower bound `lower` and upper bound `upper`.
+    ///
+    /// # Errors
+    /// Panics if `lower > upper`.
     pub fn new(lower: f64, upper: f64) -> Self {
+        if lower > upper {
+            panic!("`Upper` must be larger than `lower`.");
+        }
         Uniform {
             lower,
             upper,
@@ -18,14 +30,26 @@ impl Uniform {
 }
 
 impl Distribution for Uniform {
+    /// Samples from the given Uniform distribution.
     fn sample(&self) -> f64 {
         (self.upper - self.lower) * self.rng.f64() + self.lower
     }
 }
 
 impl Continuous for Uniform {
-    fn pdf(&self, _: f64) -> f64 {
-        1. / (self.upper - self.lower)
+    /// Calculates the [probability density
+    /// function](https://en.wikipedia.org/wiki/Probability_density_function) for the given Uniform
+    /// distribution at `x`.
+    ///
+    /// # Remarks
+    ///
+    /// Returns 0. if `x` is not in `[lower, upper]`
+    fn pdf(&self, x: f64) -> f64 {
+        if x < self.lower || x > self.upper {
+            0.
+        } else {
+            1. / (self.upper - self.lower)
+        }
     }
 }
 

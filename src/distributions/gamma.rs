@@ -1,18 +1,29 @@
 use crate::distributions::*;
 
+/// Implements the [Gamma](https://en.wikipedia.org/wiki/Gamma_distribution) distribution.
 pub struct Gamma {
+    /// Shape parameter α.
     alpha: f64,
+    /// Rate parameter β.
     beta: f64,
 }
 
 impl Gamma {
+    /// Create a new Gamma distribution with shape `alpha` and rate `beta`.
+    ///
+    /// # Errors
+    /// Panics if `alpha <= 0` or `beta <= 0`.
     pub fn new(alpha: f64, beta: f64) -> Self {
         Gamma { alpha, beta }
     }
 }
 
 impl Distribution for Gamma {
-    /// Sample from a gamma distribution
+    /// Samples from the given Gamma distribution.
+    ///
+    /// # Remarks
+    /// Uses the algorithm from Marsaglia and Tsang 2000. Applies the squeeze
+    /// method and has nearly constant average time for `alpha >= 1`.
     fn sample(&self) -> f64 {
         let d = self.alpha - 1. / 3.;
         let normal_gen = Normal::new(0., 1.);

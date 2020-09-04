@@ -1,6 +1,7 @@
 use crate::distributions::*;
 use crate::functions::beta;
 
+#[derive(Debug)]
 /// Implements the [Beta](https://en.wikipedia.org/wiki/Beta_distribution) distribution.
 pub struct Beta {
     /// Shape parameter α.
@@ -30,6 +31,22 @@ impl Beta {
             alpha_gen: Gamma::new(alpha, 1.),
             beta_gen: Gamma::new(beta, 1.),
         }
+    }
+    pub fn set_alpha(&mut self, alpha: f64) -> &mut Self {
+        if alpha <= 0. {
+            panic!("Alpha must be positive.");
+        }
+        self.alpha = alpha;
+        self.alpha_gen = Gamma::new(alpha, 1.);
+        self
+    }
+    pub fn set_beta(&mut self, beta: f64) -> &mut Self {
+        if beta <= 0. {
+            panic!("Beta must be positive.");
+        }
+        self.beta = beta;
+        self.beta_gen = Gamma::new(beta, 1.);
+        self
     }
 }
 

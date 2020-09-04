@@ -1,6 +1,7 @@
 use crate::distributions::*;
 use fastrand::Rng;
 
+#[derive(Debug)]
 /// Implements the [Uniform](https://en.wikipedia.org/wiki/Uniform_distribution_(continuous))
 /// distribution.
 pub struct Uniform {
@@ -26,6 +27,20 @@ impl Uniform {
             upper,
             rng: Rng::new(),
         }
+    }
+    pub fn set_lower(&mut self, lower: f64) -> &mut Self {
+        if lower > self.upper {
+            panic!("Upper must be larger than lower.")
+        }
+        self.lower = lower;
+        self
+    }
+    pub fn set_upper(&mut self, upper: f64) -> &mut Self {
+        if self.lower > upper {
+            panic!("Upper must be larger than lower.")
+        }
+        self.upper = upper;
+        self
     }
 }
 

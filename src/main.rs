@@ -3,7 +3,10 @@ mod functions;
 use distributions::*;
 
 fn main() {
-    let n = Normal::new(2., 3.);
+    let mut n = Normal::new(2., 6.);
+    println!("{:?}", n);
+    n.set_mu(3.).set_sigma(7.);
+    println!("{:?}", n);
     let u = Uniform::new(1., 6.);
     let g = Gamma::new(2., 4.);
     let e = Exponential::new(3.);

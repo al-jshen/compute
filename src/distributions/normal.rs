@@ -2,6 +2,7 @@ use crate::distributions::*;
 use fastrand::Rng;
 use std::f64::consts::PI;
 
+#[derive(Debug)]
 /// Implements the [Normal](https://en.wikipedia.org/wiki/Normal_distribution) distribution.
 pub struct Normal {
     /// Mean (or location) parameter.
@@ -26,6 +27,14 @@ impl Normal {
             sigma,
             rng: Rng::new(),
         }
+    }
+    pub fn set_mu(&mut self, mu: f64) -> &mut Self {
+        self.mu = mu;
+        self
+    }
+    pub fn set_sigma(&mut self, sigma: f64) -> &mut Self {
+        self.sigma = sigma;
+        self
     }
 }
 

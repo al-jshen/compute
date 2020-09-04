@@ -1,6 +1,7 @@
 use crate::distributions::*;
 use crate::functions::gamma;
 
+#[derive(Debug)]
 /// Implements the [Chi square](https://en.wikipedia.org/wiki/Chi-square_distribution) distribution.
 pub struct ChiSquared {
     /// Degrees of freedom (k)
@@ -21,6 +22,13 @@ impl ChiSquared {
             dof,
             sampler: Gamma::new((dof as f64) / 2., 0.5),
         }
+    }
+    pub fn set_dof(&mut self, dof: usize) -> &mut Self {
+        if dof <= 0 {
+            panic!("Degrees of freedom must be positive.");
+        }
+        self.dof = dof;
+        self
     }
 }
 

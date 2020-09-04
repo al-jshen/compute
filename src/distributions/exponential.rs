@@ -1,5 +1,6 @@
 use crate::distributions::*;
 
+#[derive(Debug)]
 /// Implements the [Exponential](https://en.wikipedia.org/wiki/Exponential_distribution)
 /// distribution.
 pub struct Exponential {
@@ -17,12 +18,19 @@ impl Exponential {
     /// Panics if `lambda <= 0`.
     pub fn new(lambda: f64) -> Self {
         if lambda <= 0. {
-            panic!("`Lambda` must be non-negative.");
+            panic!("Lambda must be positive.");
         }
         Exponential {
             lambda,
             rng: Uniform::new(0., 1.),
         }
+    }
+    pub fn set_lambda(&mut self, lambda: f64) -> &mut Self {
+        if lambda <= 0. {
+            panic!("Lambda must be positive.")
+        }
+        self.lambda = lambda;
+        self
     }
 }
 

@@ -1,6 +1,7 @@
 use crate::distributions::*;
 use crate::functions::gamma;
 
+#[derive(Debug)]
 /// Implements the [Gamma](https://en.wikipedia.org/wiki/Gamma_distribution) distribution.
 pub struct Gamma {
     /// Shape parameter α.
@@ -26,6 +27,20 @@ impl Gamma {
             normal_gen: Normal::new(0., 1.),
             uniform_gen: Uniform::new(0., 1.),
         }
+    }
+    pub fn set_alpha(&mut self, alpha: f64) -> &mut Self {
+        if alpha <= 0. {
+            panic!("Alpha must be positive.");
+        }
+        self.alpha = alpha;
+        self
+    }
+    pub fn set_beta(&mut self, beta: f64) -> &mut Self {
+        if beta <= 0. {
+            panic!("Beta must be positive.");
+        }
+        self.beta = beta;
+        self
     }
 }
 

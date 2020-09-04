@@ -44,6 +44,11 @@ impl Uniform {
     }
 }
 
+impl Default for Uniform {
+    fn default() -> Self {
+        Self::new(0., 1.)
+    }
+}
 impl Distribution for Uniform {
     /// Samples from the given Uniform distribution.
     fn sample(&self) -> f64 {

@@ -32,6 +32,12 @@ impl ChiSquared {
     }
 }
 
+impl Default for ChiSquared {
+    fn default() -> Self {
+        Self::new(1)
+    }
+}
+
 impl Distribution for ChiSquared {
     /// Samples from the given Chi square distribution.
     fn sample(&self) -> f64 {

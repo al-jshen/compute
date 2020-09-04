@@ -34,6 +34,12 @@ impl Exponential {
     }
 }
 
+impl Default for Exponential {
+    fn default() -> Self {
+        Self::new(1.)
+    }
+}
+
 impl Distribution for Exponential {
     /// Samples from the given Exponential distribution.
     ///

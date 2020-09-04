@@ -50,6 +50,12 @@ impl Beta {
     }
 }
 
+impl Default for Beta {
+    fn default() -> Self {
+        Self::new(1., 1.)
+    }
+}
+
 impl Distribution for Beta {
     /// Samples from the given Beta distribution using the Gamma distribution.
     fn sample(&self) -> f64 {

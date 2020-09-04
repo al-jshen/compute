@@ -38,6 +38,12 @@ impl Normal {
     }
 }
 
+impl Default for Normal {
+    fn default() -> Self {
+        Self::new(0., 1.)
+    }
+}
+
 impl Distribution for Normal {
     /// Sample from the given Normal distribution.
     fn sample(&self) -> f64 {

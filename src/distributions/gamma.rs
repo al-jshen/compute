@@ -44,6 +44,12 @@ impl Gamma {
     }
 }
 
+impl Default for Gamma {
+    fn default() -> Self {
+        Self::new(1., 1.)
+    }
+}
+
 impl Distribution for Gamma {
     /// Samples from the given Gamma distribution.
     ///

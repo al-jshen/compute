@@ -2,8 +2,8 @@ use crate::distributions::*;
 use fastrand::Rng;
 use std::f64::consts::PI;
 
-#[derive(Debug)]
 /// Implements the [Normal](https://en.wikipedia.org/wiki/Normal_distribution) distribution.
+#[derive(Debug)]
 pub struct Normal {
     /// Mean (or location) parameter.
     mu: f64,
@@ -41,7 +41,32 @@ impl Normal {
 impl Distribution for Normal {
     /// Sample from the given Normal distribution.
     fn sample(&self) -> f64 {
-        sample_normal(&self.rng) * self.sigma + self.mu
+        loop {
+            let u = self.rng.u64(u64::MIN..u64::MAX);
+
+            let i = (u & 0x7F) as usize;
+            let j = ((u >> 8) & 0xFFFFFF) as u32;
+            let s = if u & 0x80 != 0 { 1.0 } else { -1.0 };
+
+            if j < K[i] {
+                let x = j as f64 * W[i];
+                return s * x * self.sigma + self.mu;
+            }
+
+            let (x, y) = if i < 127 {
+                let x = j as f64 * W[i];
+                let y = Y[i + 1] + (Y[i] - Y[i + 1]) * self.rng.f64();
+                (x, y)
+            } else {
+                let x = R - (-self.rng.f64()).ln_1p() / R;
+                let y = (-R * (x - 0.5 * R)).exp() * self.rng.f64();
+                (x, y)
+            };
+
+            if y < (-0.5 * x * x).exp() {
+                return s * x * self.sigma + self.mu;
+            }
+        }
     }
 }
 
@@ -49,35 +74,6 @@ impl Continuous for Normal {
     /// Calculates the probability density function of the given Normal distribution at `x`.
     fn pdf(&self, x: f64) -> f64 {
         1. / (self.sigma * (2. * PI).sqrt()) * (-0.5 * ((x - self.mu) / self.sigma).powi(2)).exp()
-    }
-}
-
-fn sample_normal(rng: &Rng) -> f64 {
-    loop {
-        let u = rng.u64(u64::MIN..u64::MAX);
-
-        let i = (u & 0x7F) as usize;
-        let j = ((u >> 8) & 0xFFFFFF) as u32;
-        let s = if u & 0x80 != 0 { 1.0 } else { -1.0 };
-
-        if j < K[i] {
-            let x = j as f64 * W[i];
-            return s * x;
-        }
-
-        let (x, y) = if i < 127 {
-            let x = j as f64 * W[i];
-            let y = Y[i + 1] + (Y[i] - Y[i + 1]) * rng.f64();
-            (x, y)
-        } else {
-            let x = R - (-rng.f64()).ln_1p() / R;
-            let y = (-R * (x - 0.5 * R)).exp() * rng.f64();
-            (x, y)
-        };
-
-        if y < (-0.5 * x * x).exp() {
-            return s * x;
-        }
     }
 }
 

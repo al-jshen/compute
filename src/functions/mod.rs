@@ -1,3 +1,4 @@
+use approx_eq::assert_approx_eq;
 use std::f64::consts::PI;
 
 const G: f64 = 4.7421875 + 1.;
@@ -20,7 +21,7 @@ const GAMMA_COEFFS: [f64; 14] = [
     0.36899182659531622704e-5,
 ];
 
-/// Calculates the Gamma function using the [Lanczos
+/// Calculates the (Gamma function)[https://en.wikipedia.org/wiki/Gamma_function] using the [Lanczos
 /// approximation](https://en.wikipedia.org/wiki/Lanczos_approximation). Has a typical precision of
 /// 15 decimal places. Uses the reflection formula to extend the calculation to the entire complex
 /// plane.
@@ -40,9 +41,25 @@ pub fn gamma(mut z: f64) -> f64 {
 
 #[test]
 fn test_gamma() {
-    assert!((gamma(0.1) - 9.513507698668731836292487).abs() / 9.513507698668731836292487 < 1e-10);
-    assert!((gamma(0.5) - 1.7724538509551602798167).abs() / 1.7724538509551602798167 < 1e-10);
-    assert!((gamma(6.) - 120.).abs() / 120. < 1e-10);
-    assert!((gamma(20.) - 121645100408832000.).abs() / 121645100408832000. < 1e-10);
-    assert!((gamma(-0.5) - -3.54490770181103205459).abs() / -3.54490770181103205459 < 1e-10);
+    assert_approx_eq!(gamma(0.1), 9.513507698668731836292487);
+    assert_approx_eq!(gamma(0.5), 1.7724538509551602798167);
+    assert_approx_eq!(gamma(6.), 120.);
+    assert_approx_eq!(gamma(20.), 121645100408832000.);
+    assert_approx_eq!(gamma(-0.5), -3.54490770181103205459);
+}
+
+/// Calculates the [beta function](https://en.wikipedia.org/wiki/Beta_function) using the
+/// relationship between the beta function and the gamma function.
+pub fn beta(a: f64, b: f64) -> f64 {
+    gamma(a) * gamma(b) / gamma(a + b)
+}
+
+#[test]
+fn test_beta() {
+    assert_approx_eq!(beta(1., 3.12345), 1. / 3.12345);
+    assert_approx_eq!(beta(2.1313, 1. - 2.1313), PI / (PI * 2.1313).sin());
+    assert_approx_eq!(
+        beta(7.2, 0.23) * beta(7.2 + 0.23, 1. - 0.23),
+        PI / (7.2 * (PI * 0.23).sin())
+    );
 }

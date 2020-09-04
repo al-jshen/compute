@@ -1,8 +1,8 @@
 use crate::distributions::*;
 use crate::functions::gamma;
 
-#[derive(Debug)]
 /// Implements the [Chi square](https://en.wikipedia.org/wiki/Chi-square_distribution) distribution.
+#[derive(Debug)]
 pub struct ChiSquared {
     /// Degrees of freedom (k)
     dof: usize,

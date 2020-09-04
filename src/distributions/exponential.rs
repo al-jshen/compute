@@ -1,8 +1,8 @@
 use crate::distributions::*;
 
-#[derive(Debug)]
 /// Implements the [Exponential](https://en.wikipedia.org/wiki/Exponential_distribution)
 /// distribution.
+#[derive(Debug)]
 pub struct Exponential {
     /// Rate parameter λ
     lambda: f64,

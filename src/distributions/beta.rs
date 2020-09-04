@@ -1,8 +1,8 @@
 use crate::distributions::*;
 use crate::functions::beta;
 
-#[derive(Debug)]
 /// Implements the [Beta](https://en.wikipedia.org/wiki/Beta_distribution) distribution.
+#[derive(Debug)]
 pub struct Beta {
     /// Shape parameter α.
     alpha: f64,

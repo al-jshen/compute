@@ -1,9 +1,9 @@
 use crate::distributions::*;
 use fastrand::Rng;
 
-#[derive(Debug)]
 /// Implements the [Uniform](https://en.wikipedia.org/wiki/Uniform_distribution_(continuous))
 /// distribution.
+#[derive(Debug)]
 pub struct Uniform {
     /// Lower bound for the Uniform distribution.
     lower: f64,

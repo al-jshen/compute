@@ -82,7 +82,13 @@ impl Distribution for Gamma {
 
 impl Continuous for Gamma {
     /// Calculates the probability density function for the given Gamma function at `x`.
+    ///
+    /// # Remarks
+    /// x should be positive.
     fn pdf(&self, x: f64) -> f64 {
+        if x <= 0. {
+            return 0.;
+        }
         self.beta.powf(self.alpha) / gamma(self.alpha)
             * x.powf(self.alpha - 1.)
             * (-self.beta * x).exp()

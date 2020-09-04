@@ -69,7 +69,13 @@ impl Distribution for Beta {
 
 impl Continuous for Beta {
     /// Calculates the probability density function for the given Beta function at `x`.
+    ///
+    /// # Remarks
+    /// Returns 0. if x is not in `[0, 1]`
     fn pdf(&self, x: f64) -> f64 {
+        if x < 0. || x > 1. {
+            return 0.;
+        }
         x.powf(self.alpha + 1.) * (1. - x).powf(self.beta - 1.) / beta(self.alpha, self.beta)
     }
 }

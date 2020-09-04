@@ -64,9 +64,8 @@ impl Continuous for Exponential {
     /// Returns `0.` if `x` is negative.
     fn pdf(&self, x: f64) -> f64 {
         if x < 0. {
-            0.
-        } else {
-            self.lambda * (-self.lambda * x).exp()
+            return 0.;
         }
+        self.lambda * (-self.lambda * x).exp()
     }
 }

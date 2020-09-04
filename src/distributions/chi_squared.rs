@@ -50,7 +50,14 @@ impl Distribution for ChiSquared {
 
 impl Continuous for ChiSquared {
     /// Calculates the probability density function for the given Chi square distribution at `x`.
+    ///
+    /// # Remarks
+    /// If `dof = 1` then x should be positive. Otherwise, x should be non-negative. If these
+    /// conditions are not met, then the probability of x is 0.
     fn pdf(&self, x: f64) -> f64 {
+        if (self.dof == 1 && x <= 0.) || (x < 0.) {
+            return 0.;
+        }
         let half_k = (self.dof as f64) / 2.;
         1. / (2_f64.powf(half_k) * gamma(half_k)) * x.powf(half_k - 1.) * (-x / 2.).exp()
     }

@@ -2,6 +2,7 @@
 //! commonly used (maximum entropy) distributions.
 
 mod beta;
+mod chi_squared;
 mod exponential;
 mod gamma;
 mod normal;
@@ -25,6 +26,7 @@ pub trait Continuous: Distribution {
 }
 
 pub use self::beta::Beta;
+pub use self::chi_squared::ChiSquared;
 pub use self::exponential::Exponential;
 pub use self::gamma::Gamma;
 pub use self::normal::Normal;

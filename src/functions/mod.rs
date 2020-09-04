@@ -25,17 +25,16 @@ const GAMMA_COEFFS: [f64; 14] = [
 /// approximation](https://en.wikipedia.org/wiki/Lanczos_approximation). Has a typical precision of
 /// 15 decimal places. Uses the reflection formula to extend the calculation to the entire complex
 /// plane.
-pub fn gamma(mut z: f64) -> f64 {
+pub fn gamma(z: f64) -> f64 {
     if z < 0.5 {
         PI / ((PI * z).sin() * gamma(1. - z))
     } else {
-        z -= 1.;
         let mut x = 0.99999999999999709182;
         for (idx, val) in GAMMA_COEFFS.iter().enumerate() {
-            x += val / (z + (idx as f64) + 1.);
+            x += val / ((z - 1.) + (idx as f64) + 1.);
         }
-        let t = z + G - 0.5;
-        ((2. * PI) as f64).sqrt() * t.powf(z + 0.5) * (-t).exp() * x
+        let t = (z - 1.) + G - 0.5;
+        ((2. * PI) as f64).sqrt() * t.powf((z - 1.) + 0.5) * (-t).exp() * x
     }
 }
 

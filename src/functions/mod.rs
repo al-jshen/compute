@@ -22,9 +22,9 @@ const GAMMA_COEFFS: [f64; 14] = [
 ];
 
 /// Calculates the (Gamma function)[https://en.wikipedia.org/wiki/Gamma_function] using the [Lanczos
-/// approximation](https://en.wikipedia.org/wiki/Lanczos_approximation). Has a typical precision of
-/// 15 decimal places. Uses the reflection formula to extend the calculation to the entire complex
-/// plane.
+/// approximation](https://en.wikipedia.org/wiki/Lanczos_approximation). It obeys the equation
+/// `gamma(x+1) = gamma(x) * x`. This approximation uses the reflection formula to extend the
+/// calculation to the entire complex plane.
 pub fn gamma(z: f64) -> f64 {
     if z < 0.5 {
         PI / ((PI * z).sin() * gamma(1. - z))
@@ -63,6 +63,11 @@ fn test_beta() {
     );
 }
 
+/// Calculates the [digamma function](https://en.wikipedia.org/wiki/Digamma_function), which is the
+/// logarithmic derivative of the gamma function. It obeys the equation `digamma(x+1) = digamma(x)
+/// + 1/x`.
+/// The approximation works better for large values. If the value is small, this function will shift
+/// it up using the digamma recurrence relation.
 pub fn digamma(x: f64) -> f64 {
     if x < 6. {
         digamma(x + 1.) - 1. / x

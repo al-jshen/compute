@@ -1,4 +1,5 @@
 use crate::distributions::*;
+use crate::functions::gamma;
 
 /// Implements the [Gamma](https://en.wikipedia.org/wiki/Gamma_distribution) distribution.
 pub struct Gamma {
@@ -14,6 +15,9 @@ impl Gamma {
     /// # Errors
     /// Panics if `alpha <= 0` or `beta <= 0`.
     pub fn new(alpha: f64, beta: f64) -> Self {
+        if alpha <= 0. || beta <= 0. {
+            panic!("Both alpha and beta must be positive.");
+        }
         Gamma { alpha, beta }
     }
 }
@@ -48,7 +52,10 @@ impl Distribution for Gamma {
 }
 
 impl Continuous for Gamma {
-    fn pdf(&self, _: f64) -> f64 {
-        1.
+    /// Calculates the probability density function for the given Gamma function at `x`.
+    fn pdf(&self, x: f64) -> f64 {
+        self.beta.powf(self.alpha) / gamma(self.alpha)
+            * x.powf(self.alpha - 1.)
+            * (-self.beta * x).exp()
     }
 }

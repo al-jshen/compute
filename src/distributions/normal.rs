@@ -36,9 +36,6 @@ impl Normal {
         self.sigma = sigma;
         self
     }
-    pub fn update(&mut self, params: &[f64; 2]) -> &mut Self {
-        self.set_mu(params[0]).set_sigma(params[1])
-    }
 }
 
 impl Default for Normal {
@@ -76,6 +73,9 @@ impl Distribution for Normal {
                 return s * x * self.sigma + self.mu;
             }
         }
+    }
+    fn update(&mut self, params: &[f64]) {
+        self.set_mu(params[0]).set_sigma(params[1]);
     }
 }
 

@@ -32,9 +32,6 @@ impl Exponential {
         self.lambda = lambda;
         self
     }
-    pub fn update(&mut self, params: &[f64; 1]) -> &mut Self {
-        self.set_lambda(params[0])
-    }
 }
 
 impl Default for Exponential {
@@ -51,6 +48,9 @@ impl Distribution for Exponential {
     /// sampling](https://en.wikipedia.org/wiki/Inverse_transform_sampling) method.
     fn sample(&self) -> f64 {
         -self.rng.sample().ln() / self.lambda
+    }
+    fn update(&mut self, params: &[f64]) {
+        self.set_lambda(params[0]);
     }
 }
 

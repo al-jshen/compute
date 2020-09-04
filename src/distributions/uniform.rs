@@ -42,9 +42,6 @@ impl Uniform {
         self.upper = upper;
         self
     }
-    pub fn update(&mut self, params: &[f64; 2]) -> &mut Self {
-        self.set_lower(params[0]).set_upper(params[1])
-    }
 }
 
 impl Default for Uniform {
@@ -56,6 +53,9 @@ impl Distribution for Uniform {
     /// Samples from the given Uniform distribution.
     fn sample(&self) -> f64 {
         (self.upper - self.lower) * self.rng.f64() + self.lower
+    }
+    fn update(&mut self, params: &[f64]) {
+        self.set_lower(params[0]).set_upper(params[1]);
     }
 }
 

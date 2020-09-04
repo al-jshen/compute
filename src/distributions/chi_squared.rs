@@ -30,9 +30,6 @@ impl ChiSquared {
         self.dof = dof;
         self
     }
-    pub fn update(&mut self, params: &[f64; 1]) -> &mut Self {
-        self.set_dof(params[0] as usize)
-    }
 }
 
 impl Default for ChiSquared {
@@ -45,6 +42,9 @@ impl Distribution for ChiSquared {
     /// Samples from the given Chi square distribution.
     fn sample(&self) -> f64 {
         self.sampler.sample()
+    }
+    fn update(&mut self, params: &[f64]) {
+        self.set_dof(params[0] as usize);
     }
 }
 

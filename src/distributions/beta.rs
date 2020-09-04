@@ -48,9 +48,6 @@ impl Beta {
         self.beta_gen = Gamma::new(beta, 1.);
         self
     }
-    pub fn update(&mut self, params: &[f64; 2]) -> &mut Self {
-        self.set_alpha(params[0]).set_beta(params[1])
-    }
 }
 
 impl Default for Beta {
@@ -64,6 +61,9 @@ impl Distribution for Beta {
     fn sample(&self) -> f64 {
         let x = self.alpha_gen.sample();
         x / (x + self.beta_gen.sample())
+    }
+    fn update(&mut self, params: &[f64]) {
+        self.set_alpha(params[0]).set_beta(params[1]);
     }
 }
 

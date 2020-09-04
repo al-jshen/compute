@@ -16,6 +16,7 @@ pub trait Distribution {
     fn sample_iter(&self, n: usize) -> Vec<f64> {
         (0..n).map(|_| self.sample()).collect()
     }
+    fn update(&mut self, params: &[f64]);
 }
 
 /// Provides a trait for interacting with continuous probability distributions.

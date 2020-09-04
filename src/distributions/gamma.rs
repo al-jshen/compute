@@ -42,9 +42,6 @@ impl Gamma {
         self.beta = beta;
         self
     }
-    pub fn update(&mut self, params: &[f64; 2]) -> &mut Self {
-        self.set_alpha(params[0]).set_beta(params[1])
-    }
 }
 
 impl Default for Gamma {
@@ -77,6 +74,9 @@ impl Distribution for Gamma {
                 return d * v * self.beta;
             }
         }
+    }
+    fn update(&mut self, params: &[f64]) {
+        self.set_alpha(params[0]).set_beta(params[1]);
     }
 }
 

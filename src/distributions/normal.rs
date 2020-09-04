@@ -1,16 +1,13 @@
 use crate::distributions::*;
-use fastrand::Rng;
 use std::f64::consts::PI;
 
 /// Implements the [Normal](https://en.wikipedia.org/wiki/Normal_distribution) distribution.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Normal {
     /// Mean (or location) parameter.
     mu: f64,
     /// Standard deviation (or scale) parameter.
     sigma: f64,
-    /// Random number generator used to sample from distribution.
-    rng: Rng,
 }
 
 impl Normal {
@@ -22,11 +19,7 @@ impl Normal {
         if sigma < 0. {
             panic!("Sigma must be non-negative.")
         }
-        Normal {
-            mu,
-            sigma,
-            rng: Rng::new(),
-        }
+        Normal { mu, sigma }
     }
     pub fn set_mu(&mut self, mu: f64) -> &mut Self {
         self.mu = mu;
@@ -48,7 +41,7 @@ impl Distribution for Normal {
     /// Sample from the given Normal distribution.
     fn sample(&self) -> f64 {
         loop {
-            let u = self.rng.u64(u64::MIN..u64::MAX);
+            let u = fastrand::u64(u64::MIN..u64::MAX);
 
             let i = (u & 0x7F) as usize;
             let j = ((u >> 8) & 0xFFFFFF) as u32;
@@ -61,11 +54,11 @@ impl Distribution for Normal {
 
             let (x, y) = if i < 127 {
                 let x = j as f64 * W[i];
-                let y = Y[i + 1] + (Y[i] - Y[i + 1]) * self.rng.f64();
+                let y = Y[i + 1] + (Y[i] - Y[i + 1]) * fastrand::f64();
                 (x, y)
             } else {
-                let x = R - (-self.rng.f64()).ln_1p() / R;
-                let y = (-R * (x - 0.5 * R)).exp() * self.rng.f64();
+                let x = R - (-fastrand::f64()).ln_1p() / R;
+                let y = (-R * (x - 0.5 * R)).exp() * fastrand::f64();
                 (x, y)
             };
 

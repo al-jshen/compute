@@ -2,7 +2,7 @@ use crate::distributions::*;
 use crate::functions::gamma;
 
 /// Implements the [Gamma](https://en.wikipedia.org/wiki/Gamma_distribution) distribution.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Gamma {
     /// Shape parameter α.
     alpha: f64,

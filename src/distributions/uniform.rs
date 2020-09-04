@@ -1,16 +1,13 @@
 use crate::distributions::*;
-use fastrand::Rng;
 
 /// Implements the [Uniform](https://en.wikipedia.org/wiki/Uniform_distribution_(continuous))
 /// distribution.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Uniform {
     /// Lower bound for the Uniform distribution.
     lower: f64,
     /// Upper bound for the Uniform distribution.
     upper: f64,
-    /// Random number generator used to sample from the distribution.
-    rng: Rng,
 }
 
 impl Uniform {
@@ -22,11 +19,7 @@ impl Uniform {
         if lower > upper {
             panic!("`Upper` must be larger than `lower`.");
         }
-        Uniform {
-            lower,
-            upper,
-            rng: Rng::new(),
-        }
+        Uniform { lower, upper }
     }
     pub fn set_lower(&mut self, lower: f64) -> &mut Self {
         if lower > self.upper {
@@ -52,7 +45,7 @@ impl Default for Uniform {
 impl Distribution for Uniform {
     /// Samples from the given Uniform distribution.
     fn sample(&self) -> f64 {
-        (self.upper - self.lower) * self.rng.f64() + self.lower
+        (self.upper - self.lower) * fastrand::f64() + self.lower
     }
     fn update(&mut self, params: &[f64]) {
         self.set_lower(params[0]).set_upper(params[1]);

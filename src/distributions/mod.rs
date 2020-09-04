@@ -1,3 +1,4 @@
+mod gamma;
 mod normal;
 mod uniform;
 
@@ -12,5 +13,6 @@ pub trait Continuous: Distribution {
     fn pdf(&self, x: f64) -> f64;
 }
 
+pub use self::gamma::Gamma;
 pub use self::normal::Normal;
 pub use self::uniform::Uniform;

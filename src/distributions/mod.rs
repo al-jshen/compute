@@ -1,5 +1,5 @@
-pub mod normal;
-pub mod uniform;
+mod normal;
+mod uniform;
 
 pub trait Distribution {
     fn sample(&self) -> f64;
@@ -11,3 +11,6 @@ pub trait Distribution {
 pub trait Continuous: Distribution {
     fn pdf(&self, x: f64) -> f64;
 }
+
+pub use self::normal::Normal;
+pub use self::uniform::Uniform;

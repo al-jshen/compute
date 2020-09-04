@@ -62,3 +62,25 @@ fn test_beta() {
         PI / (7.2 * (PI * 0.23).sin())
     );
 }
+
+pub fn digamma(x: f64) -> f64 {
+    if x < 6. {
+        digamma(x + 1.) - 1. / x
+    } else {
+        x.ln() - 1. / (2. * x) - 1. / (12. * x.powi(2)) + 1. / (120. * x.powi(4))
+            - 1. / (252. * x.powi(6))
+            + 1. / (240. * x.powi(8))
+            - 5. / (660. * x.powi(10))
+            + 691. / (32760. * x.powi(12))
+            - 1. / (12. * x.powi(14))
+    }
+}
+
+#[test]
+fn test_digamma() {
+    assert_approx_eq!(digamma(21. + 1.), digamma(21.) + 1. / 21.);
+    assert_approx_eq!(digamma(2. + 1.), digamma(2.) + 1. / 2.);
+    assert_approx_eq!(digamma(0.5), -1.96351002602142347944097633);
+    assert_approx_eq!(digamma(-0.5), 0.036489973978576520559023667);
+    assert_approx_eq!(digamma(1.), 0.57721566490153286060651209);
+}

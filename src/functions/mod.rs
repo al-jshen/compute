@@ -78,7 +78,7 @@ pub fn beta(a: f64, b: f64) -> f64 {
 /// assert_approx_eq!(digamma(2. + 1.), digamma(2.) + 1. / 2.);
 /// assert_approx_eq!(digamma(0.5), -1.96351002602142347944097633);
 /// assert_approx_eq!(digamma(-0.5), 0.036489973978576520559023667);
-/// assert_approx_eq!(digamma(1.), 0.57721566490153286060651209);
+/// assert_approx_eq!(digamma(1.), -0.57721566490153286060651209);
 /// ```
 pub fn digamma(x: f64) -> f64 {
     if x < 6. {

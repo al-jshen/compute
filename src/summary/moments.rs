@@ -1,3 +1,6 @@
+//! A module for computing statistical moments and related values. In particular, this includes
+//! means and variances.
+
 /// An implementation of Welford's online algorithm, which is used for calculating statistics in a
 /// recurrent and stable manner.
 /// See https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance for the reference

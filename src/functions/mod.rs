@@ -1,4 +1,4 @@
-#![allow(clippy::excessive_precision)]
+//! Various mathematical functions commonly used in statistics.
 
 use std::f64::consts::PI;
 

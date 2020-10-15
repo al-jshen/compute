@@ -1,3 +1,5 @@
+//! A module for computing order statistics. This includes medians, quantiles, and extrema.
+
 /// Returns the smallest element in the array.
 /// ```
 /// use statistics::summary::min;

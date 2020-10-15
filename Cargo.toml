@@ -1,11 +1,14 @@
 [package]
 name = "statistics"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Jeff Shen <jshen2014@hotmail.com>"]
 edition = "2018"
+license = "MIT OR Apache-2.0"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+readme = "README.md"
+description = "A crate for statistical computing."
+repository = "https://github.com/al-jshen/statistics"
 
 [dependencies]
 fastrand = "1.3.5"
-approx_eq = { git = "https://github.com/al-jshen/approx_eq" }
+approx_eq = "0.1"

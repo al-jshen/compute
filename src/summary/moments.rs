@@ -26,7 +26,7 @@ pub fn welford_statistics(data: &[f64]) -> (usize, f64, f64) {
 /// Calculates the mean of an array of data points in a numerically stable manner
 /// using the Welford algorithm.
 /// ```
-/// use statistics::data::mean;
+/// use statistics::summary::mean;
 /// use approx_eq::assert_approx_eq;
 ///
 /// let data1: Vec<f64> = vec![-0.2711336 ,  1.20002575,  0.69102151, -0.56390913, -1.62661382, -0.0613969 ,  0.39876752, -0.99619281,  1.12860854, -0.61163405];
@@ -44,16 +44,16 @@ pub fn mean(data: &[f64]) -> f64 {
 /// Calculates the population variance from an array of data points in a numerically stable manner
 /// using the Welford algorithm.
 /// ```
-/// use statistics::data::variance;
+/// use statistics::summary::var;
 /// use approx_eq::assert_approx_eq;
 ///
 /// let data1: Vec<f64> = vec![-0.2711336 ,  1.20002575,  0.69102151, -0.56390913, -1.62661382, -0.0613969 ,  0.39876752, -0.99619281,  1.12860854, -0.61163405];
-/// assert_approx_eq!(variance(&data1), 0.7707231173572182);
+/// assert_approx_eq!(var(&data1), 0.7707231173572182);
 ///
 /// let data2: Vec<f64> = vec![-1.35521905,  0.70316493, -0.24386284,  0.20382644,  1.28818114, -0.90003795, -0.73912347,  1.48550753,  1.02038191,  0.18684426];
-/// assert_approx_eq!(variance(&data2), 0.8458540238604941);
+/// assert_approx_eq!(var(&data2), 0.8458540238604941);
 /// ```
-pub fn variance(data: &[f64]) -> f64 {
+pub fn var(data: &[f64]) -> f64 {
     let (count, _, m2) = welford_statistics(data);
     m2 / count as f64
 }
@@ -61,16 +61,32 @@ pub fn variance(data: &[f64]) -> f64 {
 /// Calculates the sample variance from an array of data points in a numerically stable manner
 /// using the Welford algorithm.
 /// ```
-/// use statistics::data::sample_variance;
+/// use statistics::summary::sample_var;
 /// use approx_eq::assert_approx_eq;
 ///
 /// let data1: Vec<f64> = vec![-0.2711336 ,  1.20002575,  0.69102151, -0.56390913, -1.62661382, -0.0613969 ,  0.39876752, -0.99619281,  1.12860854, -0.61163405];
-/// assert_approx_eq!(sample_variance(&data1), 0.8563590181955176);
+/// assert_approx_eq!(sample_var(&data1), 0.8563590181955176);
 ///
 /// let data2: Vec<f64> = vec![-1.35521905,  0.70316493, -0.24386284,  0.20382644,  1.28818114, -0.90003795, -0.73912347,  1.48550753,  1.02038191,  0.18684426];
-/// assert_approx_eq!(sample_variance(&data2), 0.939837803612305);
+/// assert_approx_eq!(sample_var(&data2), 0.939837803612305);
 /// ```
-pub fn sample_variance(data: &[f64]) -> f64 {
+pub fn sample_var(data: &[f64]) -> f64 {
     let (count, _, m2) = welford_statistics(data);
     m2 / (count - 1) as f64
+}
+
+/// Calculates the standard deviation of an array of data points. This is the square root of of the
+/// variance.
+/// ```
+/// use statistics::summary::std;
+/// use approx_eq::assert_approx_eq;
+///
+/// let data1: Vec<f64> = vec![-0.2711336 ,  1.20002575,  0.69102151, -0.56390913, -1.62661382, -0.0613969 ,  0.39876752, -0.99619281,  1.12860854, -0.61163405];
+/// assert_approx_eq!(std(&data1), 0.8779083758433825);
+///
+/// let data2: Vec<f64> = vec![-1.35521905,  0.70316493, -0.24386284,  0.20382644,  1.28818114, -0.90003795, -0.73912347,  1.48550753,  1.02038191,  0.18684426];
+/// assert_approx_eq!(std(&data2), 0.9197032256391593);
+/// ```
+pub fn std(data: &[f64]) -> f64 {
+    var(data).sqrt()
 }

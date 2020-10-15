@@ -74,6 +74,6 @@ impl Mean for ChiSquared {
 impl Variance for ChiSquared {
     /// Calculates the variance of the Chi square distribution.
     fn var(&self) -> f64 {
-        self.dof * 2.
+        self.mean() * 2.
     }
 }

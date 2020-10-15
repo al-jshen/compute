@@ -1,3 +1,5 @@
+#![allow(clippy::many_single_char_names)]
+
 use crate::distributions::*;
 use std::f64::consts::PI;
 

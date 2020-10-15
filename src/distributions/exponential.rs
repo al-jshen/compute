@@ -69,3 +69,10 @@ impl Continuous for Exponential {
         self.lambda * (-self.lambda * x).exp()
     }
 }
+
+impl Mean for Exponential {
+    /// Returns the mean of the given exponential distribution.
+    fn mean(&self) -> f64 {
+        1. / self.lambda
+    }
+}

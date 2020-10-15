@@ -48,6 +48,14 @@ impl Distribution for ChiSquared {
     }
 }
 
+impl Mean for ChiSquared {
+    /// Calculates the mean of the Chi square distribution, which is the same as its degrees of
+    /// freedom.
+    fn mean(&self) -> f64 {
+        self.dof as f64
+    }
+}
+
 impl Continuous for ChiSquared {
     /// Calculates the probability density function for the given Chi square distribution at `x`.
     ///

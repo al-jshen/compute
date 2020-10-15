@@ -79,3 +79,11 @@ impl Continuous for Beta {
         x.powf(self.alpha + 1.) * (1. - x).powf(self.beta - 1.) / beta(self.alpha, self.beta)
     }
 }
+
+impl Mean for Beta {
+    /// Returns the mean of the given beta function, which for a B(a, b)
+    /// distribution is given by `a / (a + b)`.
+    fn mean(&self) -> f64 {
+        self.alpha / (self.alpha + self.beta)
+    }
+}

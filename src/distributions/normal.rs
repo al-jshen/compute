@@ -79,6 +79,13 @@ impl Continuous for Normal {
     }
 }
 
+impl Mean for Normal {
+    /// Returns the mean of the given Normal distribution.
+    fn mean(&self) -> f64 {
+        self.mu
+    }
+}
+
 #[test]
 fn maxprob() {
     let n = self::Normal::new(5., 4.);

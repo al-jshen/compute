@@ -94,3 +94,10 @@ impl Continuous for Gamma {
             * (-self.beta * x).exp()
     }
 }
+
+impl Mean for Gamma {
+    /// Calculates the mean, which for a Gamma(a, b) distribution is given by `a / b`.
+    fn mean(&self) -> f64 {
+        self.alpha / self.beta
+    }
+}

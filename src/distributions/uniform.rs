@@ -69,6 +69,13 @@ impl Continuous for Uniform {
     }
 }
 
+impl Mean for Uniform {
+    /// Calculates the mean, which for a Uniform(a, b) distribution is given by `(a + b) / 2`.
+    fn mean(&self) -> f64 {
+        (self.lower + self.upper) / 2.
+    }
+}
+
 #[test]
 fn inrange() {
     let u = self::Uniform::new(-2., 6.);

@@ -26,6 +26,12 @@ pub trait Continuous: Distribution {
     fn pdf(&self, x: f64) -> f64;
 }
 
+/// Provides a trait for computing the mean of a distribution.
+pub trait Mean: Distribution {
+    /// Calculates the mean of the distribution.
+    fn mean(&self) -> f64;
+}
+
 pub use self::beta::Beta;
 pub use self::chi_squared::ChiSquared;
 pub use self::exponential::Exponential;

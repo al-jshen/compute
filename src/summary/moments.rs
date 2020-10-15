@@ -29,7 +29,7 @@ fn welford_statistics(data: &[f64]) -> (usize, f64, f64) {
 /// Calculates the mean of an array of data points in a numerically stable manner
 /// using the Welford algorithm.
 /// ```
-/// use statistics::summary::mean;
+/// use compute::summary::mean;
 /// use approx_eq::assert_approx_eq;
 ///
 /// let data1: Vec<f64> = vec![-0.2711336 ,  1.20002575,  0.69102151, -0.56390913, -1.62661382, -0.0613969 ,  0.39876752, -0.99619281,  1.12860854, -0.61163405];
@@ -47,7 +47,7 @@ pub fn mean(data: &[f64]) -> f64 {
 /// Calculates the population variance from an array of data points in a numerically stable manner
 /// using the Welford algorithm.
 /// ```
-/// use statistics::summary::var;
+/// use compute::summary::var;
 /// use approx_eq::assert_approx_eq;
 ///
 /// let data1: Vec<f64> = vec![-0.2711336 ,  1.20002575,  0.69102151, -0.56390913, -1.62661382, -0.0613969 ,  0.39876752, -0.99619281,  1.12860854, -0.61163405];
@@ -64,7 +64,7 @@ pub fn var(data: &[f64]) -> f64 {
 /// Calculates the sample variance from an array of data points in a numerically stable manner
 /// using the Welford algorithm.
 /// ```
-/// use statistics::summary::sample_var;
+/// use compute::summary::sample_var;
 /// use approx_eq::assert_approx_eq;
 ///
 /// let data1: Vec<f64> = vec![-0.2711336 ,  1.20002575,  0.69102151, -0.56390913, -1.62661382, -0.0613969 ,  0.39876752, -0.99619281,  1.12860854, -0.61163405];
@@ -81,7 +81,7 @@ pub fn sample_var(data: &[f64]) -> f64 {
 /// Calculates the standard deviation of an array of data points. This is the square root of of the
 /// variance.
 /// ```
-/// use statistics::summary::std;
+/// use compute::summary::std;
 /// use approx_eq::assert_approx_eq;
 ///
 /// let data1: Vec<f64> = vec![-0.2711336 ,  1.20002575,  0.69102151, -0.56390913, -1.62661382, -0.0613969 ,  0.39876752, -0.99619281,  1.12860854, -0.61163405];

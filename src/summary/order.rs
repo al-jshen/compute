@@ -2,7 +2,7 @@
 
 /// Returns the smallest element in the array.
 /// ```
-/// use statistics::summary::min;
+/// use compute::summary::min;
 /// use approx_eq::assert_approx_eq;
 ///
 /// let data1: Vec<f64> = vec![-0.2711336 ,  1.20002575,  0.69102151, -0.56390913, -1.62661382, -0.0613969 ,  0.39876752, -0.99619281,  1.12860854, -0.61163405];
@@ -17,7 +17,7 @@ pub fn min(data: &[f64]) -> f64 {
 
 /// Returns the largest element in the array.
 /// ```
-/// use statistics::summary::max;
+/// use compute::summary::max;
 /// use approx_eq::assert_approx_eq;
 ///
 /// let data1: Vec<f64> = vec![-0.2711336 ,  1.20002575,  0.69102151, -0.56390913, -1.62661382, -0.0613969 ,  0.39876752, -0.99619281,  1.12860854, -0.61163405];

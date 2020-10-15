@@ -29,7 +29,7 @@ const GAMMA_COEFFS: [f64; 14] = [
 ///
 /// ```
 /// use approx_eq::assert_approx_eq;
-/// use statistics::functions::gamma;
+/// use compute::functions::gamma;
 /// assert_approx_eq!(gamma(0.1), 9.513507698668731836292487);
 /// assert_approx_eq!(gamma(0.5), 1.7724538509551602798167);
 /// assert_approx_eq!(gamma(6.), 120.);
@@ -54,7 +54,7 @@ pub fn gamma(z: f64) -> f64 {
 ///
 /// ```
 /// use approx_eq::assert_approx_eq;
-/// use statistics::functions::beta;
+/// use compute::functions::beta;
 /// use std::f64::consts::PI;
 /// assert_approx_eq!(beta(1., 3.12345), 1. / 3.12345);
 /// assert_approx_eq!(beta(2.1313, 1. - 2.1313), PI / (PI * 2.1313).sin());
@@ -74,7 +74,7 @@ pub fn beta(a: f64, b: f64) -> f64 {
 ///
 /// ```
 /// use approx_eq::assert_approx_eq;
-/// use statistics::functions::digamma;
+/// use compute::functions::digamma;
 /// assert_approx_eq!(digamma(21. + 1.), digamma(21.) + 1. / 21.);
 /// assert_approx_eq!(digamma(2. + 1.), digamma(2.) + 1. / 2.);
 /// assert_approx_eq!(digamma(0.5), -1.96351002602142347944097633);

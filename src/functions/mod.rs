@@ -61,7 +61,6 @@ pub fn gamma(z: f64) -> f64 {
 ///     PI / (7.2 * (PI * 0.23).sin())
 /// );
 /// ```
-
 pub fn beta(a: f64, b: f64) -> f64 {
     gamma(a) * gamma(b) / gamma(a + b)
 }
@@ -80,6 +79,7 @@ pub fn beta(a: f64, b: f64) -> f64 {
 /// assert_approx_eq!(digamma(-0.5), 0.036489973978576520559023667);
 /// assert_approx_eq!(digamma(1.), -0.57721566490153286060651209);
 /// ```
+#[allow(dead_code)]
 pub fn digamma(x: f64) -> f64 {
     if x < 6. {
         digamma(x + 1.) - 1. / x

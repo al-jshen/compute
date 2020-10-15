@@ -15,18 +15,14 @@ impl ChiSquared {
     /// # Errors
     /// Panics if degrees of freedom is not positive.
     pub fn new(dof: usize) -> Self {
-        if dof <= 0 {
-            panic!("Degrees of freedom must be positive.");
-        }
+        assert!(dof > 0, "Degrees of freedom must be positive.");
         ChiSquared {
             dof,
             sampler: Gamma::new((dof as f64) / 2., 0.5),
         }
     }
     pub fn set_dof(&mut self, dof: usize) -> &mut Self {
-        if dof <= 0 {
-            panic!("Degrees of freedom must be positive.");
-        }
+        assert!(dof > 0, "Degrees of freedom must be positive.");
         self.dof = dof;
         self
     }

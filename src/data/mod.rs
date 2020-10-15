@@ -19,7 +19,6 @@ pub fn welford_statistics(data: &[f64]) -> (usize, f64, f64) {
     let mut aggregate = (0 as usize, 0., 0.);
     for i in data {
         aggregate = welford_update(aggregate, i);
-        println!("{:?}", &aggregate);
     }
     aggregate
 }

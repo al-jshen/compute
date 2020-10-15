@@ -26,10 +26,17 @@ pub trait Continuous: Distribution {
     fn pdf(&self, x: f64) -> f64;
 }
 
-/// Provides a trait for computing the mean of a distribution.
+/// Provides a trait for computing the mean of a distribution where there is a closed-form
+/// expression.
 pub trait Mean: Distribution {
     /// Calculates the mean of the distribution.
     fn mean(&self) -> f64;
+}
+
+/// Provides a trait for computing the variance of a distribution where there is a closed-form
+/// solution. Requires the `Mean` trait to be implemented because of the definition of variance.
+pub trait Variance: Mean {
+    fn var(&self) -> f64;
 }
 
 pub use self::beta::Beta;

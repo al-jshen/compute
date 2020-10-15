@@ -76,6 +76,13 @@ impl Mean for Uniform {
     }
 }
 
+impl Variance for Uniform {
+    /// Calculates the variance of the given Uniform distribution.
+    fn var(&self) -> f64 {
+        (self.upper - self.lower).powi(2) / 12.
+    }
+}
+
 #[test]
 fn inrange() {
     let u = self::Uniform::new(-2., 6.);

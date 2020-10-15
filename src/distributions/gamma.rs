@@ -101,3 +101,10 @@ impl Mean for Gamma {
         self.alpha / self.beta
     }
 }
+
+impl Variance for Gamma {
+    /// Calculates the variance of the given Gamma distribution.
+    fn var(&self) -> f64 {
+        self.alpha / self.beta.powi(2)
+    }
+}

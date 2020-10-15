@@ -48,14 +48,6 @@ impl Distribution for ChiSquared {
     }
 }
 
-impl Mean for ChiSquared {
-    /// Calculates the mean of the Chi square distribution, which is the same as its degrees of
-    /// freedom.
-    fn mean(&self) -> f64 {
-        self.dof as f64
-    }
-}
-
 impl Continuous for ChiSquared {
     /// Calculates the probability density function for the given Chi square distribution at `x`.
     ///
@@ -68,5 +60,20 @@ impl Continuous for ChiSquared {
         }
         let half_k = (self.dof as f64) / 2.;
         1. / (2_f64.powf(half_k) * gamma(half_k)) * x.powf(half_k - 1.) * (-x / 2.).exp()
+    }
+}
+
+impl Mean for ChiSquared {
+    /// Calculates the mean of the Chi square distribution, which is the same as its degrees of
+    /// freedom.
+    fn mean(&self) -> f64 {
+        self.dof as f64
+    }
+}
+
+impl Variance for ChiSquared {
+    /// Calculates the variance of the Chi square distribution.
+    fn var(&self) -> f64 {
+        self.dof * 2.
     }
 }

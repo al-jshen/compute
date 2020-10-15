@@ -81,9 +81,17 @@ impl Continuous for Beta {
 }
 
 impl Mean for Beta {
-    /// Returns the mean of the given beta function, which for a B(a, b)
+    /// Returns the mean of the beta distribution, which for a B(a, b)
     /// distribution is given by `a / (a + b)`.
     fn mean(&self) -> f64 {
         self.alpha / (self.alpha + self.beta)
+    }
+}
+
+impl Variance for Beta {
+    /// Returns the variance of the beta distribution.
+    fn var(&self) -> f64 {
+        (self.alpha * self.beta)
+            / ((self.alpha + self.beta).powi(2) * (self.alpha + self.beta + 1.))
     }
 }

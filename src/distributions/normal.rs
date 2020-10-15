@@ -86,6 +86,13 @@ impl Mean for Normal {
     }
 }
 
+impl Variance for Normal {
+    /// Returns the variance of the given Normal distribution.
+    fn var(&self) -> f64 {
+        self.sigma
+    }
+}
+
 #[test]
 fn maxprob() {
     let n = self::Normal::new(5., 4.);

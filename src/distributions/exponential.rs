@@ -76,3 +76,9 @@ impl Mean for Exponential {
         1. / self.lambda
     }
 }
+
+impl Variance for Exponential {
+    fn var(&self) -> f64 {
+        1. / self.lambda.powi(2)
+    }
+}

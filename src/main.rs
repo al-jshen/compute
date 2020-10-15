@@ -1,5 +1,7 @@
+mod data;
 mod distributions;
 mod functions;
+use data::*;
 use distributions::*;
 
 fn main() {
@@ -22,7 +24,19 @@ fn main() {
         Box::new(b),
         Box::new(c),
     ];
-    for i in v {
-        println!("{}", i.sample());
-    }
+    let data = v.iter().map(|d| d.sample()).collect::<Vec<_>>();
+    println!("{:?}", &data);
+    println!("{}", variance(&data));
+    let data1: Vec<f64> = vec![
+        -0.2711336,
+        1.20002575,
+        0.69102151,
+        -0.56390913,
+        -1.62661382,
+        -0.0613969,
+        0.39876752,
+        -0.99619281,
+        1.12860854,
+        -0.61163405,
+    ];
 }

@@ -2,7 +2,7 @@
 /// recurrent and stable manner.
 /// See https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance for the reference
 /// implementation of the Welford update algorithm.
-pub fn welford_update(existing_aggregate: (usize, f64, f64), new_val: &f64) -> (usize, f64, f64) {
+fn welford_update(existing_aggregate: (usize, f64, f64), new_val: &f64) -> (usize, f64, f64) {
     // existing aggregate consists of (count, mean, M2)
     let (mut count, mut mean, mut m2) = existing_aggregate;
     count += 1;
@@ -15,7 +15,7 @@ pub fn welford_update(existing_aggregate: (usize, f64, f64), new_val: &f64) -> (
 
 /// Uses the Welford online algorithm to calculate the count, mean, and m2 of an array of data
 /// points. This is the driver for the `mean`, `variance`, and `sample_variance` functions.
-pub fn welford_statistics(data: &[f64]) -> (usize, f64, f64) {
+fn welford_statistics(data: &[f64]) -> (usize, f64, f64) {
     let mut aggregate = (0 as usize, 0., 0.);
     for i in data {
         aggregate = welford_update(aggregate, i);

@@ -1,5 +1,5 @@
-mod moments;
-mod order;
+pub mod moments;
+pub mod order;
 
 pub use self::moments::*;
 pub use self::order::*;

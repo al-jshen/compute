@@ -26,8 +26,7 @@ fn welford_statistics(data: &[f64]) -> (usize, f64, f64) {
     aggregate
 }
 
-/// Calculates the mean of an array of data points in a numerically stable manner
-/// using the Welford algorithm.
+/// Calculates the mean of an array of data points.
 /// ```
 /// use compute::summary::mean;
 /// use approx_eq::assert_approx_eq;
@@ -40,6 +39,22 @@ fn welford_statistics(data: &[f64]) -> (usize, f64, f64) {
 /// assert_approx_eq!(mean(&data2), 0.16496629);
 /// ```
 pub fn mean(data: &[f64]) -> f64 {
+    data.iter().sum::<f64>() / data.len() as f64
+}
+
+/// Calculates the mean of an array of data points using the Welford algorithm.
+/// ```
+/// use compute::summary::welford_mean;
+/// use approx_eq::assert_approx_eq;
+///
+/// let data1: Vec<f64> = vec![-0.2711336 ,  1.20002575,  0.69102151, -0.56390913, -1.62661382, -0.0613969 ,  0.39876752, -0.99619281,  1.12860854, -0.61163405];
+/// assert_approx_eq!(welford_mean(&data1), -0.071245699);
+/// println!("{}", welford_mean(&data1));
+///
+/// let data2: Vec<f64> = vec![-1.35521905,  0.70316493, -0.24386284,  0.20382644,  1.28818114, -0.90003795, -0.73912347,  1.48550753,  1.02038191,  0.18684426];
+/// assert_approx_eq!(welford_mean(&data2), 0.16496629);
+/// ```
+pub fn welford_mean(data: &[f64]) -> f64 {
     let (_, mean, _) = welford_statistics(data);
     mean
 }

@@ -2,17 +2,18 @@ use crate::distributions::*;
 use crate::functions::gamma;
 use crate::summary::*;
 use approx_eq::assert_approx_eq;
+#[allow(non_snake_case)]
 
-/// Implements the [Poisson](https://en.wikipedia.org/wiki/Uniform_distribution_(continuous))
+/// Implements the [Poisson](https://en.wikipedia.org/wiki/https://en.wikipedia.org/wiki/Poisson_distribution)
 /// distribution.
 #[derive(Debug, Clone, Copy)]
 pub struct Poisson {
-    /// Rate parameter for the poisson distribution.
+    /// Rate parameter for the Poisson distribution.
     lambda: f64,
 }
 
 impl Poisson {
-    /// Create a new Poisson distribution with lower bound `lower` and upper bound `upper`.
+    /// Create a new Poisson distribution with rate parameter `lambda`.
     ///
     /// # Errors
     /// Panics if `lambda <= 0.0`.
@@ -118,7 +119,7 @@ fn sample_ptrs(lam: f64) -> f64 {
 }
 
 #[test]
-fn correct_moments() {
+fn test_moments() {
     let data5 = self::Poisson::new(5.).sample_iter(1e6 as usize);
     let mean5 = mean(&data5);
     let var5 = var(&data5);

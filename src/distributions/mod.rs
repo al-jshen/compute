@@ -1,6 +1,7 @@
 //! Provides a unified interface for working with probability distributions. Also implements
 //! commonly used (maximum entropy) distributions.
 
+mod bernoulli;
 mod beta;
 mod chi_squared;
 mod discreteuniform;
@@ -47,6 +48,7 @@ pub trait Discrete: Distribution {
     fn pmf(&self, x: i64) -> f64;
 }
 
+pub use self::bernoulli::Bernoulli;
 pub use self::beta::Beta;
 pub use self::chi_squared::ChiSquared;
 pub use self::discreteuniform::DiscreteUniform;

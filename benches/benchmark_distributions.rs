@@ -1,0 +1,20 @@
+use compute::distributions::*;
+use criterion::{criterion_group, criterion_main, Criterion};
+
+pub fn criterion_generate(c: &mut Criterion) {
+    c.bench_function("generate 1e6 standard normals", |b| {
+        b.iter(|| Normal::new(0., 1.).sample_iter(1e6 as usize))
+    });
+    c.bench_function("generate 1e6 uniforms", |b| {
+        b.iter(|| Uniform::new(-1., 1.).sample_iter(1e6 as usize))
+    });
+    c.bench_function("generate 1e6 gammas", |b| {
+        b.iter(|| Gamma::new(2., 4.).sample_iter(1e6 as usize))
+    });
+    c.bench_function("generate 1e6 exponentials", |b| {
+        b.iter(|| Exponential::new(2.).sample_iter(1e6 as usize))
+    });
+}
+
+criterion_group!(benches, criterion_generate);
+criterion_main!(benches);

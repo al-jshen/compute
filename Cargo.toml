@@ -19,5 +19,9 @@ approx_eq = "0.1"
 criterion = "0.3"
 
 [[bench]]
-name = "benchmark"
+name = "benchmark_summary"
+harness = false
+
+[[bench]]
+name = "benchmark_distributions"
 harness = false

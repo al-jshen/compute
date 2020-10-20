@@ -7,6 +7,7 @@ mod discreteuniform;
 mod exponential;
 mod gamma;
 mod normal;
+mod poisson;
 mod uniform;
 
 /// The primary trait defining a probability distribution.
@@ -52,4 +53,5 @@ pub use self::discreteuniform::DiscreteUniform;
 pub use self::exponential::Exponential;
 pub use self::gamma::Gamma;
 pub use self::normal::Normal;
+pub use self::poisson::Poisson;
 pub use self::uniform::Uniform;

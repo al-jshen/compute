@@ -1,5 +1,7 @@
 use crate::distributions::*;
 use crate::functions::gamma;
+use crate::summary::*;
+use approx_eq::assert_approx_eq;
 
 /// Implements the [Gamma](https://en.wikipedia.org/wiki/Gamma_distribution) distribution.
 #[derive(Debug, Clone, Copy)]
@@ -23,7 +25,7 @@ impl Gamma {
         }
         Gamma {
             alpha,
-            beta,
+            beta: 1. / beta,
             normal_gen: Normal::new(0., 1.),
             uniform_gen: Uniform::new(0., 1.),
         }
@@ -39,7 +41,7 @@ impl Gamma {
         if beta <= 0. {
             panic!("Beta must be positive.");
         }
-        self.beta = beta;
+        self.beta = 1. / beta;
         self
     }
 }
@@ -107,4 +109,10 @@ impl Variance for Gamma {
     fn var(&self) -> f64 {
         self.alpha / self.beta.powi(2)
     }
+}
+
+#[test]
+fn test_moments() {
+    let data = Gamma::new(2., 4.).sample_iter(1e6 as usize);
+    assert_approx_eq!(0.5, mean(&data), 1e-2);
 }

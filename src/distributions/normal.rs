@@ -1,6 +1,8 @@
 #![allow(clippy::many_single_char_names)]
 
 use crate::distributions::*;
+use crate::summary::*;
+use approx_eq::assert_approx_eq;
 use std::f64::consts::PI;
 
 /// Implements the [Normal](https://en.wikipedia.org/wiki/Normal_distribution) distribution.
@@ -386,3 +388,14 @@ const W: [f64; 128] = [
     2.05295471952e-07,
     2.22600839893e-07,
 ];
+
+#[test]
+fn test_moments() {
+    let data1 = Normal::new(0., 1.).sample_iter(1e6 as usize);
+    assert_approx_eq!(0., mean(&data1), 1e-2);
+    assert_approx_eq!(1., std(&data1), 1e-2);
+
+    let data2 = Normal::new(10., 20.).sample_iter(1e6 as usize);
+    assert_approx_eq!(10., mean(&data2), 1e-2);
+    assert_approx_eq!(20., std(&data2), 1e-2);
+}

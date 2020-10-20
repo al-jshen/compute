@@ -10,7 +10,7 @@ pub struct DiscreteUniform {
 }
 
 impl DiscreteUniform {
-    /// Create a new discrete uniform distribution with lower bound `lower` and upper bound `upper`.
+    /// Create a new discrete uniform distribution with lower bound `lower` and upper bound `upper` (inclusive on both ends).
     ///
     /// # Errors
     /// Panics if `lower > upper`.
@@ -44,7 +44,7 @@ impl Default for DiscreteUniform {
 impl Distribution for DiscreteUniform {
     /// Samples from the given discrete uniform distribution.
     fn sample(&self) -> f64 {
-        fastrand::i64(self.lower..self.upper) as f64
+        fastrand::i64(self.lower..=self.upper) as f64
     }
     fn update(&mut self, params: &[f64]) {
         self.set_lower(params[0] as i64).set_upper(params[1] as i64);

@@ -22,7 +22,7 @@ const GAMMA_COEFFS: [f64; 14] = [
     0.36899182659531622704e-5,
 ];
 
-/// Calculates the (Gamma function)[https://en.wikipedia.org/wiki/Gamma_function] using the [Lanczos
+/// Calculates the [Gamma function](https://en.wikipedia.org/wiki/Gamma_function) using the [Lanczos
 /// approximation](https://en.wikipedia.org/wiki/Lanczos_approximation). It obeys the equation
 /// `gamma(x+1) = gamma(x) * x`. This approximation uses the reflection formula to extend the
 /// calculation to the entire complex plane.
@@ -111,7 +111,9 @@ pub fn digamma(x: f64) -> f64 {
 ///         }
 ///     }
 /// }
-/// assert_approx_eq!(logistic(0.), 0.5);
+/// assert_eq!(logistic(f64::NEG_INFINITY), 0.);
+/// assert_eq!(logistic(0.), 0.5);
+/// assert_eq!(logistic(f64::INFINITY), 1.);
 /// ```
 pub fn logistic(x: f64) -> f64 {
     1. / (1. + (-x).exp())
@@ -135,7 +137,9 @@ pub fn logistic(x: f64) -> f64 {
 ///         );
 ///     }
 /// }
-/// assert_approx_eq!(logit(0.5), 0.);
+/// assert_eq!(logit(0.), f64::NEG_INFINITY);
+/// assert_eq!(logit(0.5), 0.);
+/// assert_eq!(logit(1.), f64::INFINITY);
 /// ```
 pub fn logit(p: f64) -> f64 {
     if p < 0. || p > 1. {

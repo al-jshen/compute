@@ -93,3 +93,53 @@ pub fn digamma(x: f64) -> f64 {
             - 1. / (12. * x.powi(14))
     }
 }
+
+/// Calculates the standard [logistic function](https://en.wikipedia.org/wiki/Logistic_function)
+///
+/// ```
+/// use approx_eq::assert_approx_eq;
+/// use compute::functions::logistic;
+/// use compute::distributions::{Exponential, Distribution};
+/// let d = Exponential::new(5.).sample_iter(100 as usize);
+/// d.iter().for_each(|x| {
+///     assert_approx_eq!(logistic(*x) + logistic(-*x), 1.);
+/// });
+/// for i in 0..d.len() {
+///     for j in i..d.len() {
+///         if d[i] >= d[j] {
+///             assert!(logistic(d[i]) >= logistic(d[j]));
+///         }
+///     }
+/// }
+/// assert_approx_eq!(logistic(0.), 0.5);
+/// ```
+pub fn logistic(x: f64) -> f64 {
+    1. / (1. + (-x).exp())
+}
+
+/// Calculates the [logit function](https://en.wikipedia.org/wiki/Logit)
+/// ```
+/// use approx_eq::assert_approx_eq;
+/// use compute::functions::{logistic, logit};
+/// use compute::distributions::{Uniform, Distribution};
+/// let d = Uniform::new(0., 1.).sample_iter(100 as usize);
+/// d.iter().for_each(|x| {
+///     assert_approx_eq!(*x, logistic(logit(*x)));
+///     assert_approx_eq!(*x, logit(logistic(*x)));
+/// });
+/// for i in 0..d.len() {
+///     for j in (i+1)..d.len() {
+///         assert_approx_eq!(
+///             logit(d[i]) - logit(d[j]),
+///             ((d[i] / (1. - d[i])) / (d[j] / (1. - d[j]))).ln()
+///         );
+///     }
+/// }
+/// assert_approx_eq!(logit(0.5), 0.);
+/// ```
+pub fn logit(p: f64) -> f64 {
+    if p < 0. || p > 1. {
+        panic!("p must be in [0, 1]");
+    }
+    (p / (1. - p)).ln()
+}

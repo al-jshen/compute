@@ -40,7 +40,10 @@ impl Distribution for Bernoulli {
     fn sample(&self) -> f64 {
         if self.p == 1. {
             return 1.;
+        } else if self.p == 0. {
+            return 0.;
         }
+
         if self.p > fastrand::f64() {
             return 1.;
         } else {

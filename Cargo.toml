@@ -1,6 +1,6 @@
 [package]
 name = "compute"
-version = "0.1.8"
+version = "0.1.9"
 authors = ["Jeff Shen <jshen2014@hotmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -24,4 +24,8 @@ harness = false
 
 [[bench]]
 name = "benchmark_distributions"
+harness = false
+
+[[bench]]
+name = "benchmark_functions"
 harness = false

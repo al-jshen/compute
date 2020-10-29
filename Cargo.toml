@@ -9,6 +9,7 @@ readme = "README.md"
 description = "A crate for statistical computing."
 repository = "https://github.com/al-jshen/compute"
 
+categories = ["science"]
 keywords = ["statistics", "compute", "data"]
 
 [dependencies]

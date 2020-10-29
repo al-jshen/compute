@@ -74,3 +74,26 @@ pub fn boxcox_shifted(x: f64, lambda: f64, alpha: f64) -> f64 {
         ((x + alpha).powf(lambda) - 1.) / lambda
     }
 }
+
+/// Calculates the softmax (the normalized exponential) function, which is a generalization of the
+/// logistic function to multiple dimensions.
+///
+/// Takes in a vector of real numbers and normalizes it to a probability distribution such that
+/// each of the components are in the interval (0, 1) and the components add up to 1. Larger input
+/// components correspond to larger probabilities.
+///
+/// ```
+/// use approx_eq::assert_approx_eq;
+/// use compute::functions::softmax;
+/// let orig = vec![1., 2., 3., 4., 1., 2., 3.];
+/// let tfm = vec![0.02364054, 0.06426166, 0.1746813, 0.474833, 0.02364054, 0.06426166, 0.1746813];
+/// let smv = softmax(&orig);
+/// for i in 0..smv.len() {
+///     assert_approx_eq!(smv[i], tfm[i]);
+/// }
+/// assert_approx_eq!(smv.iter().sum(), 1.);
+/// ```
+pub fn softmax(x: &[f64]) -> Vec<f64> {
+    let sum_exp: f64 = x.iter().map(|i| i.exp()).sum();
+    x.iter().map(|i| i.exp() / sum_exp).collect()
+}

@@ -59,6 +59,7 @@ impl Optimizer for Adam {
                 let vhat = v[p] / (1. - self.beta2.powi(t as i32)); // bias-corrected second moment estimate
                 params[p] -= self.stepsize * mhat / (vhat.sqrt() + self.epsilon);
             }
+            // println!("{:?}", params);
             // check for convergence
             // TODO: find a better convergence test
             if max(&(0..params.len())

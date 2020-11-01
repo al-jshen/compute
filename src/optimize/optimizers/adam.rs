@@ -1,4 +1,6 @@
 use super::Optimizer;
+use crate::summary::max;
+use ::approx_eq::*;
 
 /// Implements the Adam optimizer. See [Kingma and Ba 2014](https://arxiv.org/abs/1412.6980) for
 /// details about the algorithm.
@@ -58,8 +60,12 @@ impl Optimizer for Adam {
                 params[p] -= self.stepsize * mhat / (vhat.sqrt() + self.epsilon);
             }
             // check for convergence
-            // TODO: find a better convergence test, this is bad
-            if prev_params == params {
+            // TODO: find a better convergence test
+            if max(&(0..params.len())
+                .map(|i| rel_diff(params[i], prev_params[i]))
+                .collect::<Vec<_>>())
+                < 1e-7
+            {
                 break;
             }
         }
@@ -71,7 +77,6 @@ impl Optimizer for Adam {
 mod tests {
     use super::*;
     use crate::predict::{PolynomialRegressor, Predictor};
-    use approx_eq::assert_approx_eq;
 
     #[test]
     fn test_adam_slr() {

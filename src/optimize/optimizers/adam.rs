@@ -109,7 +109,7 @@ mod tests {
 
         let preds = slr.get_coeffs();
         for i in 0..preds.len() {
-            assert_approx_eq!(preds[i], coeffs[i]);
+            assert_approx_eq!(preds[i], coeffs[i], 1e-4);
         }
     }
 }

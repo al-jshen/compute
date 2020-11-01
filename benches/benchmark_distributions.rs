@@ -37,5 +37,11 @@ fn poisson(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, generate, discrete_uniform, poisson);
+fn gen_matrix(c: &mut Criterion) {
+    c.bench_function("generate 100x100 matrix of normals", |b| {
+        b.iter(|| Normal::default().matrix((100, 100)))
+    });
+}
+
+criterion_group!(benches, gen_matrix);
 criterion_main!(benches);

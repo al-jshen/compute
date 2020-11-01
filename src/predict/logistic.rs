@@ -63,6 +63,7 @@ impl Predictor for LogisticRegressor {
                 partial(|params: &[f64]| mse(&predict(params, &x), &y), evalat, dim)
             },
             self.get_coeffs(),
+            1e6 as usize,
         );
         self
     }

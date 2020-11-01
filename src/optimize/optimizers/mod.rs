@@ -3,7 +3,7 @@
 mod adam;
 
 pub trait Optimizer {
-    fn optimize<F>(&mut self, grad_fn: F, params: Vec<f64>) -> Vec<f64>
+    fn optimize<F>(&mut self, grad_fn: F, params: Vec<f64>, steps: usize) -> Vec<f64>
     where
         F: Fn(&[f64], usize) -> f64;
 }

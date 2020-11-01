@@ -41,14 +41,14 @@ impl Default for Adam {
 
 impl Optimizer for Adam {
     /// Run the optimization algorithm, given a vector of parameters to optimize and a gradient function.
-    fn optimize<F>(&mut self, grad_fn: F, mut params: Vec<f64>) -> Vec<f64>
+    fn optimize<F>(&mut self, grad_fn: F, mut params: Vec<f64>, steps: usize) -> Vec<f64>
     where
         F: Fn(&[f64], usize) -> f64,
     {
         let mut t: usize = 0;
         let mut m = vec![0.; params.len()];
         let mut v = vec![0.; params.len()];
-        loop {
+        while t < steps {
             t += 1;
             let prev_params = params.clone();
             for p in 0..params.len() {

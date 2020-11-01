@@ -1,3 +1,5 @@
+//! Various functions for computing loss/cost functions.
+
 use crate::summary::mean;
 
 /// Calculates the mean squared error of a vector of predictions.

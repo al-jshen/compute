@@ -1,8 +1,5 @@
 use crate::distributions::*;
 use crate::functions::gamma;
-use crate::summary::*;
-use approx_eq::assert_approx_eq;
-#[allow(non_snake_case)]
 
 /// Implements the [Poisson](https://en.wikipedia.org/wiki/https://en.wikipedia.org/wiki/Poisson_distribution)
 /// distribution.
@@ -91,6 +88,7 @@ fn sample_mult(lambda: f64) -> f64 {
     count
 }
 
+#[allow(non_snake_case)]
 fn sample_ptrs(lam: f64) -> f64 {
     let slam = lam.sqrt();
     let loglam = lam.ln();
@@ -118,17 +116,24 @@ fn sample_ptrs(lam: f64) -> f64 {
     }
 }
 
-#[test]
-fn test_moments() {
-    let data5 = self::Poisson::new(5.).sample_iter(1e6 as usize);
-    let mean5 = mean(&data5);
-    let var5 = var(&data5);
-    assert_approx_eq!(mean5, 5., 1e-2);
-    assert_approx_eq!(var5, 5., 1e-2);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::summary::{mean, var};
+    use approx_eq::assert_approx_eq;
 
-    let data42 = self::Poisson::new(42.).sample_iter(1e6 as usize);
-    let mean42 = mean(&data42);
-    let var42 = var(&data42);
-    assert_approx_eq!(mean42, 42., 1e-2);
-    assert_approx_eq!(var42, 42., 1e-2);
+    #[test]
+    fn test_moments() {
+        let data5 = self::Poisson::new(5.).sample_iter(1e6 as usize);
+        let mean5 = mean(&data5);
+        let var5 = var(&data5);
+        assert_approx_eq!(mean5, 5., 1e-2);
+        assert_approx_eq!(var5, 5., 1e-2);
+
+        let data42 = self::Poisson::new(42.).sample_iter(1e6 as usize);
+        let mean42 = mean(&data42);
+        let var42 = var(&data42);
+        assert_approx_eq!(mean42, 42., 1e-2);
+        assert_approx_eq!(var42, 42., 1e-2);
+    }
 }

@@ -1,6 +1,5 @@
+#![allow(clippy::float_cmp)]
 use crate::distributions::*;
-use crate::summary::*;
-use approx_eq::assert_approx_eq;
 
 /// Implements the [Bernoulli distribution](https://en.wikipedia.org/wiki/Bernoulli_distribution).
 #[derive(Debug, Clone, Copy)]
@@ -45,9 +44,9 @@ impl Distribution for Bernoulli {
         }
 
         if self.p > fastrand::f64() {
-            return 1.;
+            1.
         } else {
-            return 0.;
+            0.
         }
     }
     fn update(&mut self, params: &[f64]) {
@@ -85,14 +84,21 @@ impl Variance for Bernoulli {
     }
 }
 
-#[test]
-fn test_bernoulli() {
-    let data = Bernoulli::new(0.75).sample_iter(1e6 as usize);
-    for i in &data {
-        assert!(*i == 0. || *i == 1.);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::summary::{mean, var};
+    use approx_eq::assert_approx_eq;
+
+    #[test]
+    fn test_bernoulli() {
+        let data = Bernoulli::new(0.75).sample_iter(1e6 as usize);
+        for i in &data {
+            assert!(*i == 0. || *i == 1.);
+        }
+        assert_approx_eq!(0.75, mean(&data), 1e-2);
+        assert_approx_eq!(0.75 * 0.25, var(&data), 1e-2);
+        assert!(Bernoulli::default().pmf(2) == 0.);
+        assert!(Bernoulli::default().pmf(0) == 0.5);
     }
-    assert_approx_eq!(0.75, mean(&data), 1e-2);
-    assert_approx_eq!(0.75 * 0.25, var(&data), 1e-2);
-    assert!(Bernoulli::default().pmf(2) == 0.);
-    assert!(Bernoulli::default().pmf(0) == 0.5);
 }

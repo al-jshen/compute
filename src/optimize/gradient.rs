@@ -1,3 +1,5 @@
+//! Functions for computing derivatives of functions.
+
 /// Calculates the step size `h` to use to compute the gradient.
 fn calc_h(x: f64) -> f64 {
     if x != 0. {

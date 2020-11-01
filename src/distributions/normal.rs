@@ -30,6 +30,9 @@ impl Normal {
         self
     }
     pub fn set_sigma(&mut self, sigma: f64) -> &mut Self {
+        if sigma < 0. {
+            panic!("Sigma must be non-negative.")
+        }
         self.sigma = sigma;
         self
     }

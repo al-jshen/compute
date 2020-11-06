@@ -1,5 +1,7 @@
-use super::Predictor;
+use super::{ClosedPredictor, Predictor};
 use crate::optimize::*;
+use ndarray::{stack, Array, Axis, Ix1, Ix2};
+use ndarray_linalg::Inverse;
 
 /// Implements a polynomial regressor with coefficients `coeffs`.
 ///
@@ -30,9 +32,10 @@ impl Predictor for PolynomialRegressor {
         self.coeffs = params.to_owned();
         self
     }
+
     /// Fit the polynomial regressor to some observed data `y` given some explanatory variables `x`
     /// using the given optimizer. See [Optimizer](/compute/optimize/trait.Optimizer.html).
-    fn fit<O>(&mut self, x: &[f64], y: &[f64], mut optimizer: O) -> &mut Self
+    fn fit_with_optimizer<O>(&mut self, x: &[f64], y: &[f64], mut optimizer: O) -> &mut Self
     where
         O: Optimizer,
     {
@@ -46,7 +49,7 @@ impl Predictor for PolynomialRegressor {
         );
         self
     }
-    /// Returns c0 + c[1] * x + c[2] * x^2 ... + cn + x^n, where c[i] are the coefficients of the
+    /// Returns `c0 + c[1] * x + c[2] * x^2 ... + cn + x^n`, where `c[i]` are the coefficients of the
     /// polynomial regressor, and `x` is some vector of explanatory variables.
     fn predict(&self, x: &[f64]) -> Vec<f64> {
         x.iter()
@@ -57,6 +60,17 @@ impl Predictor for PolynomialRegressor {
                     .sum::<f64>()
             })
             .collect::<Vec<_>>()
+    }
+}
+
+impl ClosedPredictor for PolynomialRegressor {
+    /// Fit the polynomial regressor to some observed data `y` given some explanatory variables
+    /// `x`. Uses least squares fitting.
+    fn fit(&mut self, x: &Array<f64, Ix1>, y: &Array<f64, Ix1>) -> &mut Self {
+        let xd: Array<f64, Ix2> = design(x.clone());
+        let coeffs: Array<f64, Ix1> = (xd.t().dot(&xd)).inv().unwrap().dot(&xd.t()).dot(y);
+        self.coeffs = coeffs.to_vec();
+        self
     }
 }
 
@@ -71,9 +85,16 @@ fn predict(coeffs: &[f64], x: &[f64]) -> Vec<f64> {
         .collect::<Vec<_>>()
 }
 
+fn design(x: Array<f64, Ix1>) -> Array<f64, Ix2> {
+    let d = Array::ones((x.len(), 1));
+    stack![Axis(1), d, x.insert_axis(Axis(1))]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::distributions::{Distribution, Normal};
+    use approx_eq::assert_approx_eq;
 
     #[test]
     fn test_slr() {
@@ -83,5 +104,24 @@ mod tests {
         assert_eq!(slr.predict(&x), y);
         slr.update(&[0., 1.]);
         assert_eq!(slr.predict(&x), x);
+    }
+
+    fn test_fits() {
+        let x: Array<f64, Ix1> = Array::range(0., 50., 0.1);
+        let yv: Array<f64, Ix1> = 5. + 2. * &x;
+        let y = &yv.mapv(|x| x + Normal::new(0., 10.).sample());
+
+        let mut p = PolynomialRegressor::new(&[2., 2.]);
+        p.fit(&x, &y);
+        let coeffs1 = p.get_coeffs();
+
+        p.update(&[2., 2.]);
+        let mut o = Adam::default();
+        p.fit_with_optimizer(&x.to_vec(), &y.to_vec(), o);
+        let coeffs2 = p.get_coeffs();
+
+        for (i, j) in coeffs1.iter().zip(coeffs2.iter()) {
+            assert_approx_eq!(*i, *j, 1e-4);
+        }
     }
 }

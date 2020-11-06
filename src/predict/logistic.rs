@@ -2,25 +2,6 @@ use super::Predictor;
 use crate::optimize::*;
 
 /// Implements a logistic regressor.
-///
-/// ```rust
-/// use compute::predict::{LogisticRegressor, Predictor};
-/// use compute::optimize::Adam;
-///
-/// let x = vec![
-///     0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00, 3.25, 3.50, 4.00,
-///     4.25, 4.50, 4.75, 5.00, 5.50,
-/// ];
-/// let y = vec![
-///     0., 0., 0., 0., 0., 0., 1., 0., 1., 0., 1., 0., 1., 0., 1., 1., 1., 1., 1., 1.,
-/// ];
-/// assert_eq!(x.len(), y.len());
-/// let mut clf = LogisticRegressor::default();
-/// let optim = Adam::new(1e-3, 0.9, 0.99, 1e-8);
-/// clf.fit(&x, &y, optim);
-/// println!("{:?}", clf.get_coeffs());
-/// println!("{:?}", clf.predict(&[1., 2., 3., 4., 5.]));
-/// ```
 pub struct LogisticRegressor {
     coeffs: Vec<f64>,
 }
@@ -54,7 +35,7 @@ impl Predictor for LogisticRegressor {
     /// Fit the logistic regressor to some observed data `y` with classes 0 and 1, given some
     /// explanatory variables `x` using the given optimizer.
     /// See [Optimizer](/compute/optimize/trait.Optimizer.html).
-    fn fit<O>(&mut self, x: &[f64], y: &[f64], mut optimizer: O) -> &mut Self
+    fn fit_with_optimizer<O>(&mut self, x: &[f64], y: &[f64], mut optimizer: O) -> &mut Self
     where
         O: Optimizer,
     {
@@ -80,4 +61,27 @@ fn predict(coeffs: &[f64], x: &[f64]) -> Vec<f64> {
     x.iter()
         .map(|val| 1. / (1. + (-coeffs[0] - coeffs[1] * val).exp()))
         .collect::<Vec<_>>()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::optimize::Adam;
+
+    #[test]
+    fn test_logistic_regressor() {
+        let x = vec![
+            0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00, 3.25, 3.50,
+            4.00, 4.25, 4.50, 4.75, 5.00, 5.50,
+        ];
+        let y = vec![
+            0., 0., 0., 0., 0., 0., 1., 0., 1., 0., 1., 0., 1., 0., 1., 1., 1., 1., 1., 1.,
+        ];
+        assert_eq!(x.len(), y.len());
+        let mut clf = LogisticRegressor::default();
+        let optim = Adam::new(1e-3, 0.9, 0.99, 1e-8);
+        clf.fit_with_optimizer(&x, &y, optim);
+        println!("{:?}", clf.get_coeffs());
+        println!("{:?}", clf.predict(&[1., 2., 3., 4., 5.]));
+    }
 }

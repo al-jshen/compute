@@ -85,7 +85,7 @@ impl Variance for DiscreteUniform {
 #[test]
 fn inrange() {
     let u = self::DiscreteUniform::new(-2, 6);
-    let samples = u.sample_iter(100);
+    let samples = u.sample_vec(100);
     samples.into_iter().for_each(|x| {
         assert!(-2. <= x);
         assert!(x <= 6.);

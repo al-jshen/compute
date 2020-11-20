@@ -78,11 +78,11 @@ impl Variance for ChiSquared {
 
 #[test]
 fn test_moments() {
-    let data1 = ChiSquared::new(2).sample_iter(1e6 as usize);
+    let data1 = ChiSquared::new(2).sample_vec(1e6 as usize);
     assert_approx_eq!(2., mean(&data1), 1e-2);
     assert_approx_eq!(4., var(&data1), 1e-2);
 
-    let data2 = ChiSquared::new(5).sample_iter(1e6 as usize);
+    let data2 = ChiSquared::new(5).sample_vec(1e6 as usize);
     assert_approx_eq!(5., mean(&data2), 1e-2);
     assert_approx_eq!(10., var(&data2), 1e-2);
 }

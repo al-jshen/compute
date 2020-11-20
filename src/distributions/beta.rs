@@ -101,7 +101,7 @@ impl Variance for Beta {
 #[test]
 fn test_moments() {
     let dist1 = Beta::new(2., 4.);
-    let data1 = dist1.sample_iter(1e6 as usize);
+    let data1 = dist1.sample_vec(1e6 as usize);
     assert_approx_eq!(dist1.mean(), mean(&data1), 1e-2);
     assert_approx_eq!(dist1.var(), var(&data1), 1e-2);
 }

@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn test_bernoulli() {
-        let data = Bernoulli::new(0.75).sample_iter(1e6 as usize);
+        let data = Bernoulli::new(0.75).sample_vec(1e6 as usize);
         for i in &data {
             assert!(*i == 0. || *i == 1.);
         }

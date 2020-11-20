@@ -10,20 +10,23 @@ mod gamma;
 mod normal;
 mod poisson;
 mod uniform;
-use ndarray::{Array, Ix2};
+use ndarray::{Array, Ix1, Ix2};
 
 /// The primary trait defining a probability distribution.
 pub trait Distribution: Send + Sync {
     /// Samples from the given probability distribution.
     fn sample(&self) -> f64;
     /// Generates a vector of `n` randomly sampled values from the given probability distribution.
-    fn sample_iter(&self, n: usize) -> Vec<f64> {
+    fn sample_vec(&self, n: usize) -> Vec<f64> {
         (0..n).map(|_| self.sample()).collect()
+    }
+    /// Creates an 1d array with values sampled from the given distribution.
+    fn vector(&self, shape: usize) -> Array<f64, Ix1> {
+        Array::from_shape_fn(shape, |_| self.sample())
     }
     /// Creates an 2d matrix with values sampled from the given distribution.
     fn matrix(&self, shape: (usize, usize)) -> Array<f64, Ix2> {
         Array::from_shape_fn(shape, |_| self.sample())
-        // Array::from_shape_vec(shape.f(), self.sample_iter(shape.0 * shape.1)).unwrap()
     }
     fn update(&mut self, params: &[f64]);
 }

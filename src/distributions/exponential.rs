@@ -87,7 +87,7 @@ impl Variance for Exponential {
 
 #[test]
 fn test_moments() {
-    let data2 = Exponential::new(5.).sample_iter(1e6 as usize);
+    let data2 = Exponential::new(5.).sample_vec(1e6 as usize);
     assert_approx_eq!(1. / 5., mean(&data2), 1e-2);
     assert_approx_eq!(1. / 25., var(&data2), 1e-2);
 }

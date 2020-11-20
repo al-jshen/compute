@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     fn test_logistic() {
-        let d = Exponential::new(5.).sample_iter(100 as usize);
+        let d = Exponential::new(5.).sample_vec(100 as usize);
         d.iter().for_each(|x| {
             assert_approx_eq!(logistic(*x) + logistic(-*x), 1.);
         });
@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn test_logit() {
-        let d = Uniform::new(0., 1.).sample_iter(100 as usize);
+        let d = Uniform::new(0., 1.).sample_vec(100 as usize);
         d.iter().for_each(|x| {
             assert_approx_eq!(*x, logistic(logit(*x)));
             assert_approx_eq!(*x, logit(logistic(*x)));

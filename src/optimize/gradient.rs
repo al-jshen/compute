@@ -10,7 +10,7 @@ fn calc_h(x: f64) -> f64 {
 }
 
 /// Calculates the symmetric difference quotient `(f(x+h) - f(x-h)) / 2h`.
-/// See https://en.wikipedia.org/wiki/Symmetric_derivative
+/// See <https://en.wikipedia.org/wiki/Symmetric_derivative>
 pub fn sym_der<F>(f: F, x: f64) -> f64
 where
     F: Fn(f64) -> f64,

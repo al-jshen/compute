@@ -106,6 +106,7 @@ mod tests {
         assert_eq!(slr.predict(&x), x);
     }
 
+    #[test]
     fn test_fits() {
         let x: Array<f64, Ix1> = Array::range(0., 50., 0.1);
         let yv: Array<f64, Ix1> = 5. + 2. * &x;
@@ -116,7 +117,7 @@ mod tests {
         let coeffs1 = p.get_coeffs();
 
         p.update(&[2., 2.]);
-        let mut o = Adam::default();
+        let o = Adam::default();
         p.fit_with_optimizer(&x.to_vec(), &y.to_vec(), o);
         let coeffs2 = p.get_coeffs();
 

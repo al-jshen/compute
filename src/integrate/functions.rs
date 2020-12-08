@@ -34,16 +34,10 @@ where
         if n > 1
             && (rel_diff(r[n][n], r[n - 1][n - 1]) < eps || (r[n][n] - r[n - 1][n - 1]).abs() < eps)
         {
-            // for l in &r {
-            //     println!("{:?}", l);
-            // }
             return r[n][n];
         }
     }
 
-    // for l in &r {
-    //     println!("{:?}", l);
-    // }
     r[nmax - 1][nmax - 1]
 }
 

@@ -1,3 +1,5 @@
-mod methods;
+mod functions;
+mod odes;
 
-pub use methods::*;
+pub use functions::*;
+pub use odes::*;

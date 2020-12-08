@@ -1,7 +1,5 @@
 use crate::distributions::*;
 use crate::functions::beta;
-use crate::summary::*;
-use approx_eq::assert_approx_eq;
 
 /// Implements the [Beta](https://en.wikipedia.org/wiki/Beta_distribution) distribution.
 #[derive(Debug, Clone, Copy)]
@@ -98,10 +96,17 @@ impl Variance for Beta {
     }
 }
 
-#[test]
-fn test_moments() {
-    let dist1 = Beta::new(2., 4.);
-    let data1 = dist1.sample_vec(1e6 as usize);
-    assert_approx_eq!(dist1.mean(), mean(&data1), 1e-2);
-    assert_approx_eq!(dist1.var(), var(&data1), 1e-2);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::summary::{mean, var};
+    use approx_eq::assert_approx_eq;
+
+    #[test]
+    fn test_moments() {
+        let dist1 = Beta::new(2., 4.);
+        let data1 = dist1.sample_vec(1e6 as usize);
+        assert_approx_eq!(dist1.mean(), mean(&data1), 1e-2);
+        assert_approx_eq!(dist1.var(), var(&data1), 1e-2);
+    }
 }

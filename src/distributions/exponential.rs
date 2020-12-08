@@ -1,6 +1,4 @@
 use crate::distributions::*;
-use crate::summary::*;
-use approx_eq::assert_approx_eq;
 
 /// Implements the [Exponential](https://en.wikipedia.org/wiki/Exponential_distribution)
 /// distribution.
@@ -85,9 +83,17 @@ impl Variance for Exponential {
     }
 }
 
-#[test]
-fn test_moments() {
-    let data2 = Exponential::new(5.).sample_vec(1e6 as usize);
-    assert_approx_eq!(1. / 5., mean(&data2), 1e-2);
-    assert_approx_eq!(1. / 25., var(&data2), 1e-2);
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use crate::summary::{mean, var};
+    use approx_eq::assert_approx_eq;
+
+    #[test]
+    fn test_moments() {
+        let data2 = Exponential::new(5.).sample_vec(1e6 as usize);
+        assert_approx_eq!(1. / 5., mean(&data2), 1e-2);
+        assert_approx_eq!(1. / 25., var(&data2), 1e-2);
+    }
 }

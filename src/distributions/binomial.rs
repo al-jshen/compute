@@ -1,6 +1,5 @@
 use crate::distributions::*;
-use crate::functions::{binom_coeff, gamma};
-use crate::summary::min;
+use crate::functions::binom_coeff;
 
 /// Implements the [Binomial](https://en.wikipedia.org/wiki/https://en.wikipedia.org/wiki/Binomial_distribution)
 /// distribution with trials `n` and probability of success `p`.

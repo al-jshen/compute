@@ -3,6 +3,7 @@
 
 mod bernoulli;
 mod beta;
+mod binomial;
 mod chi_squared;
 mod discreteuniform;
 mod exponential;
@@ -59,6 +60,7 @@ pub trait Discrete: Distribution {
 
 pub use self::bernoulli::Bernoulli;
 pub use self::beta::Beta;
+pub use self::binomial::Binomial;
 pub use self::chi_squared::ChiSquared;
 pub use self::discreteuniform::DiscreteUniform;
 pub use self::exponential::Exponential;

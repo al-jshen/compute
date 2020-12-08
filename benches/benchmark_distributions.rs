@@ -37,11 +37,20 @@ fn poisson(c: &mut Criterion) {
     });
 }
 
+fn binomial(c: &mut Criterion) {
+    c.bench_function("generate 1e3 poissons with inversion method", |b| {
+        b.iter(|| Binomial::new(15, 0.4).sample_vec(1e3 as usize))
+    });
+    c.bench_function("generate 1e3 poissons with BTPE algorithm", |b| {
+        b.iter(|| Binomial::new(70, 0.7).sample_vec(1e3 as usize))
+    });
+}
+
 fn gen_matrix(c: &mut Criterion) {
     c.bench_function("generate 100x100 matrix of normals", |b| {
         b.iter(|| Normal::default().matrix((100, 100)))
     });
 }
 
-criterion_group!(benches, gen_matrix);
+criterion_group!(benches, binomial);
 criterion_main!(benches);

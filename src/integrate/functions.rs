@@ -41,6 +41,64 @@ where
     r[nmax - 1][nmax - 1]
 }
 
+/// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
+/// `w` for the n-point Gauss-Legendre quadrature.
+pub fn gau_leg_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+    unimplemented!();
+}
+
+///
+/// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
+/// `w` for the n-point Gauss-Laguerre quadrature.
+pub fn gau_lag_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+    unimplemented!();
+}
+
+/// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
+/// `w` for the n-point Gauss-Jacobi quadrature.
+pub fn gau_jac_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+    unimplemented!();
+}
+
+/// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
+/// `w` for the n-point Gauss-Hermite quadrature.
+pub fn gau_her_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+    unimplemented!();
+}
+
+/// Integrate a function `f` from `a` to `b` using the [Gauss-Legendre quadrature
+/// method](https://en.wikipedia.org/wiki/Gaussian_quadrature) with 5 points (allows for
+/// exact integration of polynomials up to degree 9).
+pub fn quad5<F>(f: F, a: f64, b: f64) -> f64
+where
+    F: Fn(f64) -> f64,
+{
+    let xm = 0.5 * (b + a);
+    let xr = 0.5 * (b - a);
+    (0..5)
+        .map(|i| {
+            let dx = xr * GAUSS_QUAD_NODES[i];
+            GAUSS_QUAD_WEIGHTS[i] * (f(xm + dx) + f(xm - dx))
+        })
+        .sum::<f64>()
+        * xr
+}
+
+const GAUSS_QUAD_NODES: [f64; 5] = [
+    0.1488743389816312,
+    0.4333953941292472,
+    0.6794095682990244,
+    0.8650633666889845,
+    0.9739065285171717,
+];
+const GAUSS_QUAD_WEIGHTS: [f64; 5] = [
+    0.2955242247147529,
+    0.2692667193099963,
+    0.2190863625159821,
+    0.1494513491505806,
+    0.0666713443086881,
+];
+
 #[cfg(test)]
 mod tests {
     use super::*;

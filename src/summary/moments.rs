@@ -51,10 +51,16 @@ pub fn sample_var(data: &[f64]) -> f64 {
     m2 / (count - 1) as f64
 }
 
-/// Calculates the standard deviation of an array of data points. This is the square root of of the
+/// Calculates the standard deviation of an array of data points. This is the square root of the
 /// variance.
 pub fn std(data: &[f64]) -> f64 {
     var(data).sqrt()
+}
+
+/// Calculates the sample standard deviation of an array of data points. This is the square root of the
+/// sample variance.
+pub fn sample_std(data: &[f64]) -> f64 {
+    sample_var(data).sqrt()
 }
 
 #[cfg(test)]

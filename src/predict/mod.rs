@@ -3,7 +3,6 @@
 mod logistic;
 mod polynomial;
 use crate::optimize::Optimizer;
-use ndarray::{Array, Ix1};
 
 /// A predictor for which the parameters can be optimized and updated.
 pub trait Predictor {
@@ -12,11 +11,6 @@ pub trait Predictor {
     where
         O: Optimizer;
     fn predict(&self, x: &[f64]) -> Vec<f64>;
-}
-
-/// Predictor for which there is a closed-form solution for the parameters.
-pub trait ClosedPredictor {
-    fn fit(&mut self, x: &Array<f64, Ix1>, y: &Array<f64, Ix1>) -> &mut Self;
 }
 
 pub use self::logistic::*;

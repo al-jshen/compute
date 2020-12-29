@@ -15,8 +15,7 @@ keywords = ["statistics", "compute", "data"]
 [dependencies]
 fastrand = "1"
 approx_eq = "0.1"
-ndarray = "0.13"
-ndarray-linalg = {version = "0.12", features = ["openblas"]}
+blas = "0.20"
 lapack = "0.16"
 openblas-src = "0.9"
 

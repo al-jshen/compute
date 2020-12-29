@@ -1,14 +1,77 @@
+extern crate blas;
+extern crate lapack;
 extern crate openblas_src;
+use blas::dgemm;
 use lapack::{dgetrf, dgetri};
 
-pub fn invert_matrix(matrix: &[f64], n: i32, m: i32) -> Vec<f64> {
-    assert_eq!(matrix.len() as i32, n * m);
+/// Given an n by n matrix, invert it. The resulting matrix is returned as a flattened array.
+pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
+    let n = (matrix.len() as f64).sqrt() as i32; // should divide into it perfectly
     let mut a = matrix.to_vec();
     let mut ipiv = vec![0; 3];
     let mut info: i32 = 0;
-    unsafe { dgetrf(m, n, &mut a, n, &mut ipiv, &mut info) }
+    // LU decomposition
+    unsafe { dgetrf(n, n, &mut a, n, &mut ipiv, &mut info) }
     let lwork: i32 = n.pow(2);
     let mut work = vec![0.; lwork as usize];
+    // Matrix inversion
     unsafe { dgetri(n, &mut a, n, &ipiv, &mut work, lwork, &mut info) }
+    // Exit code 0 = no problems
+    assert_eq!(info, 0);
     a
+}
+
+/// Given a matrix X with k rows, return X transpose times X, which is a symmetric matrix.
+pub fn xtx(x: &[f64], k: i32) -> Vec<f64> {
+    let n = x.len() as i32 / k; // should divide into it perfectly
+    let mut result = vec![0.; (n * n) as usize];
+    unsafe { dgemm(b'T', b'N', n, n, k, 1., x, k, x, k, 0., &mut result, n) }
+    result
+}
+
+/// Multiply two matrices together, optionally transposing one or both of them.
+pub fn matmul(
+    a: &[f64],
+    b: &[f64],
+    rows_a: i32,
+    rows_b: i32,
+    transpose_a: bool,
+    transpose_b: bool,
+) -> Vec<f64> {
+    let cols_a = a.len() as i32 / rows_a;
+    let cols_b = b.len() as i32 / rows_b;
+    let trans_a = if transpose_a { b'T' } else { b'N' };
+    let trans_b = if transpose_b { b'T' } else { b'N' };
+    let m = if transpose_a { cols_a } else { rows_a };
+    let n = if transpose_b { rows_b } else { cols_b };
+    let k = if transpose_a { rows_a } else { cols_a };
+    let alpha = 1.;
+    let beta = 0.;
+    let lda = rows_a;
+    let ldb = rows_b;
+    let ldc = m;
+    if transpose_a {
+        assert!(lda >= k);
+    } else {
+        assert!(lda >= m);
+    }
+    if transpose_b {
+        assert!(ldb >= n);
+    } else {
+        assert!(ldb >= k);
+    }
+    let mut c = vec![0.; (ldc * n) as usize];
+    unsafe {
+        dgemm(
+            trans_a, trans_b, m, n, k, alpha, a, lda, b, ldb, beta, &mut c, ldc,
+        )
+    }
+    c
+}
+
+/// Create a design matrix from a given matrix.
+pub fn design(x: &[f64], rows: i32) -> Vec<f64> {
+    let mut ones = vec![1.; rows as usize];
+    ones.extend_from_slice(x);
+    ones
 }

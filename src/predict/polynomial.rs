@@ -1,7 +1,6 @@
-use super::{ClosedPredictor, Predictor};
+use super::Predictor;
 use crate::optimize::*;
-use ndarray::{stack, Array, Axis, Ix1, Ix2};
-use ndarray_linalg::Inverse;
+use crate::utils::*;
 
 /// Implements a polynomial regressor with coefficients `coeffs`.
 ///
@@ -63,14 +62,16 @@ impl Predictor for PolynomialRegressor {
     }
 }
 
-impl ClosedPredictor for PolynomialRegressor {
+impl PolynomialRegressor {
     /// Fit the polynomial regressor to some observed data `y` given some explanatory variables
     /// `x`. Uses least squares fitting.
-    fn fit(&mut self, x: &Array<f64, Ix1>, y: &Array<f64, Ix1>) -> &mut Self {
-        let xd: Array<f64, Ix2> = design(x.clone());
-        let coeffs: Array<f64, Ix1> = (xd.t().dot(&xd)).inv().unwrap().dot(&xd.t()).dot(y);
-        self.coeffs = coeffs.to_vec();
-        self
+    pub fn fit(&mut self, x: &[f64], y: &[f64]) -> &mut Self {
+        assert_eq!(x.len(), y.len());
+        let x_design = design(x, x.len() as i32);
+        let xtxinv = invert_matrix(&xtx(&x_design, x.len() as i32));
+        let xty = matmul(&x_design, y, x.len() as i32, y.len() as i32, true, false);
+        let coeffs = matmul(&xtxinv, &xty, 2, 2, false, false);
+        self.update(&coeffs)
     }
 }
 
@@ -85,10 +86,10 @@ fn predict(coeffs: &[f64], x: &[f64]) -> Vec<f64> {
         .collect::<Vec<_>>()
 }
 
-fn design(x: Array<f64, Ix1>) -> Array<f64, Ix2> {
-    let d = Array::ones((x.len(), 1));
-    stack![Axis(1), d, x.insert_axis(Axis(1))]
-}
+// fn design(x: Array<f64, Ix1>) -> Array<f64, Ix2> {
+//     let d = Array::ones((x.len(), 1));
+//     stack![Axis(1), d, x.insert_axis(Axis(1))]
+// }
 
 #[cfg(test)]
 mod tests {
@@ -108,9 +109,10 @@ mod tests {
 
     #[test]
     fn test_fits() {
-        let x: Array<f64, Ix1> = Array::range(0., 50., 0.1);
-        let yv: Array<f64, Ix1> = 5. + 2. * &x;
-        let y = &yv.mapv(|x| x + Normal::new(0., 10.).sample());
+        let x: Vec<f64> = (0..500).into_iter().map(|x| x as f64 / 10.).collect();
+        let yv: Vec<f64> = (&x).into_iter().map(|v| 5. + 2. * v).collect();
+        let scatter = Normal::new(0., 10.);
+        let y: Vec<f64> = (&yv).into_iter().map(|v| v + scatter.sample()).collect();
 
         let mut p = PolynomialRegressor::new(&[2., 2.]);
         p.fit(&x, &y);

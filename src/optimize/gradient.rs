@@ -42,6 +42,14 @@ where
     (f(&xph) - f(&xmh)) / (2. * h)
 }
 
+/// Given a function, return its derivative (a function).
+pub fn derivative<F>(f: F) -> impl Fn(f64) -> f64 + Copy
+where
+    F: Fn(f64) -> f64 + Copy,
+{
+    move |x: f64| sym_der(f, x)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

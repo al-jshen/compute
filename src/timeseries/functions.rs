@@ -1,4 +1,4 @@
-use crate::summary::mean;
+use crate::summary::{covariance, mean};
 
 /// Calculates the autocovariance of lag k of a vector of time series data,
 /// assuming that the points are equally spaced in time.
@@ -10,6 +10,8 @@ pub fn acovf(ts: &[f64], k: usize) -> f64 {
             .into_iter()
             .map(|i| (ts[i] - ts_mean) * (ts[i - k] - ts_mean))
             .sum::<f64>()
+    // this is ~50% slower for some reason
+    // covariance(&ts[..ts.len() - k], &ts[k..])
 }
 
 /// Calculates the autocorrelation of lag k of a vector of time series data,

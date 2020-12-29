@@ -58,7 +58,7 @@ pub fn matmul(
     if transpose_b {
         assert!(ldb >= n);
     } else {
-        assert!(ldb >= k);
+        assert!(ldb >= k, "ldb={} must be at least as large as k={}", ldb, k);
     }
     let mut c = vec![0.; (ldc * n) as usize];
     unsafe {
@@ -74,4 +74,18 @@ pub fn design(x: &[f64], rows: i32) -> Vec<f64> {
     let mut ones = vec![1.; rows as usize];
     ones.extend_from_slice(x);
     ones
+}
+
+/// Given a vector of length n, creates n stacked duplicates, resulting in a square [Toeplitz
+/// matrix](https://en.wikipedia.org/wiki/Toeplitz_matrix). This function also assumes evenness.
+/// That is, x_i = x_{-i}.
+pub fn toeplitz_even_square(x: &[f64]) -> Vec<f64> {
+    let n = x.len();
+    let mut v = vec![0.; n * n];
+    for i in 0..n as i32 {
+        for j in 0..n as i32 {
+            v[(i * n as i32 + j) as usize] = x[(i - j).abs() as usize];
+        }
+    }
+    v
 }

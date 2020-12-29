@@ -17,6 +17,8 @@ fastrand = "1"
 approx_eq = "0.1"
 ndarray = "0.13"
 ndarray-linalg = {version = "0.12", features = ["openblas"]}
+lapack = "0.16"
+openblas-src = "0.9"
 
 [dev-dependencies]
 criterion = "0.3"

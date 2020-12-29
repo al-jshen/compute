@@ -6,4 +6,5 @@ pub mod predict;
 pub mod prelude;
 pub mod summary;
 pub mod timeseries;
+pub mod utils;
 pub mod validation;

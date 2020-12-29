@@ -1,28 +1,26 @@
-use crate::summary::{covariance, mean};
+use crate::summary::mean;
 
-/// Calculates the autocovariance of lag k of a vector of time series data,
+/// Calculates the autocovariance of lag (-)k of a vector of time series data,
 /// assuming that the points are equally spaced in time.
-pub fn acovf(ts: &[f64], k: usize) -> f64 {
+pub fn acovf(ts: &[f64], k: i32) -> f64 {
     let n = ts.len();
     let ts_mean = mean(&ts);
     1. / n as f64
-        * (k..n)
+        * (k.abs() as usize..n)
             .into_iter()
-            .map(|i| (ts[i] - ts_mean) * (ts[i - k] - ts_mean))
+            .map(|i| (ts[i] - ts_mean) * (ts[i - k.abs() as usize] - ts_mean))
             .sum::<f64>()
-    // this is ~50% slower for some reason
-    // covariance(&ts[..ts.len() - k], &ts[k..])
 }
 
-/// Calculates the autocorrelation of lag k of a vector of time series data,
+/// Calculates the autocorrelation of lag (-)k of a vector of time series data,
 /// assuming that the points are equally spaced in time.
-pub fn acf(ts: &[f64], k: usize) -> f64 {
+pub fn acf(ts: &[f64], k: i32) -> f64 {
     let n = ts.len();
     let ts_mean = mean(&ts);
     let numerator: f64 = 1. / n as f64
-        * (k..n)
+        * (k.abs() as usize..n)
             .into_iter()
-            .map(|i| (ts[i] - ts_mean) * (ts[i - k] - ts_mean))
+            .map(|i| (ts[i] - ts_mean) * (ts[i - k.abs() as usize] - ts_mean))
             .sum::<f64>();
     let denominator: f64 = (0..n)
         .into_iter()
@@ -30,6 +28,12 @@ pub fn acf(ts: &[f64], k: usize) -> f64 {
         .sum::<f64>()
         / n as f64;
     numerator / denominator
+}
+
+/// Applies a single differencing operation to a vector. Note that the length of the vector is shortened by
+/// one.
+pub fn difference(v: Vec<f64>) -> Vec<f64> {
+    (0..v.len() - 1).map(|i| v[i + 1] - v[i]).collect()
 }
 
 #[cfg(test)]
@@ -114,7 +118,7 @@ mod tests {
         ];
 
         for i in 0..50 {
-            assert_approx_eq!(acf(&data, i), autocorrelations[i]);
+            assert_approx_eq!(acf(&data, i), autocorrelations[i as usize]);
             assert_approx_eq!(acovf(&data, i) / acovf(&data, 0), acf(&data, i));
             assert!(acovf(&data, 0) >= acovf(&data, i).abs());
         }

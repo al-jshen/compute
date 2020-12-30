@@ -1,3 +1,4 @@
+#![allow(unused_variables)]
 use approx_eq::rel_diff;
 
 /// Integrate a function `f` from `a` to `b` using the [trapezoid rule](https://en.wikipedia.org/wiki/Trapezoidal_rule) with `n` partitions.

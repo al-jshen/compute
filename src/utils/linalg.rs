@@ -8,16 +8,19 @@ use lapack::{dgetrf, dgetri};
 pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
     let n = (matrix.len() as f64).sqrt() as i32; // should divide into it perfectly
     let mut a = matrix.to_vec();
-    let mut ipiv = vec![0; 3];
+    let mut ipiv = vec![0; n as usize];
     let mut info: i32 = 0;
-    // LU decomposition
-    unsafe { dgetrf(n, n, &mut a, n, &mut ipiv, &mut info) }
-    let lwork: i32 = n.pow(2);
+    let lwork: i32 = 64 * n; // optimal size as given by lwork=1
     let mut work = vec![0.; lwork as usize];
     // Matrix inversion
-    unsafe { dgetri(n, &mut a, n, &ipiv, &mut work, lwork, &mut info) }
-    // Exit code 0 = no problems
-    assert_eq!(info, 0);
+    unsafe {
+        dgetrf(n, n, &mut a, n, &mut ipiv, &mut info);
+        assert_eq!(info, 0, "dgetrf failed");
+    }
+    unsafe {
+        dgetri(n, &mut a, n, &mut ipiv, &mut work, lwork, &mut info);
+        assert_eq!(info, 0, "dgetri failed");
+    }
     a
 }
 
@@ -25,7 +28,9 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
 pub fn xtx(x: &[f64], k: i32) -> Vec<f64> {
     let n = x.len() as i32 / k; // should divide into it perfectly
     let mut result = vec![0.; (n * n) as usize];
-    unsafe { dgemm(b'T', b'N', n, n, k, 1., x, k, x, k, 0., &mut result, n) }
+    unsafe {
+        dgemm(b'T', b'N', n, n, k, 1., x, k, x, k, 0., &mut result, n);
+    }
     result
 }
 
@@ -51,12 +56,12 @@ pub fn matmul(
     let ldb = rows_b;
     let ldc = m;
     if transpose_a {
-        assert!(lda >= k);
+        assert!(lda >= k, "lda={} must be at least as large as k={}", lda, k);
     } else {
-        assert!(lda >= m);
+        assert!(lda >= m, "lda={} must be at least as large as m={}", lda, m);
     }
     if transpose_b {
-        assert!(ldb >= n);
+        assert!(ldb >= n, "ldb={} must be at least as large as n={}", ldb, n);
     } else {
         assert!(ldb >= k, "ldb={} must be at least as large as k={}", ldb, k);
     }
@@ -64,7 +69,7 @@ pub fn matmul(
     unsafe {
         dgemm(
             trans_a, trans_b, m, n, k, alpha, a, lda, b, ldb, beta, &mut c, ldc,
-        )
+        );
     }
     c
 }

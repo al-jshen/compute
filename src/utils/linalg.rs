@@ -1,7 +1,7 @@
 extern crate blas;
 extern crate lapack;
 extern crate openblas_src;
-use blas::dgemm;
+use blas::{ddot, dgemm};
 use lapack::{dgetrf, dgetri};
 
 /// Given an n by n matrix, invert it. The resulting matrix is returned as a flattened array.
@@ -10,9 +10,8 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
     let mut a = matrix.to_vec();
     let mut ipiv = vec![0; n as usize];
     let mut info: i32 = 0;
-    let lwork: i32 = 64 * n; // optimal size as given by lwork=1
+    let lwork: i32 = 64 * n; // optimal size as given by lwork=-1
     let mut work = vec![0.; lwork as usize];
-    // Matrix inversion
     unsafe {
         dgetrf(n, n, &mut a, n, &mut ipiv, &mut info);
         assert_eq!(info, 0, "dgetrf failed");
@@ -93,4 +92,13 @@ pub fn toeplitz_even_square(x: &[f64]) -> Vec<f64> {
         }
     }
     v
+}
+
+/// Calculates the dot product of two equal-length vectors.
+pub fn dot(x: &[f64], y: &[f64]) -> f64 {
+    assert_eq!(x.len(), y.len());
+    let n = x.len() as i32;
+    unsafe {
+        return ddot(n, x, 1, y, 1);
+    }
 }

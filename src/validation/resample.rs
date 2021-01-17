@@ -18,6 +18,21 @@ pub fn bootstrap(data: &[f64], n_bootstrap: usize) -> Vec<Vec<f64>> {
     resamples
 }
 
+/// Given a length-n array of data, returns all leave-one-out length n-1 vectors. See
+/// <https://en.wikipedia.org/wiki/Jackknife_resampling>
+pub fn jackknife(data: &[f64]) -> Vec<Vec<f64>> {
+    let n = data.len();
+    let mut resamples: Vec<Vec<f64>> = Vec::with_capacity(n);
+    for i in 0..n {
+        let (front, back) = data.split_at(i);
+        let (_, rest) = back.split_first().unwrap();
+        let mut v = front.to_vec();
+        v.extend_from_slice(rest);
+        resamples.push(v);
+    }
+    resamples
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -46,5 +61,22 @@ mod tests {
         // the "true" mean and std within 2.5%
         assert_approx_eq!(mean(&x), mean(&means), 0.025);
         assert_approx_eq!(std(&x), mean(&stds), 0.025);
+    }
+
+    #[test]
+    fn test_jackknife_size() {
+        let x = Normal::default().sample_vec(50);
+        let jk_samples = jackknife(&x);
+        for s in jk_samples {
+            assert_eq!(s.len(), 49);
+        }
+    }
+
+    #[test]
+    fn test_jackknife_mean() {
+        let x = Normal::default().sample_vec(100);
+        let jk_samples = jackknife(&x);
+        let jk_means = jk_samples.iter().map(|s| mean(s)).collect::<Vec<_>>();
+        assert_approx_eq!(mean(&x), mean(&jk_means));
     }
 }

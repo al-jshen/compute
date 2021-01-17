@@ -1,5 +1,5 @@
 use super::Optimizer;
-use crate::summary::max;
+use crate::statistics::max;
 use ::approx_eq::*;
 
 /// Implements the Adam optimizer. See [Kingma and Ba 2014](https://arxiv.org/abs/1412.6980) for

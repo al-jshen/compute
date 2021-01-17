@@ -84,7 +84,7 @@ impl Variance for T {
 mod tests {
 
     use super::*;
-    use crate::summary::mean;
+    use crate::statistics::mean;
     use approx_eq::assert_approx_eq;
 
     #[test]

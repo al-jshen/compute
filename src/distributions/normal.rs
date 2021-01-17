@@ -394,7 +394,7 @@ const W: [f64; 128] = [
 mod tests {
 
     use super::*;
-    use crate::summary::{mean, std};
+    use crate::statistics::{mean, std};
     use approx_eq::assert_approx_eq;
 
     #[test]

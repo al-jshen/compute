@@ -1,4 +1,4 @@
-use crate::summary::mean;
+use crate::statistics::mean;
 
 /// Calculates the covariance between two vectors x and y. This is a two-pass algorithm which
 /// centers the data before computing the covariance, which improves stability but does not

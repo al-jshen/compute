@@ -119,7 +119,7 @@ fn sample_ptrs(lam: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::summary::{mean, var};
+    use crate::statistics::{mean, var};
     use approx_eq::assert_approx_eq;
 
     #[test]

@@ -37,7 +37,7 @@ pub fn jackknife(data: &[f64]) -> Vec<Vec<f64>> {
 mod tests {
     use super::*;
     use crate::distributions::{Distribution, Normal};
-    use crate::summary::{max, mean, min, std};
+    use crate::statistics::{max, mean, min, std};
     use approx_eq::assert_approx_eq;
 
     #[test]

@@ -1,6 +1,6 @@
 extern crate lapack;
 use super::acf;
-use crate::summary::mean;
+use crate::statistics::mean;
 use crate::utils::*;
 use std::fmt::{Display, Formatter, Result};
 
@@ -84,7 +84,7 @@ impl Display for AR {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::summary::mean;
+    use crate::statistics::mean;
     use approx_eq::{assert_approx_eq, rel_diff};
 
     #[test]

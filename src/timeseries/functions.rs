@@ -1,4 +1,4 @@
-use crate::summary::mean;
+use crate::statistics::mean;
 
 /// Calculates the autocovariance of lag (-)k of a vector of time series data,
 /// assuming that the points are equally spaced in time.

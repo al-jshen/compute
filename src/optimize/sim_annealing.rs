@@ -1,5 +1,5 @@
 use crate::distributions::{Distribution, Normal};
-use crate::summary::{max, min};
+use crate::statistics::{max, min};
 use std::f64::consts::PI;
 
 pub fn sim_anneal<F>(

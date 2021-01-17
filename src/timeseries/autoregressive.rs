@@ -84,7 +84,8 @@ impl Display for AR {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx_eq::rel_diff;
+    use crate::summary::mean;
+    use approx_eq::{assert_approx_eq, rel_diff};
 
     #[test]
     fn test_ar_model() {
@@ -244,5 +245,8 @@ mod tests {
                 pred_from_r[i]
             );
         }
+
+        let far_pred = ar.predict(&data, 1000).pop().unwrap();
+        assert_approx_eq!(far_pred, mean(&data), 1e-4);
     }
 }

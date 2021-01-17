@@ -45,7 +45,7 @@ clf.fit(&x, &y);                           // linear least squares fitting
 println!("{:?}", clf.get_coeffs());        // get model coefficients
 ```
 
-## Time Series Models
+## Time series models
 ```rust
 use compute::timeseries::*;
 

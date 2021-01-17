@@ -1,0 +1,11 @@
+## Planned features
+- automatic differentiation (replacing numerical differentiation)
+- more time series models (SARIMA, exponential smoothing models)
+- non-linear least squares algorithms (Levenberg-Marquardt)
+- ODE integrators (leapfrog, RK4)
+- clustering algorithms (k-means, DBSCAN)
+- more optimizers (SGD, Adagrad)
+- more regression models (GLMs, mixed models, GP, penalized models)
+- prediction trees (CART, random forests, gradient boosted trees)
+- order statistics (quantiles)
+- interpolation (polynomial, spline)

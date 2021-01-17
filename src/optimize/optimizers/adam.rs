@@ -103,7 +103,6 @@ mod tests {
             -235., -237.5, -240., -242.5,
         ];
 
-        // initial guess is intercept=4, slope=3
         let mut slr = PolynomialRegressor::new(1);
         let optimizer = Adam::new(1e-3, 0.9, 0.999, 1e-8);
         slr.fit_with_optimizer(&x, &y, optimizer);

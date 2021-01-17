@@ -36,7 +36,8 @@ mod tests {
             5.802896, 7.802896, 9.802896, 11.802896, 13.802896, 15.802896, 17.802896, 19.802896,
             21.802896, 23.802896,
         ];
-        let slr = PolynomialRegressor::new(1);
+        let mut slr = PolynomialRegressor::new(1);
+        slr.update(&[5., 2.]);
         assert_approx_eq!(mse(&slr.predict(&x), &y), 0.6446419891202162);
     }
 }

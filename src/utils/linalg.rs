@@ -1,6 +1,11 @@
 extern crate blas;
 extern crate lapack;
+
+#[cfg(target_os = "macos")]
+extern crate accelerate_src;
+#[cfg(not(target_os = "macos"))]
 extern crate openblas_src;
+
 use blas::{ddot, dgemm};
 use lapack::{dgetrf, dgetri};
 

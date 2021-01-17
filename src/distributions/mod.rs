@@ -10,6 +10,7 @@ mod exponential;
 mod gamma;
 mod normal;
 mod poisson;
+mod t;
 mod uniform;
 // use ndarray::{Array, Ix1, Ix2};
 
@@ -67,4 +68,5 @@ pub use self::exponential::Exponential;
 pub use self::gamma::Gamma;
 pub use self::normal::Normal;
 pub use self::poisson::Poisson;
+pub use self::t::T;
 pub use self::uniform::Uniform;

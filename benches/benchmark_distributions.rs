@@ -46,11 +46,11 @@ fn binomial(c: &mut Criterion) {
     });
 }
 
-fn gen_matrix(c: &mut Criterion) {
-    c.bench_function("generate 100x100 matrix of normals", |b| {
-        b.iter(|| Normal::default().matrix((100, 100)))
+fn t(c: &mut Criterion) {
+    c.bench_function("generate 1e6 t distributed variates", |b| {
+        b.iter(|| T::new(2.).sample_vec(1e6 as usize))
     });
 }
 
-criterion_group!(benches, binomial);
+criterion_group!(benches, t);
 criterion_main!(benches);

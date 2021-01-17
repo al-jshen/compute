@@ -76,7 +76,7 @@ impl Continuous for Beta {
         if x < 0. || x > 1. {
             return 0.;
         }
-        x.powf(self.alpha + 1.) * (1. - x).powf(self.beta - 1.) / beta(self.alpha, self.beta)
+        x.powf(self.alpha - 1.) * (1. - x).powf(self.beta - 1.) / beta(self.alpha, self.beta)
     }
 }
 
@@ -104,9 +104,9 @@ mod tests {
 
     #[test]
     fn test_moments() {
-        let dist1 = Beta::new(2., 4.);
-        let data1 = dist1.sample_vec(1e6 as usize);
-        assert_approx_eq!(dist1.mean(), mean(&data1), 1e-2);
-        assert_approx_eq!(dist1.var(), var(&data1), 1e-2);
+        let dist = Beta::new(2., 4.);
+        let data = dist.sample_vec(1e6 as usize);
+        assert_approx_eq!(dist.mean(), mean(&data), 1e-2);
+        assert_approx_eq!(dist.var(), var(&data), 1e-2);
     }
 }

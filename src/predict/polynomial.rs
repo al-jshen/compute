@@ -6,6 +6,7 @@ use crate::utils::*;
 ///
 /// In the case of a two coefficients, this reduces to simple linear regression,
 /// where the first parameter is the intercept, and the second is the slope.
+#[derive(Debug)]
 pub struct PolynomialRegressor {
     coeffs: Vec<f64>,
 }

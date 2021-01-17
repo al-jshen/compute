@@ -33,7 +33,7 @@ impl AR {
         let autocorrelations: Vec<f64> = (0..=self.p).map(|t| acf(&adjusted, t as i32)).collect();
         let r = &autocorrelations[1..];
         let n = r.len() as i32;
-        let r_matrix = invert_matrix(&toeplitz_even_square(&autocorrelations[..n as usize]));
+        let r_matrix = invert_matrix(&toeplitz(&autocorrelations[..n as usize]));
         let coeffs = matmul(&r_matrix, &r, n, n, false, false);
         self.coeffs = coeffs;
         self.coeffs.reverse();

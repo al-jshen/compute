@@ -88,7 +88,7 @@ pub fn design(x: &[f64], rows: i32) -> Vec<f64> {
 /// Given a vector of length n, creates n stacked duplicates, resulting in a square [Toeplitz
 /// matrix](https://en.wikipedia.org/wiki/Toeplitz_matrix). This function also assumes evenness.
 /// That is, x_i = x_{-i}.
-pub fn toeplitz_even_square(x: &[f64]) -> Vec<f64> {
+pub fn toeplitz(x: &[f64]) -> Vec<f64> {
     let n = x.len();
     let mut v = vec![0.; n * n];
     for i in 0..n as i32 {
@@ -106,4 +106,9 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
     unsafe {
         return ddot(n, x, 1, y, 1);
     }
+}
+
+/// Calculates the norm of a vector.
+pub fn norm(x: &[f64]) -> f64 {
+    x.iter().map(|x| x.powi(2)).sum::<f64>().sqrt()
 }

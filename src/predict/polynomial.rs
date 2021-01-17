@@ -11,12 +11,10 @@ pub struct PolynomialRegressor {
 }
 
 impl PolynomialRegressor {
-    /// Create a new polynomial regressor with coefficients `coeffs`, where the first number is
-    /// the 0th order coefficient, the second is the 1st order coefficient, and so on. Accepts an
-    /// arbitrary number of coefficients.
-    pub fn new(coeffs: &[f64]) -> Self {
+    /// Create a new polynomial regressor with degree `deg` (e.g., deg = 1 is a linear model).
+    pub fn new(deg: usize) -> Self {
         PolynomialRegressor {
-            coeffs: coeffs.to_owned(),
+            coeffs: vec![0.; deg + 1],
         }
     }
     /// Prints the coefficients of the polynomial regressor.
@@ -101,7 +99,8 @@ mod tests {
     fn test_slr() {
         let x = vec![0., 1., 2., 3., 4., 5., 6., 7., 8., 9.];
         let y = vec![5., 7., 9., 11., 13., 15., 17., 19., 21., 23.];
-        let mut slr = PolynomialRegressor::new(&[5., 2.]);
+        let mut slr = PolynomialRegressor::new(1);
+        slr.update(&[5., 2.]);
         assert_eq!(slr.predict(&x), y);
         slr.update(&[0., 1.]);
         assert_eq!(slr.predict(&x), x);
@@ -114,7 +113,7 @@ mod tests {
         let scatter = Normal::new(0., 10.);
         let y: Vec<f64> = (&yv).into_iter().map(|v| v + scatter.sample()).collect();
 
-        let mut p = PolynomialRegressor::new(&[2., 2.]);
+        let mut p = PolynomialRegressor::new(1);
         p.fit(&x, &y);
         let coeffs1 = p.get_coeffs();
 

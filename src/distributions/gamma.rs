@@ -23,7 +23,7 @@ impl Gamma {
         }
         Gamma {
             alpha,
-            beta: 1. / beta,
+            beta,
             normal_gen: Normal::new(0., 1.),
             uniform_gen: Uniform::new(0., 1.),
         }
@@ -39,7 +39,7 @@ impl Gamma {
         if beta <= 0. {
             panic!("Beta must be positive.");
         }
-        self.beta = 1. / beta;
+        self.beta = beta;
         self
     }
 }
@@ -68,10 +68,10 @@ impl Distribution for Gamma {
             };
             let u = self.uniform_gen.sample();
             if u < 1. - 0.0331 * x.powi(4) {
-                return d * v * self.beta;
+                return d * v / self.beta;
             }
             if u.ln() < 0.5 * x.powi(2) + d * (1. - v + v.ln()) {
-                return d * v * self.beta;
+                return d * v / self.beta;
             }
         }
     }

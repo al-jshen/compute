@@ -7,7 +7,7 @@
   - optimizers
     - Adam
 - numerical integration of functions 
-  - trapezoid, Romberg, 5-point Gaussian-Legendre quadrature
+  - trapezoid, Romberg, 5-point Gauss-Legendre quadrature
 - basic statistical distributions
   - continuous
     - Gaussian, Beta, Gamma, Chi Squared, Student's T, Uniform, Exponential

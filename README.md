@@ -15,7 +15,11 @@ To use this in your Rust program, add the following to your `Cargo.toml` file:
 compute = "0.1"
 ```
 
-## Statistical distributions
+For a list of features, see [`FEATURES.md`](FEATURES.md). For more detailed explanations, see the [documentation](https://docs.rs/compute).
+
+## Examples
+
+### Statistical distributions
 ```rust
 use compute::distributions::*;
 
@@ -32,8 +36,7 @@ println!("{}", p.sample()); // sample single value
 println!("{}", p.pmf(2));  // probability mass function
 ```
 
-
-## Regression
+### Regression
 ```rust
 use compute::predict::*;
 
@@ -45,7 +48,7 @@ clf.fit(&x, &y);                           // linear least squares fitting
 println!("{:?}", clf.get_coeffs());        // get model coefficients
 ```
 
-## Time series models
+### Time series models
 ```rust
 use compute::timeseries::*;
 
@@ -57,7 +60,7 @@ println!("{:?}", ar.coeffs);         // get model coefficients
 println!("{:?}", ar.predict(&x, 5)); // forecast 5 steps ahead
 ```
 
-## Numerical integration
+### Numerical integration
 ```rust
 use compute::integrate::*;
 
@@ -67,10 +70,9 @@ println!("{}", quad5(f, 0., 1.));             // gaussian quadrature integration
 println!("{}", romberg(f, 0., 1., 1e-8, 10)); // romberg integration with tolerance and max steps
 ```
 
-
-## Data summary functions
+### Data summary functions
 ```rust
-use compute::summary::*;
+use compute::statistics::*;
 
 let x = vec![2.2, 3.4, 5., 10., -2.1, 0.1];
 let y = vec![1.,  2., -2., 5.7, -0.7, 5.7];
@@ -82,8 +84,7 @@ println!("{}", sample_std(&y));
 println!("{}", covariance(&x, &y));
 ```
 
-
-## Linear algebra functions
+### Linear algebra functions
 ```rust
 use compute::utils::*;
 
@@ -101,7 +102,7 @@ println!("{:?}", dot(&x, &y));                       // dot product of x and y (
 println!("{:?}", matmul(&x, &y, 2, 2, false, true)); // matrix multiply, transposing y
 ```
 
-## Mathematical and statistical functions
+### Mathematical and statistical functions
 ```rust
 use compute::functions::*;
 
@@ -110,4 +111,3 @@ println!("{}", boxcox(5., 2.);      // boxcox transform
 println!("{}", digamma(2.));
 println!("{}", binom_coeff(10, 4)); // n choose k
 ```
-

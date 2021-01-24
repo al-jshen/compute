@@ -1,5 +1,5 @@
 use super::Predictor;
-use crate::optimize::*;
+use crate::optimize::{loss::mse, num_gradient, optimizers::Optimizer};
 
 /// Implements a logistic regressor.
 pub struct LogisticRegressor {
@@ -41,7 +41,7 @@ impl Predictor for LogisticRegressor {
     {
         self.coeffs = optimizer.optimize(
             |evalat: &[f64], dim: usize| {
-                partial(|params: &[f64]| mse(&predict(params, &x), &y), evalat, dim)
+                num_gradient::partial(|params: &[f64]| mse(&predict(params, &x), &y), evalat, dim)
             },
             self.get_coeffs(),
             1e6 as usize,
@@ -66,7 +66,7 @@ fn predict(coeffs: &[f64], x: &[f64]) -> Vec<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::optimize::Adam;
+    use crate::optimize::optimizers::Adam;
 
     #[test]
     fn test_logistic_regressor() {

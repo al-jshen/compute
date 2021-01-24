@@ -2,7 +2,7 @@
 
 mod logistic;
 mod polynomial;
-use crate::optimize::Optimizer;
+use crate::optimize::optimizers::Optimizer;
 
 /// A predictor for which the parameters can be optimized and updated.
 pub trait Predictor {

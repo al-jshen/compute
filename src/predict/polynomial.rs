@@ -1,5 +1,5 @@
 use super::Predictor;
-use crate::optimize::*;
+use crate::optimize::{loss::mse, num_gradient::partial, optimizers::Optimizer};
 use crate::utils::*;
 
 /// Implements a polynomial regressor with coefficients `coeffs`.
@@ -85,11 +85,6 @@ fn predict(coeffs: &[f64], x: &[f64]) -> Vec<f64> {
         .collect::<Vec<_>>()
 }
 
-// fn design(x: Array<f64, Ix1>) -> Array<f64, Ix2> {
-//     let d = Array::ones((x.len(), 1));
-//     stack![Axis(1), d, x.insert_axis(Axis(1))]
-// }
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -119,7 +114,7 @@ mod tests {
         let coeffs1 = p.get_coeffs();
 
         p.update(&[2., 2.]);
-        let o = Adam::default();
+        let o = crate::optimize::optimizers::Adam::default();
         p.fit_with_optimizer(&x.to_vec(), &y.to_vec(), o);
         let coeffs2 = p.get_coeffs();
 

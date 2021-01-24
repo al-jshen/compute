@@ -7,3 +7,4 @@ pub use crate::statistics::*;
 pub use crate::timeseries::*;
 pub use crate::utils::*;
 pub use crate::validation::*;
+pub use autodiff::*;

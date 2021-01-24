@@ -8,6 +8,7 @@ extern crate openblas_src;
 
 use blas::{ddot, dgemm};
 use lapack::{dgetrf, dgetri};
+use num_traits::PrimInt;
 
 /// Given an n by n matrix, invert it. The resulting matrix is returned as a flattened array.
 pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
@@ -29,7 +30,8 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
 }
 
 /// Given a matrix X with k rows, return X transpose times X, which is a symmetric matrix.
-pub fn xtx(x: &[f64], k: i32) -> Vec<f64> {
+pub fn xtx(x: &[f64], k: usize) -> Vec<f64> {
+    let k = k as i32;
     let n = x.len() as i32 / k; // should divide into it perfectly
     let mut result = vec![0.; (n * n) as usize];
     unsafe {
@@ -42,22 +44,24 @@ pub fn xtx(x: &[f64], k: i32) -> Vec<f64> {
 pub fn matmul(
     a: &[f64],
     b: &[f64],
-    rows_a: i32,
-    rows_b: i32,
+    rows_a: usize,
+    rows_b: usize,
     transpose_a: bool,
     transpose_b: bool,
 ) -> Vec<f64> {
+    let rows_a = rows_a as i32;
+    let rows_b = rows_b as i32;
     let cols_a = a.len() as i32 / rows_a;
     let cols_b = b.len() as i32 / rows_b;
     let trans_a = if transpose_a { b'T' } else { b'N' };
     let trans_b = if transpose_b { b'T' } else { b'N' };
-    let m = if transpose_a { cols_a } else { rows_a };
-    let n = if transpose_b { rows_b } else { cols_b };
-    let k = if transpose_a { rows_a } else { cols_a };
+    let m = if transpose_a { cols_a } else { rows_a as i32 };
+    let n = if transpose_b { rows_b as i32 } else { cols_b };
+    let k = if transpose_a { rows_a as i32 } else { cols_a };
     let alpha = 1.;
     let beta = 0.;
-    let lda = rows_a;
-    let ldb = rows_b;
+    let lda = rows_a as i32;
+    let ldb = rows_b as i32;
     let ldc = m;
     if transpose_a {
         assert!(lda >= k, "lda={} must be at least as large as k={}", lda, k);
@@ -78,11 +82,27 @@ pub fn matmul(
     c
 }
 
-/// Create a design matrix from a given matrix.
+/// Create a design matrix from a given matrix. Note that this follows column-major ordering, so
+/// the resulting vector simply has some 1s appended to the front.
 pub fn design(x: &[f64], rows: i32) -> Vec<f64> {
     let mut ones = vec![1.; rows as usize];
     ones.extend_from_slice(x);
     ones
+}
+
+/// Given some length m data x, create an nth order
+/// [Vandermonde matrix](https://en.wikipedia.org/wiki/Vandermonde_matrix).
+/// Note that this returns a vector with column-major ordering.
+pub fn vandermonde(x: &[f64], n: usize) -> Vec<f64> {
+    let mut vm = Vec::with_capacity(x.len() * n);
+
+    for i in 0..n {
+        for v in x.iter() {
+            vm.push(v.powi(i as i32));
+        }
+    }
+
+    vm
 }
 
 /// Given a vector of length n, creates n stacked duplicates, resulting in a square [Toeplitz

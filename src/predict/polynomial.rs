@@ -66,10 +66,18 @@ impl PolynomialRegressor {
     /// `x`. Uses least squares fitting.
     pub fn fit(&mut self, x: &[f64], y: &[f64]) -> &mut Self {
         assert_eq!(x.len(), y.len());
-        let x_design = design(x, x.len() as i32);
-        let xtxinv = invert_matrix(&xtx(&x_design, x.len() as i32));
-        let xty = matmul(&x_design, y, x.len() as i32, y.len() as i32, true, false);
-        let coeffs = matmul(&xtxinv, &xty, 2, 2, false, false);
+        let xv = vandermonde(x, self.coeffs.len());
+        let xtx = xtx(&xv, x.len());
+        let xtxinv = invert_matrix(&xtx);
+        let xty = matmul(&xv, y, x.len(), y.len(), true, false);
+        let coeffs = matmul(
+            &xtxinv,
+            &xty,
+            self.coeffs.len(),
+            self.coeffs.len(),
+            false,
+            false,
+        );
         self.update(&coeffs)
     }
 }

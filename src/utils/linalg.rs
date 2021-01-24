@@ -8,7 +8,6 @@ extern crate openblas_src;
 
 use blas::{ddot, dgemm};
 use lapack::{dgetrf, dgetri};
-use num_traits::PrimInt;
 
 /// Given an n by n matrix, invert it. The resulting matrix is returned as a flattened array.
 pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {

@@ -16,7 +16,6 @@ keywords = ["statistics", "compute", "data"]
 fastrand = "1"
 approx_eq = "0.1"
 autodiff = "0.2"
-num-traits = "0.2"
 blas = "0.20"
 lapack = "0.16"
 

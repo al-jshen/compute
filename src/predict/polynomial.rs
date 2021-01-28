@@ -37,7 +37,6 @@ impl Predictor for PolynomialRegressor {
     where
         O: Optimizer,
     {
-        // let mut optimizer = Adam::new(0.01, 0.99, 0.999, 1e-8, &self.coeffs);
         self.coeffs = optimizer.optimize(
             |evalat: &[f64], dim: usize| {
                 partial(|params: &[f64]| mse(&predict(params, &x), &y), evalat, dim)

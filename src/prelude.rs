@@ -2,9 +2,12 @@ pub use crate::distributions::*;
 pub use crate::functions::*;
 pub use crate::integrate::*;
 pub use crate::optimize::*;
+#[cfg(feature = "linalg")]
 pub use crate::predict::*;
 pub use crate::statistics::*;
+#[cfg(feature = "linalg")]
 pub use crate::timeseries::*;
+#[cfg(feature = "linalg")]
 pub use crate::utils::*;
 pub use crate::validation::*;
 pub use autodiff::*;

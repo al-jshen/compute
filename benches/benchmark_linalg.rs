@@ -18,5 +18,11 @@ pub fn criterion_ludecomp(c: &mut Criterion) {
     c.bench_function("10x10 lu factorization", |b| b.iter(|| lu(&v)));
 }
 
-criterion_group!(benches, criterion_ludecomp);
+pub fn criterion_solve(c: &mut Criterion) {
+    let a = Uniform::new(2., 50.).sample_vec(20 * 20);
+    let bvec = Uniform::new(6., 30.).sample_vec(20);
+    c.bench_function("20 variable linear solve", |b| b.iter(|| solve(&a, &bvec)));
+}
+
+criterion_group!(benches, criterion_solve);
 criterion_main!(benches);

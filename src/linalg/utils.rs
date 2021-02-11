@@ -13,6 +13,8 @@ use blas::{ddot, dgemm};
 #[cfg(feature = "lapack")]
 use lapack::{dgesv, dgetrf, dgetri};
 
+use super::lu;
+
 /// Check if matrix is square.
 pub fn is_square(m: &[f64]) -> Result<usize, String> {
     let n = (m.len() as f32).sqrt();
@@ -69,29 +71,55 @@ pub fn xtx(x: &[f64], k: usize) -> Vec<f64> {
     result
 }
 
-/// Solve the linear system Ax = b.
-#[cfg(feature = "lapack")]
+/// Solve the linear system Ax = b using LU decomposition.
 pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
     let n = b.len();
     assert!(a.len() == n * n);
-    let mut lu = transpose(&a, n);
-    let mut ipiv = vec![0; n as usize];
-    let mut result = b.to_vec();
-    let mut info = 0;
-    unsafe {
-        dgesv(
-            n as i32,
-            1,
-            &mut lu,
-            n as i32,
-            &mut ipiv,
-            &mut result,
-            n as i32,
-            &mut info,
-        );
-        assert_eq!(info, 0, "dgesv failed");
+
+    // this is slower than the non-lapack version
+    // #[cfg(feature = "lapack")]
+    // {
+    //     let mut lu = transpose(&a, n);
+    //     let mut ipiv = vec![0; n as usize];
+    //     let mut result = b.to_vec();
+    //     let mut info = 0;
+    //     unsafe {
+    //         dgesv(
+    //             n as i32,
+    //             1,
+    //             &mut lu,
+    //             n as i32,
+    //             &mut ipiv,
+    //             &mut result,
+    //             n as i32,
+    //             &mut info,
+    //         );
+    //         assert_eq!(info, 0, "dgesv failed");
+    //     }
+    //     result
+    // }
+
+    let (lu, pivots) = lu(&a);
+
+    let mut x = vec![0.; n];
+    for i in 0..pivots.len() {
+        x[i] = b[pivots[i] as usize];
     }
-    result
+
+    for k in 0..n {
+        for i in (k + 1)..n {
+            x[i] -= x[k] * lu[i * n + k];
+        }
+    }
+
+    for k in (0..n).rev() {
+        x[k] /= lu[k * n + k];
+        for i in 0..k {
+            x[i] -= x[k] * lu[i * n + k];
+        }
+    }
+
+    x
 }
 
 /// Multiply two matrices together, optionally transposing one or both of them.

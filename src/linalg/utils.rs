@@ -3,9 +3,9 @@ extern crate blas;
 #[cfg(feature = "lapack")]
 extern crate lapack;
 
-#[cfg(target_os = "macos")]
+#[cfg(all(target_os = "macos", feature = "blas", feature = "lapack"))]
 extern crate accelerate_src;
-#[cfg(not(target_os = "macos"))]
+#[cfg(all(not(target_os = "macos"), feature = "blas", feature = "lapack"))]
 extern crate openblas_src;
 
 #[cfg(feature = "blas")]
@@ -13,6 +13,7 @@ use blas::{ddot, dgemm};
 #[cfg(feature = "lapack")]
 use lapack::{dgesv, dgetrf, dgetri};
 
+#[cfg(not(feature = "lapack"))]
 use super::lu;
 
 /// Check if matrix is square.

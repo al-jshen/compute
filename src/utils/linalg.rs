@@ -125,16 +125,42 @@ pub fn toeplitz(x: &[f64]) -> Vec<f64> {
     v
 }
 
-/// Calculates the dot product of two equal-length vectors.
+/// Calculates the dot product of two equal-length vectors. When the feature "blas" is enabled,
+/// uses `ddot` from BLAS. Otherwise, uses a length-8 unrolled loop.
 pub fn dot(x: &[f64], y: &[f64]) -> f64 {
     assert_eq!(x.len(), y.len());
+
     #[cfg(feature = "blas")]
     {
         unsafe {
             return ddot(x.len() as i32, x, 1, y, 1);
         }
     }
-    (0..x.len()).map(|i| x[i] * y[i]).sum()
+
+    let n = x.len();
+    let chunks = (n - (n % 8)) / 8;
+    let mut s = 0.;
+
+    // unroll as many as possible
+    for i in 0..chunks {
+        let idx = i * 8;
+        assert!(n > idx + 7);
+        s += x[idx] * y[idx]
+            + x[idx + 1] * y[idx + 1]
+            + x[idx + 2] * y[idx + 2]
+            + x[idx + 3] * y[idx + 3]
+            + x[idx + 4] * y[idx + 4]
+            + x[idx + 5] * y[idx + 5]
+            + x[idx + 6] * y[idx + 6]
+            + x[idx + 7] * y[idx + 7];
+    }
+
+    // do the rest
+    for j in (chunks * 8)..n {
+        s += x[j] * y[j];
+    }
+
+    s
 }
 
 /// Calculates the norm of a vector.

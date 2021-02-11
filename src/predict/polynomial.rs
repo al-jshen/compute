@@ -1,6 +1,6 @@
 use super::Predictor;
+use crate::linalg::*;
 use crate::optimize::{loss::mse, num_gradient::partial, optimizers::Optimizer};
-use crate::utils::*;
 
 /// Implements a polynomial regressor with coefficients `coeffs`.
 ///

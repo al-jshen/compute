@@ -1,4 +1,4 @@
-use crate::utils::dot;
+use crate::linalg::dot;
 
 pub fn convolve(f: &[f64], w: &[f64], dt: f64) -> Vec<f64> {
     let (mut a, mut weight) = if w.len() > f.len() {

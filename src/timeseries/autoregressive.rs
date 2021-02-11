@@ -1,7 +1,7 @@
 extern crate lapack;
 use super::acf;
+use crate::linalg::*;
 use crate::statistics::mean;
-use crate::utils::*;
 use std::fmt::{Display, Formatter, Result};
 
 #[derive(Debug)]

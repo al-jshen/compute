@@ -11,7 +11,6 @@ pub struct PolynomialRegressor {
     coeffs: Vec<f64>,
 }
 
-#[cfg(all(feature = "blas", feature = "lapack"))]
 impl PolynomialRegressor {
     /// Create a new polynomial regressor with degree `deg` (e.g., deg = 1 is a linear model).
     pub fn new(deg: usize) -> Self {
@@ -112,9 +111,9 @@ mod tests {
 
     #[test]
     fn test_fits() {
-        let x: Vec<f64> = (0..500).into_iter().map(|x| x as f64 / 10.).collect();
+        let x: Vec<f64> = (0..250).into_iter().map(|x| x as f64 / 10.).collect();
         let yv: Vec<f64> = (&x).into_iter().map(|v| 5. + 2. * v).collect();
-        let scatter = Normal::new(0., 10.);
+        let scatter = Normal::new(0., 5.);
         let y: Vec<f64> = (&yv).into_iter().map(|v| v + scatter.sample()).collect();
 
         let mut p = PolynomialRegressor::new(1);
@@ -126,8 +125,9 @@ mod tests {
         p.fit_with_optimizer(&x.to_vec(), &y.to_vec(), o);
         let coeffs2 = p.get_coeffs();
 
-        for (i, j) in coeffs1.iter().zip(coeffs2.iter()) {
-            assert_approx_eq!(*i, *j, 1e-4);
-        }
+        println!("{:?}", coeffs1);
+        println!("{:?}", coeffs2);
+        assert_approx_eq!(coeffs1[0], coeffs2[0], 1e-4);
+        assert_approx_eq!(coeffs1[1], coeffs2[1], 1e-4);
     }
 }

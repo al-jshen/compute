@@ -1,6 +1,6 @@
 [package]
 name = "compute"
-version = "0.1.18"
+version = "0.1.19"
 authors = ["Jeff Shen <jshen2014@hotmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -20,7 +20,7 @@ blas = {version = "0.20", optional = true}
 lapack = {version = "0.16", optional = true}
 
 [features]
-# default = ["blas", "lapack"]
+default = ["blas", "lapack"]
 
 [target.'cfg(target_os = "macos")'.dependencies]
 accelerate-src = "0.3"

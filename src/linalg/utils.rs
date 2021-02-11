@@ -32,7 +32,7 @@ pub fn transpose(a: &[f64], nrows: usize) -> Vec<f64> {
     let mut at: Vec<f64> = Vec::with_capacity(a.len());
     for i in 0..nrows {
         for j in 0..ncols {
-            at.push(a[j * ncols + i]);
+            at.push(a[j * nrows + i]);
         }
     }
     at
@@ -59,40 +59,73 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
         }
         return a;
     }
-    let mut ones = vec![0.; n];
-    let mut inverse = vec![0.; n * n];
-    let lup = lu(&matrix);
+    // maybe a little dumber than just implementing a solve function that solves all equations at
+    // the same time but this is still 5x faster than lapack's inverse for 20x20 matrices
+    #[cfg(not(feature = "lapack"))]
+    {
+        let mut ones = vec![0.; n];
+        let mut inverse = vec![0.; n * n];
+        let lup = lu(&matrix);
 
-    for i in 0..n {
-        ones[i] = 1.;
-        let sol = lu_solve(&lup, &ones);
-        assert_eq!(sol.len(), n);
-        for j in 0..n {
-            inverse[j * n + i] = sol[j];
+        for i in 0..n {
+            ones[i] = 1.;
+            let sol = lu_solve(&lup, &ones);
+            assert_eq!(sol.len(), n);
+            for j in 0..n {
+                inverse[j * n + i] = sol[j];
+            }
+            ones[i] = 0.;
         }
-        ones[i] = 0.;
+        inverse
     }
-    inverse
 }
 
 /// Given a matrix X with k rows, return X transpose times X, which is a symmetric matrix.
-#[cfg(feature = "blas")]
 pub fn xtx(x: &[f64], k: usize) -> Vec<f64> {
-    let k = k as i32;
-    let n = x.len() as i32 / k; // should divide into it perfectly
-    let mut result = vec![0.; (n * n) as usize];
-    unsafe {
-        dgemm(b'T', b'N', n, n, k, 1., x, k, x, k, 0., &mut result, n);
+    #[cfg(feature = "blas")]
+    {
+        let k = k as i32;
+        let n = x.len() as i32 / k; // should divide into it perfectly
+        let mut result = vec![0.; (n * n) as usize];
+        unsafe {
+            dgemm(b'T', b'N', n, n, k, 1., x, k, x, k, 0., &mut result, n);
+        }
+        assert!(is_square(&result).is_ok());
+        return result;
     }
-    assert!(is_square(&result).is_ok());
-    result
+    #[cfg(not(feature = "blas"))]
+    matmul(x, x, k, k, true, false)
 }
 
-/// Solve the linear system Ax = b.
+/// Solve the linear system Ax = b with LU decomposition.
 pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
     let n = b.len();
     assert!(a.len() == n * n);
 
+    // this is slower than the non-lapack version
+    #[cfg(feature = "lapack")]
+    {
+        let mut lu = transpose(&a, n);
+        let mut ipiv = vec![0; n as usize];
+        let mut result = b.to_vec();
+        let mut info = 0;
+        unsafe {
+            dgesv(
+                n as i32,
+                1,
+                &mut lu,
+                n as i32,
+                &mut ipiv,
+                &mut result,
+                n as i32,
+                &mut info,
+            );
+            assert_eq!(info, 0, "dgesv failed");
+        }
+        return result;
+    }
+
+    #[cfg(not(feature = "lapack"))]
     lu_solve(&lu(&a), b)
 }
 
@@ -103,29 +136,6 @@ pub fn lu_solve(lup: &(Vec<f64>, Vec<i32>), b: &[f64]) -> Vec<f64> {
     let (lu, pivots) = lup;
     let n = b.len();
     assert!(lu.len() == n * n);
-
-    // this is slower than the non-lapack version
-    // #[cfg(feature = "lapack")]
-    // {
-    //     let mut lu = transpose(&a, n);
-    //     let mut ipiv = vec![0; n as usize];
-    //     let mut result = b.to_vec();
-    //     let mut info = 0;
-    //     unsafe {
-    //         dgesv(
-    //             n as i32,
-    //             1,
-    //             &mut lu,
-    //             n as i32,
-    //             &mut ipiv,
-    //             &mut result,
-    //             n as i32,
-    //             &mut info,
-    //         );
-    //         assert_eq!(info, 0, "dgesv failed");
-    //     }
-    //     result
-    // }
 
     let mut x = vec![0.; n];
     for i in 0..pivots.len() {
@@ -145,11 +155,11 @@ pub fn lu_solve(lup: &(Vec<f64>, Vec<i32>), b: &[f64]) -> Vec<f64> {
         }
     }
 
-    x
+    return x;
 }
 
-/// Multiply two matrices together, optionally transposing one or both of them.
-#[cfg(feature = "blas")]
+/// Multiply two matrices together, optionally transposing one or both of them. Note that the
+/// matrices must be in column-major ordering.
 pub fn matmul(
     a: &[f64],
     b: &[f64],
@@ -158,37 +168,73 @@ pub fn matmul(
     transpose_a: bool,
     transpose_b: bool,
 ) -> Vec<f64> {
-    let rows_a = rows_a as i32;
-    let rows_b = rows_b as i32;
-    let cols_a = a.len() as i32 / rows_a;
-    let cols_b = b.len() as i32 / rows_b;
-    let trans_a = if transpose_a { b'T' } else { b'N' };
-    let trans_b = if transpose_b { b'T' } else { b'N' };
-    let m = if transpose_a { cols_a } else { rows_a as i32 };
-    let n = if transpose_b { rows_b as i32 } else { cols_b };
-    let k = if transpose_a { rows_a as i32 } else { cols_a };
-    let alpha = 1.;
-    let beta = 0.;
-    let lda = rows_a as i32;
-    let ldb = rows_b as i32;
-    let ldc = m;
-    if transpose_a {
-        assert!(lda >= k, "lda={} must be at least as large as k={}", lda, k);
-    } else {
-        assert!(lda >= m, "lda={} must be at least as large as m={}", lda, m);
+    #[cfg(feature = "blas")]
+    {
+        let rows_a = rows_a as i32;
+        let rows_b = rows_b as i32;
+        let cols_a = a.len() as i32 / rows_a;
+        let cols_b = b.len() as i32 / rows_b;
+        let trans_a = if transpose_a { b'T' } else { b'N' };
+        let trans_b = if transpose_b { b'T' } else { b'N' };
+        let m = if transpose_a { cols_a } else { rows_a as i32 };
+        let n = if transpose_b { rows_b as i32 } else { cols_b };
+        let k = if transpose_a { rows_a as i32 } else { cols_a };
+        let alpha = 1.;
+        let beta = 0.;
+        let lda = rows_a as i32;
+        let ldb = rows_b as i32;
+        let ldc = m;
+        if transpose_a {
+            assert!(lda >= k, "lda={} must be at least as large as k={}", lda, k);
+        } else {
+            assert!(lda >= m, "lda={} must be at least as large as m={}", lda, m);
+        }
+        if transpose_b {
+            assert!(ldb >= n, "ldb={} must be at least as large as n={}", ldb, n);
+        } else {
+            assert!(ldb >= k, "ldb={} must be at least as large as k={}", ldb, k);
+        }
+        let mut c = vec![0.; (ldc * n) as usize];
+        unsafe {
+            dgemm(
+                trans_a, trans_b, m, n, k, alpha, a, lda, b, ldb, beta, &mut c, ldc,
+            );
+        }
+        return c;
     }
-    if transpose_b {
-        assert!(ldb >= n, "ldb={} must be at least as large as n={}", ldb, n);
-    } else {
-        assert!(ldb >= k, "ldb={} must be at least as large as k={}", ldb, k);
+
+    #[cfg(not(feature = "blas"))]
+    {
+        let cols_a = a.len() / rows_a;
+        let cols_b = b.len() / rows_b;
+        let m = if transpose_a { cols_a } else { rows_a };
+        let l = if transpose_a { rows_a } else { cols_a };
+        let n = if transpose_b { rows_b } else { cols_b };
+        let mut c = vec![0.; m * n];
+
+        // this is kind of dumb. TODO: figure out the indexing for transpose
+        let a = if transpose_a {
+            transpose(&a, rows_a)
+        } else {
+            a.to_vec()
+        };
+        let b = if transpose_b {
+            transpose(&b, rows_b)
+        } else {
+            b.to_vec()
+        };
+
+        for i in 0..m {
+            for k in 0..l {
+                let temp = a[k * m + i];
+                for j in 0..n {
+                    c[j * m + i] += temp * b[j * l + k];
+                }
+            }
+        }
+
+        return c;
     }
-    let mut c = vec![0.; (ldc * n) as usize];
-    unsafe {
-        dgemm(
-            trans_a, trans_b, m, n, k, alpha, a, lda, b, ldb, beta, &mut c, ldc,
-        );
-    }
-    c
 }
 
 /// Create a design matrix from a given matrix. Note that this follows column-major ordering, so
@@ -240,30 +286,33 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
         }
     }
 
-    let n = x.len();
-    let chunks = (n - (n % 8)) / 8;
-    let mut s = 0.;
+    #[cfg(not(feature = "blas"))]
+    {
+        let n = x.len();
+        let chunks = (n - (n % 8)) / 8;
+        let mut s = 0.;
 
-    // unroll as many as possible
-    for i in 0..chunks {
-        let idx = i * 8;
-        assert!(n > idx + 7);
-        s += x[idx] * y[idx]
-            + x[idx + 1] * y[idx + 1]
-            + x[idx + 2] * y[idx + 2]
-            + x[idx + 3] * y[idx + 3]
-            + x[idx + 4] * y[idx + 4]
-            + x[idx + 5] * y[idx + 5]
-            + x[idx + 6] * y[idx + 6]
-            + x[idx + 7] * y[idx + 7];
+        // unroll as many as possible
+        for i in 0..chunks {
+            let idx = i * 8;
+            assert!(n > idx + 7);
+            s += x[idx] * y[idx]
+                + x[idx + 1] * y[idx + 1]
+                + x[idx + 2] * y[idx + 2]
+                + x[idx + 3] * y[idx + 3]
+                + x[idx + 4] * y[idx + 4]
+                + x[idx + 5] * y[idx + 5]
+                + x[idx + 6] * y[idx + 6]
+                + x[idx + 7] * y[idx + 7];
+        }
+
+        // do the rest
+        for j in (chunks * 8)..n {
+            s += x[j] * y[j];
+        }
+
+        return s;
     }
-
-    // do the rest
-    for j in (chunks * 8)..n {
-        s += x[j] * y[j];
-    }
-
-    s
 }
 
 /// Calculates the norm of a vector.

@@ -1,4 +1,3 @@
-extern crate lapack;
 use super::acf;
 use crate::linalg::*;
 use crate::statistics::mean;
@@ -13,7 +12,6 @@ pub struct AR {
 
 /// Implements an [autoregressive model](https://en.wikipedia.org/wiki/Autoregressive_model) of
 /// order p.
-#[cfg(all(feature = "blas", feature = "lapack"))]
 impl AR {
     pub fn new(p: usize) -> Self {
         assert!(p > 0, "p must be greater than 0");

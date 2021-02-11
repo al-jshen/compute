@@ -11,12 +11,35 @@ extern crate openblas_src;
 #[cfg(feature = "blas")]
 use blas::{ddot, dgemm};
 #[cfg(feature = "lapack")]
-use lapack::{dgetrf, dgetri};
+use lapack::{dgesv, dgetrf, dgetri};
+
+/// Check if matrix is square.
+pub fn is_square(m: &[f64]) -> Result<usize, String> {
+    let n = (m.len() as f32).sqrt();
+    if n % 1. == 0. {
+        Ok(n as usize)
+    } else {
+        Err("Matrix not square".to_string())
+    }
+}
+
+/// Transpose a matrix.
+pub fn transpose(a: &[f64], nrows: usize) -> Vec<f64> {
+    assert!((a.len() / nrows) % 1 == 0, "shape not correct for a matrix");
+    let ncols = a.len() / nrows;
+    let mut at: Vec<f64> = Vec::with_capacity(a.len());
+    for i in 0..nrows {
+        for j in 0..ncols {
+            at.push(a[j * ncols + i]);
+        }
+    }
+    at
+}
 
 /// Given an n by n matrix, invert it. The resulting matrix is returned as a flattened array.
 #[cfg(feature = "lapack")]
 pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
-    let n = (matrix.len() as f64).sqrt() as i32; // should divide into it perfectly
+    let n = is_square(&matrix).unwrap() as i32;
     let mut a = matrix.to_vec();
     let mut ipiv = vec![0; n as usize];
     let mut info: i32 = 0;
@@ -41,6 +64,32 @@ pub fn xtx(x: &[f64], k: usize) -> Vec<f64> {
     let mut result = vec![0.; (n * n) as usize];
     unsafe {
         dgemm(b'T', b'N', n, n, k, 1., x, k, x, k, 0., &mut result, n);
+    }
+    assert!(is_square(&result).is_ok());
+    result
+}
+
+/// Solve the linear system Ax = b.
+#[cfg(feature = "lapack")]
+pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
+    let n = b.len();
+    assert!(a.len() == n * n);
+    let mut lu = transpose(&a, n);
+    let mut ipiv = vec![0; n as usize];
+    let mut result = b.to_vec();
+    let mut info = 0;
+    unsafe {
+        dgesv(
+            n as i32,
+            1,
+            &mut lu,
+            n as i32,
+            &mut ipiv,
+            &mut result,
+            n as i32,
+            &mut info,
+        );
+        assert_eq!(info, 0, "dgesv failed");
     }
     result
 }
@@ -165,5 +214,5 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
 
 /// Calculates the norm of a vector.
 pub fn norm(x: &[f64]) -> f64 {
-    x.iter().map(|x| x.powi(2)).sum::<f64>().sqrt()
+    dot(&x, &x).sqrt()
 }

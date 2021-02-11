@@ -20,10 +20,7 @@ blas = {version = "0.20", optional = true}
 lapack = {version = "0.16", optional = true}
 
 [features]
-default = ["linalg"]
-linalg = ["blas", "lapack"]
-# blas = "0.20"
-# lapack = "0.16"
+default = ["blas", "lapack"]
 
 [target.'cfg(target_os = "macos")'.dependencies]
 accelerate-src = "0.3"
@@ -35,7 +32,11 @@ openblas-src = "0.9"
 criterion = "0.3"
 
 [[bench]]
-name = "benchmark_summary"
+name = "benchmark_statistics"
+harness = false
+
+[[bench]]
+name = "benchmark_linalg"
 harness = false
 
 [[bench]]

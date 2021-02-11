@@ -1,4 +1,6 @@
+#[cfg(feature = "blas")]
 extern crate blas;
+#[cfg(feature = "lapack")]
 extern crate lapack;
 
 #[cfg(target_os = "macos")]
@@ -6,10 +8,13 @@ extern crate accelerate_src;
 #[cfg(not(target_os = "macos"))]
 extern crate openblas_src;
 
+#[cfg(feature = "blas")]
 use blas::{ddot, dgemm};
+#[cfg(feature = "lapack")]
 use lapack::{dgetrf, dgetri};
 
 /// Given an n by n matrix, invert it. The resulting matrix is returned as a flattened array.
+#[cfg(feature = "lapack")]
 pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
     let n = (matrix.len() as f64).sqrt() as i32; // should divide into it perfectly
     let mut a = matrix.to_vec();
@@ -29,6 +34,7 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
 }
 
 /// Given a matrix X with k rows, return X transpose times X, which is a symmetric matrix.
+#[cfg(feature = "blas")]
 pub fn xtx(x: &[f64], k: usize) -> Vec<f64> {
     let k = k as i32;
     let n = x.len() as i32 / k; // should divide into it perfectly
@@ -40,6 +46,7 @@ pub fn xtx(x: &[f64], k: usize) -> Vec<f64> {
 }
 
 /// Multiply two matrices together, optionally transposing one or both of them.
+#[cfg(feature = "blas")]
 pub fn matmul(
     a: &[f64],
     b: &[f64],
@@ -121,10 +128,13 @@ pub fn toeplitz(x: &[f64]) -> Vec<f64> {
 /// Calculates the dot product of two equal-length vectors.
 pub fn dot(x: &[f64], y: &[f64]) -> f64 {
     assert_eq!(x.len(), y.len());
-    let n = x.len() as i32;
-    unsafe {
-        return ddot(n, x, 1, y, 1);
+    #[cfg(feature = "blas")]
+    {
+        unsafe {
+            return ddot(x.len() as i32, x, 1, y, 1);
+        }
     }
+    (0..x.len()).map(|i| x[i] * y[i]).sum()
 }
 
 /// Calculates the norm of a vector.

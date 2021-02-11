@@ -1,5 +1,5 @@
 use compute::distributions::{Distribution, Normal};
-use compute::summary::*;
+use compute::statistics::*;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 pub fn criterion_mean(c: &mut Criterion) {

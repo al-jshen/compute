@@ -2,12 +2,12 @@ pub mod distributions;
 pub mod functions;
 pub mod integrate;
 pub mod optimize;
-#[cfg(feature = "linalg")]
+#[cfg(all(feature = "blas", feature = "lapack"))]
 pub mod predict;
 pub mod prelude;
+pub mod signal;
 pub mod statistics;
-#[cfg(feature = "linalg")]
+#[cfg(all(feature = "blas", feature = "lapack"))]
 pub mod timeseries;
-#[cfg(feature = "linalg")]
 pub mod utils;
 pub mod validation;

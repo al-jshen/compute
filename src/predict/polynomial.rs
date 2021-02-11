@@ -11,6 +11,7 @@ pub struct PolynomialRegressor {
     coeffs: Vec<f64>,
 }
 
+#[cfg(all(feature = "blas", feature = "lapack"))]
 impl PolynomialRegressor {
     /// Create a new polynomial regressor with degree `deg` (e.g., deg = 1 is a linear model).
     pub fn new(deg: usize) -> Self {

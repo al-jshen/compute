@@ -39,23 +39,40 @@ pub fn transpose(a: &[f64], nrows: usize) -> Vec<f64> {
 }
 
 /// Given an n by n matrix, invert it. The resulting matrix is returned as a flattened array.
-#[cfg(feature = "lapack")]
 pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
-    let n = is_square(&matrix).unwrap() as i32;
-    let mut a = matrix.to_vec();
-    let mut ipiv = vec![0; n as usize];
-    let mut info: i32 = 0;
-    let lwork: i32 = 64 * n; // optimal size as given by lwork=-1
-    let mut work = vec![0.; lwork as usize];
-    unsafe {
-        dgetrf(n, n, &mut a, n, &mut ipiv, &mut info);
-        assert_eq!(info, 0, "dgetrf failed");
+    let n = is_square(&matrix).unwrap();
+    #[cfg(feature = "lapack")]
+    {
+        let n = n as i32;
+        let mut a = matrix.to_vec();
+        let mut ipiv = vec![0; n as usize];
+        let mut info: i32 = 0;
+        let lwork: i32 = 64 * n; // optimal size as given by lwork=-1
+        let mut work = vec![0.; lwork as usize];
+        unsafe {
+            dgetrf(n, n, &mut a, n, &mut ipiv, &mut info);
+            assert_eq!(info, 0, "dgetrf failed");
+        }
+        unsafe {
+            dgetri(n, &mut a, n, &mut ipiv, &mut work, lwork, &mut info);
+            assert_eq!(info, 0, "dgetri failed");
+        }
+        return a;
     }
-    unsafe {
-        dgetri(n, &mut a, n, &mut ipiv, &mut work, lwork, &mut info);
-        assert_eq!(info, 0, "dgetri failed");
+    let mut ones = vec![0.; n];
+    let mut inverse = vec![0.; n * n];
+    let lup = lu(&matrix);
+
+    for i in 0..n {
+        ones[i] = 1.;
+        let sol = lu_solve(&lup, &ones);
+        assert_eq!(sol.len(), n);
+        for j in 0..n {
+            inverse[j * n + i] = sol[j];
+        }
+        ones[i] = 0.;
     }
-    a
+    inverse
 }
 
 /// Given a matrix X with k rows, return X transpose times X, which is a symmetric matrix.
@@ -71,10 +88,21 @@ pub fn xtx(x: &[f64], k: usize) -> Vec<f64> {
     result
 }
 
-/// Solve the linear system Ax = b using LU decomposition.
+/// Solve the linear system Ax = b.
 pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
     let n = b.len();
     assert!(a.len() == n * n);
+
+    lu_solve(&lu(&a), b)
+}
+
+/// Solve the linear system Ax = b given a LU decomposed matrix A. The first argument should be a
+/// tuple, where the first element is the LU decomposed matrix and the second element is the pivots
+/// P.
+pub fn lu_solve(lup: &(Vec<f64>, Vec<i32>), b: &[f64]) -> Vec<f64> {
+    let (lu, pivots) = lup;
+    let n = b.len();
+    assert!(lu.len() == n * n);
 
     // this is slower than the non-lapack version
     // #[cfg(feature = "lapack")]
@@ -98,8 +126,6 @@ pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
     //     }
     //     result
     // }
-
-    let (lu, pivots) = lu(&a);
 
     let mut x = vec![0.; n];
     for i in 0..pivots.len() {

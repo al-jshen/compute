@@ -24,5 +24,14 @@ pub fn criterion_solve(c: &mut Criterion) {
     c.bench_function("20 variable linear solve", |b| b.iter(|| solve(&a, &bvec)));
 }
 
-criterion_group!(benches, criterion_solve);
+pub fn criterion_invert(c: &mut Criterion) {
+    let a5 = Uniform::new(2., 50.).sample_vec(5 * 5);
+    let a10 = Uniform::new(2., 50.).sample_vec(10 * 10);
+    let a20 = Uniform::new(2., 50.).sample_vec(20 * 20);
+    c.bench_function("5 inversion", |b| b.iter(|| invert_matrix(&a5)));
+    c.bench_function("10x10 inversion", |b| b.iter(|| invert_matrix(&a10)));
+    c.bench_function("20x20 inversion", |b| b.iter(|| invert_matrix(&a20)));
+}
+
+criterion_group!(benches, criterion_invert);
 criterion_main!(benches);

@@ -3,9 +3,9 @@ extern crate blas;
 #[cfg(feature = "lapack")]
 extern crate lapack;
 
-#[cfg(all(target_os = "macos", feature = "blas", feature = "lapack"))]
+#[cfg(all(target_os = "macos", any(feature = "blas", feature = "lapack")))]
 extern crate accelerate_src;
-#[cfg(all(not(target_os = "macos"), feature = "blas", feature = "lapack"))]
+#[cfg(all(not(target_os = "macos"), any(feature = "blas", feature = "lapack")))]
 extern crate openblas_src;
 
 #[cfg(feature = "blas")]

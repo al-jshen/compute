@@ -5,7 +5,7 @@
 [![Crates.io](https://img.shields.io/crates/v/compute)](https://crates.io/crates/compute)
 [![Documentation](https://docs.rs/compute/badge.svg)](https://docs.rs/compute)
 
-A crate for statistical computing.
+A crate for statistical computing. For a list of what this crate provides, see [`FEATURES.md`](FEATURES.md). For more detailed explanations, see the [documentation](https://docs.rs/compute).
 
 To use this in your Rust program, add the following to your `Cargo.toml` file:
 
@@ -21,8 +21,6 @@ There are many functions which rely on linear algebra methods. You can either us
 // example with BLAS only
 compute = {version = "0.1", features = ["blas"]}
 ```
-
-For a list of what this crate provides, see [`FEATURES.md`](FEATURES.md). For more detailed explanations, see the [documentation](https://docs.rs/compute).
 
 ## Examples
 
@@ -93,7 +91,7 @@ println!("{}", covariance(&x, &y));
 
 ### Linear algebra functions
 ```rust
-use compute::utils::*;
+use compute::linalg::*;
 
 let x = vec![
   2., 3.,

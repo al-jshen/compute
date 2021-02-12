@@ -32,7 +32,7 @@
   - decompositions
     - LU
   - general utilities
-    - dot product, matrix multiplication, matrix inversion, Toeplitz matrix, design matrix, norm
+    - dot product, matrix multiplication, matrix inversion, Toeplitz matrix, Vandermonde matrix, norm
 - signal processing
   - convolutions
 

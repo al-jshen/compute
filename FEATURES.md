@@ -1,12 +1,12 @@
-
 ## Existing features
+
 - optimization methods
   - numerical differentiation, partial derivatives
   - loss functions
     - MSE
   - optimizers
     - Adam
-- numerical integration of functions 
+- numerical integration of functions
   - trapezoid, Romberg, 5-point Gauss-Legendre quadrature
 - basic statistical distributions
   - continuous
@@ -35,8 +35,11 @@
     - dot product, matrix multiplication, matrix inversion, Toeplitz matrix, Vandermonde matrix, norm
 - signal processing
   - convolutions
+  - filters
+    - Savitzky-Golay
 
 ## Planned features
+
 - automatic differentiation (replacing numerical differentiation)
 - distributions: CDFs, fitting to data
 - more time series models (SARIMA, exponential smoothing models)
@@ -52,4 +55,3 @@
 - data preprocessing (outlier detection, standardization, dimensionality reduction (PCA))
 - more linear algebra decompositions (QR, SVD, Cholesky)
 - samplers: rejection, RWM, HMC, NUTS, (dynamic) nested sampling
-  

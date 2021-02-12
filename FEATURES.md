@@ -10,7 +10,7 @@
   - trapezoid, Romberg, 5-point Gauss-Legendre quadrature
 - basic statistical distributions
   - continuous
-    - Gaussian, Beta, Gamma, Chi Squared, Student's T, Uniform, Exponential
+    - Gaussian, Beta, Gamma, Chi Squared, Student's T, Uniform, Exponential, Pareto
   - discrete
     - Bernoulli, Binomial, Poisson, Discrete Uniform
   - sampling, PDFs/PMFs
@@ -28,13 +28,17 @@
 - validation methods
   - resampling
     - bootstrap, jackknife
-- general utilities
-  - linear algebra
+- linear algebra: both BLAS/LAPACK and Rust implementations
+  - decompositions
+    - LU
+  - general utilities
     - dot product, matrix multiplication, matrix inversion, Toeplitz matrix, design matrix, norm
+- signal processing
+  - convolutions
 
 ## Planned features
 - automatic differentiation (replacing numerical differentiation)
-- CDFs for distributions
+- distributions: CDFs, fitting to data
 - more time series models (SARIMA, exponential smoothing models)
 - non-linear least squares algorithms (Levenberg-Marquardt)
 - ODE integrators (leapfrog, RK4)
@@ -46,5 +50,6 @@
 - interpolation (polynomial, spline)
 - statistical tests (t-test, ANOVA, Kolmogorov-Smirnov, Anderson-Darling)
 - data preprocessing (outlier detection, standardization, dimensionality reduction (PCA))
-
+- more linear algebra decompositions (QR, SVD, Cholesky)
+- samplers: rejection, RWM, HMC, NUTS, (dynamic) nested sampling
   

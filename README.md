@@ -15,6 +15,14 @@ To use this in your Rust program, add the following to your `Cargo.toml` file:
 compute = "0.1"
 ```
 
+There are many functions which rely on linear algebra methods. You can either use the provided Rust methods (default), or use BLAS and/or LAPACK. To do so, put the following in `Cargo.toml`:
+
+```rust
+// features can include "blas" and/or "lapack"
+// example with BLAS only
+compute = {version = "0.1", features = ["blas"]}
+```
+
 For a list of features, see [`FEATURES.md`](FEATURES.md). For more detailed explanations, see the [documentation](https://docs.rs/compute).
 
 ## Examples

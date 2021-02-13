@@ -59,14 +59,16 @@ pub fn col_to_row_major(a: &[f64], nrows: usize) -> Vec<f64> {
 
 /// Transpose a matrix.
 pub fn transpose(a: &[f64], nrows: usize) -> Vec<f64> {
-    assert!((a.len() / nrows) % 1 == 0, "shape not correct for a matrix");
-    let ncols = a.len() / nrows;
+    let ncols = is_matrix(&a, nrows).unwrap();
+
     let mut at: Vec<f64> = Vec::with_capacity(a.len());
-    for i in 0..nrows {
-        for j in 0..ncols {
-            at.push(a[j * nrows + i]);
+
+    for j in 0..ncols {
+        for i in 0..nrows {
+            at.push(a[i * ncols + j]);
         }
     }
+
     at
 }
 
@@ -195,6 +197,52 @@ pub fn lu_solve(lup: &(Vec<f64>, Vec<i32>), b: &[f64]) -> Vec<f64> {
     return x;
 }
 
+pub fn matmul_blocked(
+    a: &[f64],
+    b: &[f64],
+    rows_a: usize,
+    rows_b: usize,
+    transpose_a: bool,
+    transpose_b: bool,
+    bsize: usize,
+) -> Vec<f64> {
+    let cols_a = is_matrix(a, rows_a).unwrap();
+    let cols_b = is_matrix(b, rows_b).unwrap();
+
+    let m = if transpose_a { cols_a } else { rows_a };
+    let l = if transpose_a { rows_a } else { cols_a };
+    let n = if transpose_b { rows_b } else { cols_b };
+
+    let mut c = vec![0.; m * n];
+
+    let a = if transpose_a {
+        transpose(&a, rows_a)
+    } else {
+        a.to_vec()
+    };
+    let b = if transpose_b {
+        transpose(&b, rows_b)
+    } else {
+        b.to_vec()
+    };
+
+    // https://courses.engr.illinois.edu/cs232/sp2009/lectures/X18.pdf
+    for jj in 0..(n / bsize + 1) {
+        for kk in 0..(l / bsize + 1) {
+            for i in 0..m {
+                for k in (kk * bsize)..std::cmp::min((kk * bsize) + bsize, l) {
+                    let temp = a[i * l + k];
+                    for j in (jj * bsize)..std::cmp::min((jj * bsize) + bsize, n) {
+                        c[i * n + j] += temp * b[k * n + j];
+                    }
+                }
+            }
+        }
+    }
+
+    c
+}
+
 /// Multiply two matrices together, optionally transposing one or both of them.
 pub fn matmul(
     a: &[f64],
@@ -204,22 +252,23 @@ pub fn matmul(
     transpose_a: bool,
     transpose_b: bool,
 ) -> Vec<f64> {
+    let cols_a = is_matrix(a, rows_a).unwrap();
+    let cols_b = is_matrix(b, rows_b).unwrap();
+
     #[cfg(feature = "blas")]
     {
-        let cols_a = is_matrix(a, rows_a).unwrap();
-        let cols_b = is_matrix(b, rows_b).unwrap();
-
         // some swapping to use row-major ordering
         let (cols_a, rows_a) = (rows_a, cols_a);
         let (cols_b, rows_b) = (rows_b, cols_b);
-        let (transpose_a, transpose_b) = (!transpose_a, !transpose_b);
 
-        let trans_a = if transpose_a { b'T' } else { b'N' };
-        let trans_b = if transpose_b { b'T' } else { b'N' };
+        let (transpose_a, transpose_b) = (!transpose_a, !transpose_b);
 
         let m = if transpose_a { cols_a } else { rows_a };
         let n = if transpose_b { rows_b } else { cols_b };
         let k = if transpose_a { rows_a } else { cols_a };
+
+        let trans_a = if transpose_a { b'T' } else { b'N' };
+        let trans_b = if transpose_b { b'T' } else { b'N' };
 
         let alpha = 1.;
         let beta = 0.;
@@ -249,26 +298,19 @@ pub fn matmul(
             );
         }
 
-        return c;
+        // this is expensive?
+        return transpose(&c, n);
     }
 
     #[cfg(not(feature = "blas"))]
     {
-        let cols_a = a.len() / rows_a;
-        let cols_b = b.len() / rows_b;
-
-        let (cols_a, rows_a) = (rows_a, cols_a);
-        let (cols_b, rows_b) = (rows_b, cols_b);
-
-        let (transpose_a, transpose_b) = (!transpose_a, !transpose_b);
-
         let m = if transpose_a { cols_a } else { rows_a };
         let l = if transpose_a { rows_a } else { cols_a };
         let n = if transpose_b { rows_b } else { cols_b };
 
         let mut c = vec![0.; m * n];
 
-        // this is kind of dumb. TODO: figure out the indexing for transpose
+        // this is kind of dumb? TODO: figure out the indexing for transpose
         let a = if transpose_a {
             transpose(&a, rows_a)
         } else {
@@ -282,9 +324,9 @@ pub fn matmul(
 
         for i in 0..m {
             for k in 0..l {
-                let temp = a[k * m + i];
+                let temp = a[i * l + k];
                 for j in 0..n {
-                    c[j * m + i] += temp * b[j * l + k];
+                    c[i * n + j] += temp * b[k * n + j];
                 }
             }
         }
@@ -372,4 +414,34 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
 /// Calculates the norm of a vector.
 pub fn norm(x: &[f64]) -> f64 {
     dot(&x, &x).sqrt()
+}
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_matmul() {
+        let x = [
+            7., 2., 6., 5., 5., 5., 3., 9., 2., 2., 3., 9., 7., 9., 7., 8., 2., 7., 4., 5.,
+        ];
+        let nrows = 4;
+        let ncols = is_matrix(&x, nrows).unwrap();
+        assert_eq!(ncols, 5);
+        let xtx1 = matmul(&x, &x, 4, 4, true, false);
+        let xtx2 = matmul(&transpose(&x, 4), &x, 5, 4, false, false);
+        let y = vec![5., 5., 4., 6., 8., 5., 6., 4., 3., 6.];
+        let xty1 = matmul(&x, &y, 4, 5, false, false);
+        let xty2 = matmul(&y, &x, 2, 4, false, true);
+
+        assert_eq!(
+            xtx1,
+            vec![
+                147., 72., 164., 104., 106., 72., 98., 116., 105., 89., 164., 116., 215., 139.,
+                132., 104., 105., 139., 126., 112., 106., 89., 132., 112., 103.
+            ]
+        );
+        assert_eq!(xtx1, xtx2);
+        assert_eq!(xty1, vec![136., 127., 127., 108., 182., 182., 143., 133.]);
+        assert_eq!(xty2, vec![139., 104., 198., 142., 116., 97., 166., 122.]);
+    }
 }

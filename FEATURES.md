@@ -29,10 +29,10 @@
   - resampling
     - bootstrap, jackknife
 - linear algebra: both BLAS/LAPACK and Rust implementations
+  - general utilities
+    - dot product, (blocked) matrix multiplication, matrix inversion, Toeplitz matrix, Vandermonde matrix, norm, linear solve
   - decompositions
     - LU
-  - general utilities
-    - dot product, matrix multiplication, matrix inversion, Toeplitz matrix, Vandermonde matrix, norm
 - signal processing
   - convolutions
   - filters
@@ -45,7 +45,7 @@
 - more time series models (SARIMA, exponential smoothing models)
 - non-linear least squares algorithms (Levenberg-Marquardt)
 - ODE integrators (leapfrog, RK4)
-- clustering algorithms (k-means, DBSCAN)
+- clustering algorithms (k-means/EM, DBSCAN)
 - more optimizers (SGD, Adagrad)
 - more regression models (GLMs, mixed models, GP, penalized models)
 - prediction trees (CART, random forests, gradient boosted trees)

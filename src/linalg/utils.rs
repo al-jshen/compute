@@ -119,18 +119,18 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
 
 /// Given a matrix X with k rows, return X transpose times X, which is a symmetric matrix.
 pub fn xtx(x: &[f64], k: usize) -> Vec<f64> {
-    #[cfg(feature = "blas")]
-    {
-        let k = k as i32;
-        let n = x.len() as i32 / k; // should divide into it perfectly
-        let mut result = vec![0.; (n * n) as usize];
-        unsafe {
-            dgemm(b'T', b'N', n, n, k, 1., x, k, x, k, 0., &mut result, n);
-        }
-        assert!(is_square(&result).is_ok());
-        return result;
-    }
-    #[cfg(not(feature = "blas"))]
+    // #[cfg(feature = "blas")]
+    // {
+    //     let k = k as i32;
+    //     let n = x.len() as i32 / k; // should divide into it perfectly
+    //     let mut result = vec![0.; (n * n) as usize];
+    //     unsafe {
+    //         dgemm(b'T', b'N', n, n, k, 1., x, k, x, k, 0., &mut result, n);
+    //     }
+    //     assert!(is_square(&result).is_ok());
+    //     return result;
+    // }
+    // #[cfg(not(feature = "blas"))]
     matmul(x, x, k, k, true, false)
 }
 
@@ -195,8 +195,7 @@ pub fn lu_solve(lup: &(Vec<f64>, Vec<i32>), b: &[f64]) -> Vec<f64> {
     return x;
 }
 
-/// Multiply two matrices together, optionally transposing one or both of them. Note that the
-/// matrices must be in column-major ordering.
+/// Multiply two matrices together, optionally transposing one or both of them.
 pub fn matmul(
     a: &[f64],
     b: &[f64],
@@ -207,36 +206,49 @@ pub fn matmul(
 ) -> Vec<f64> {
     #[cfg(feature = "blas")]
     {
-        let rows_a = rows_a as i32;
-        let rows_b = rows_b as i32;
-        let cols_a = a.len() as i32 / rows_a;
-        let cols_b = b.len() as i32 / rows_b;
+        let cols_a = is_matrix(a, rows_a).unwrap();
+        let cols_b = is_matrix(b, rows_b).unwrap();
+
+        // some swapping to use row-major ordering
+        let (cols_a, rows_a) = (rows_a, cols_a);
+        let (cols_b, rows_b) = (rows_b, cols_b);
+        let (transpose_a, transpose_b) = (!transpose_a, !transpose_b);
+
         let trans_a = if transpose_a { b'T' } else { b'N' };
         let trans_b = if transpose_b { b'T' } else { b'N' };
-        let m = if transpose_a { cols_a } else { rows_a as i32 };
-        let n = if transpose_b { rows_b as i32 } else { cols_b };
-        let k = if transpose_a { rows_a as i32 } else { cols_a };
+
+        let m = if transpose_a { cols_a } else { rows_a };
+        let n = if transpose_b { rows_b } else { cols_b };
+        let k = if transpose_a { rows_a } else { cols_a };
+
         let alpha = 1.;
         let beta = 0.;
-        let lda = rows_a as i32;
-        let ldb = rows_b as i32;
+
+        let lda = rows_a;
+        let ldb = rows_b;
         let ldc = m;
+
         if transpose_a {
             assert!(lda >= k, "lda={} must be at least as large as k={}", lda, k);
         } else {
             assert!(lda >= m, "lda={} must be at least as large as m={}", lda, m);
         }
+
         if transpose_b {
             assert!(ldb >= n, "ldb={} must be at least as large as n={}", ldb, n);
         } else {
             assert!(ldb >= k, "ldb={} must be at least as large as k={}", ldb, k);
         }
+
         let mut c = vec![0.; (ldc * n) as usize];
+
         unsafe {
             dgemm(
-                trans_a, trans_b, m, n, k, alpha, a, lda, b, ldb, beta, &mut c, ldc,
+                trans_a, trans_b, m as i32, n as i32, k as i32, alpha, a, lda as i32, b,
+                ldb as i32, beta, &mut c, ldc as i32,
             );
         }
+
         return c;
     }
 
@@ -244,9 +256,16 @@ pub fn matmul(
     {
         let cols_a = a.len() / rows_a;
         let cols_b = b.len() / rows_b;
+
+        let (cols_a, rows_a) = (rows_a, cols_a);
+        let (cols_b, rows_b) = (rows_b, cols_b);
+
+        let (transpose_a, transpose_b) = (!transpose_a, !transpose_b);
+
         let m = if transpose_a { cols_a } else { rows_a };
         let l = if transpose_a { rows_a } else { cols_a };
         let n = if transpose_b { rows_b } else { cols_b };
+
         let mut c = vec![0.; m * n];
 
         // this is kind of dumb. TODO: figure out the indexing for transpose
@@ -274,12 +293,11 @@ pub fn matmul(
     }
 }
 
-/// Create a design matrix from a given matrix. Note that this follows column-major ordering, so
-/// the resulting vector simply has some 1s appended to the front.
-pub fn design(x: &[f64], rows: i32) -> Vec<f64> {
-    let mut ones = vec![1.; rows as usize];
+/// Create a design matrix from a given matrix.
+pub fn design(x: &[f64], rows: usize) -> Vec<f64> {
+    let mut ones = vec![1.; rows];
     ones.extend_from_slice(x);
-    ones
+    col_to_row_major(&ones, rows)
 }
 
 /// Given some length m data x, create an nth order

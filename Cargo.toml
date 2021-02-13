@@ -20,7 +20,7 @@ blas = {version = "0.20", optional = true}
 lapack = {version = "0.16", optional = true}
 
 [features]
-# default = ["blas", "lapack"]
+default = ["blas", "lapack"]
 
 [target.'cfg(target_os = "macos")'.dependencies]
 accelerate-src = "0.3"

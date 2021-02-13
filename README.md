@@ -13,6 +13,10 @@ To use this in your Rust program, add the following to your `Cargo.toml` file:
 // Cargo.toml
 [dependencies]
 compute = "0.1"
+
+// for the latest version, use
+[dependencies]
+compute = { git = "https://github.com/al-jshen/compute" }
 ```
 
 There are many functions which rely on linear algebra methods. You can either use the provided Rust methods (default), or use BLAS and/or LAPACK. To do so, activate the `"blas"` and/or the `"lapack"` feature flags in `Cargo.toml`:
@@ -25,10 +29,11 @@ compute = {version = "0.1", features = ["blas"]}
 ## Examples
 
 ### Statistical distributions
+
 ```rust
 use compute::distributions::*;
 
-let beta = Beta::new(2., 2.); 
+let beta = Beta::new(2., 2.);
 let betadata: Vec<f64> = b.sample_vec(1000); // vector of 1000 variates
 
 println!("{}", beta.mean());
@@ -42,6 +47,7 @@ println!("{}", p.pmf(2));  // probability mass function
 ```
 
 ### Regression
+
 ```rust
 use compute::predict::*;
 
@@ -54,6 +60,7 @@ println!("{:?}", clf.get_coeffs());        // get model coefficients
 ```
 
 ### Time series models
+
 ```rust
 use compute::timeseries::*;
 
@@ -66,6 +73,7 @@ println!("{:?}", ar.predict(&x, 5)); // forecast 5 steps ahead
 ```
 
 ### Numerical integration
+
 ```rust
 use compute::integrate::*;
 
@@ -76,6 +84,7 @@ println!("{}", romberg(f, 0., 1., 1e-8, 10)); // romberg integration with tolera
 ```
 
 ### Data summary functions
+
 ```rust
 use compute::statistics::*;
 
@@ -90,16 +99,17 @@ println!("{}", covariance(&x, &y));
 ```
 
 ### Linear algebra functions
+
 ```rust
 use compute::linalg::*;
 
 let x = vec![
-  2., 3.,
-  4., 5.,
+2., 3.,
+4., 5.,
 ];
 let y = vec![
-  5., 2.,
-  6., 1.,
+5., 2.,
+6., 1.,
 ];
 println!("{:?}", invert_matrix(&x));                 // invert matrix
 println!("{:?}", xtx(&y));                           // x transpose times x
@@ -108,6 +118,7 @@ println!("{:?}", matmul(&x, &y, 2, 2, false, true)); // matrix multiply, transpo
 ```
 
 ### Mathematical and statistical functions
+
 ```rust
 use compute::functions::*;
 

@@ -83,6 +83,24 @@ println!("{}", quad5(f, 0., 1.));             // gaussian quadrature integration
 println!("{}", romberg(f, 0., 1., 1e-8, 10)); // romberg integration with tolerance and max steps
 ```
 
+### Linear algebra
+
+```rust
+use compute::linalg::*;
+
+let x = vec![
+  2., 3.,
+  4., 5.,
+];
+let y = vec![
+  5., 2.,
+  6., 1.,
+];
+println!("{:?}", lu(&x));                            // calculate LU decomposition for x
+println!("{:?}", solve_sys(&x, &y));                 // solve 2x2 system of equations (each column of y is a system)
+println!("{:?}", matmul(&x, &y, 2, 2, false, true)); // matrix multiply, transposing y
+```
+
 ### Data summary functions
 
 ```rust
@@ -96,25 +114,6 @@ println!("{}", var(&x));
 println!("{}", max(&y));
 println!("{}", sample_std(&y));
 println!("{}", covariance(&x, &y));
-```
-
-### Linear algebra functions
-
-```rust
-use compute::linalg::*;
-
-let x = vec![
-2., 3.,
-4., 5.,
-];
-let y = vec![
-5., 2.,
-6., 1.,
-];
-println!("{:?}", invert_matrix(&x));                 // invert matrix
-println!("{:?}", xtx(&y));                           // x transpose times x
-println!("{:?}", dot(&x, &y));                       // dot product of x and y (two vectors)
-println!("{:?}", matmul(&x, &y, 2, 2, false, true)); // matrix multiply, transposing y
 ```
 
 ### Mathematical and statistical functions

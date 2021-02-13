@@ -7,14 +7,16 @@
 
 A crate for scientific and statistical computing. For a list of what this crate provides, see [`FEATURES.md`](FEATURES.md). For more detailed explanations, see the [documentation](https://docs.rs/compute).
 
-To use this in your Rust program, add the following to your `Cargo.toml` file:
+To use the latest stable version in your Rust program, add the following to your `Cargo.toml` file:
 
 ```rust
 // Cargo.toml
 [dependencies]
 compute = "0.1"
+```
 
-// for the latest version, use
+For the latest version, add the following to your `Cargo.toml` file:
+```rust
 [dependencies]
 compute = { git = "https://github.com/al-jshen/compute" }
 ```

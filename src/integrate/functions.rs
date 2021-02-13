@@ -1,3 +1,5 @@
+//! Algorithms for computing integrals of 1D functions.
+
 #![allow(unused_variables)]
 use approx_eq::rel_diff;
 

@@ -2,7 +2,7 @@ use super::Predictor;
 use crate::linalg::*;
 use crate::optimize::{loss::mse, num_gradient::partial, optimizers::Optimizer};
 
-/// Implements a polynomial regressor with coefficients `coeffs`.
+/// Implements a [polynomial regressor](https://en.wikipedia.org/wiki/Polynomial_regression).
 ///
 /// In the case of a two coefficients, this reduces to simple linear regression,
 /// where the first parameter is the intercept, and the second is the slope.

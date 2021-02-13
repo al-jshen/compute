@@ -3,6 +3,7 @@ use crate::linalg::*;
 use crate::statistics::mean;
 use std::fmt::{Display, Formatter, Result};
 
+/// Implements an [autoregressive models](https://en.wikipedia.org/wiki/Autoregressive_model).
 #[derive(Debug)]
 pub struct AR {
     pub p: usize,
@@ -10,7 +11,7 @@ pub struct AR {
     pub intercept: f64,
 }
 
-/// Implements an [autoregressive model](https://en.wikipedia.org/wiki/Autoregressive_model) of
+/// Create a new [autoregressive model](https://en.wikipedia.org/wiki/Autoregressive_model) of
 /// order p.
 impl AR {
     pub fn new(p: usize) -> Self {

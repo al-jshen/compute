@@ -1,3 +1,5 @@
+//! Algorithms for integrating functions and ODEs.
+
 mod functions;
 mod odes;
 

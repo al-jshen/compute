@@ -60,9 +60,11 @@ const SG521S: u64 = 260015;
 const SG523S: u64 = 6555;
 const SG525S: u64 = 30015;
 
-/// Smooths a signal by applying a Savitzky-Golay filter. The `points` parameter specifies the
-/// number of points to use in the convolution, and should be an odd number. The `order` parameter
-/// specifies the order of polynomial to use in the smoothing.
+/// Smooths a signal by applying a
+/// [Savitzky-Golay filter](https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter).
+/// The `points` parameter specifies the number of points to use in the convolution,
+/// and should be an odd number. The `order` parameter specifies the order of
+/// polynomial to use in the smoothing.
 ///
 /// # Remarks
 /// This function currently uses Savitzky-Golay coefficients from the original paper, which means

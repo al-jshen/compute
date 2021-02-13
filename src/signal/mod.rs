@@ -1,3 +1,5 @@
+//! Various functions for signal processing.
+
 mod convolution;
 mod filters;
 mod functions;

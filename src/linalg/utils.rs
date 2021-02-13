@@ -1,3 +1,9 @@
+//! Provides general linear algebra utilities like dot products, matrix multiplication, matrix
+//! inversion, and the creation of Vandermonde matrices. Matrix operations are generally performed on 1D
+//! arrays with the number of rows specified, whether the matrix is in row-major ordering. If the
+//! `blas` and/or `lapack` features are enabled, then those will be used. Otherwise, native Rust
+//! alternatives are available as defaults.
+
 #[cfg(feature = "blas")]
 extern crate blas;
 #[cfg(feature = "lapack")]
@@ -16,7 +22,7 @@ use lapack::{dgesv, dgetrf, dgetri};
 #[cfg(not(feature = "lapack"))]
 use crate::linalg::decomposition::lu::*;
 
-/// Check if matrix is square.
+/// Checks whether a 1D array is a valid square matrix.
 pub fn is_square(m: &[f64]) -> Result<usize, String> {
     let n = (m.len() as f32).sqrt();
     if n % 1. == 0. {
@@ -26,6 +32,7 @@ pub fn is_square(m: &[f64]) -> Result<usize, String> {
     }
 }
 
+/// Checks whether a 1D array is a valid matrix representation given the number of rows.
 pub fn is_matrix(m: &[f64], nrows: usize) -> Result<usize, String> {
     let ncols = m.len() / nrows;
     if nrows * ncols == m.len() {
@@ -35,6 +42,7 @@ pub fn is_matrix(m: &[f64], nrows: usize) -> Result<usize, String> {
     }
 }
 
+/// Convert a 1D matrix from row-major ordering into column-major ordering.
 pub fn row_to_col_major(a: &[f64], nrows: usize) -> Vec<f64> {
     let ncols = is_matrix(a, nrows).unwrap();
     let mut x = a.to_vec();
@@ -46,6 +54,7 @@ pub fn row_to_col_major(a: &[f64], nrows: usize) -> Vec<f64> {
     x
 }
 
+/// Convert a 1D matrix from column-major ordering into row-major ordering.
 pub fn col_to_row_major(a: &[f64], nrows: usize) -> Vec<f64> {
     let ncols = is_matrix(a, nrows).unwrap();
     let mut x = a.to_vec();
@@ -98,8 +107,7 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
         }
         return a;
     }
-    // maybe a little dumber than just implementing a solve function that solves all equations at
-    // the same time but this is still 5x faster than lapack's inverse for 20x20 matrices
+
     #[cfg(not(feature = "lapack"))]
     {
         let mut ones = vec![0.; n];
@@ -121,21 +129,10 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
 
 /// Given a matrix X with k rows, return X transpose times X, which is a symmetric matrix.
 pub fn xtx(x: &[f64], k: usize) -> Vec<f64> {
-    // #[cfg(feature = "blas")]
-    // {
-    //     let k = k as i32;
-    //     let n = x.len() as i32 / k; // should divide into it perfectly
-    //     let mut result = vec![0.; (n * n) as usize];
-    //     unsafe {
-    //         dgemm(b'T', b'N', n, n, k, 1., x, k, x, k, 0., &mut result, n);
-    //     }
-    //     assert!(is_square(&result).is_ok());
-    //     return result;
-    // }
-    // #[cfg(not(feature = "blas"))]
     matmul(x, x, k, k, true, false)
 }
 
+/// Solves a system of linear scalar equations. `a` must represent a square matrix.
 pub fn solve_sys(a: &[f64], b: &[f64]) -> Vec<f64> {
     let n = is_square(a).unwrap();
     let nsys = is_matrix(b, n).unwrap();
@@ -211,6 +208,8 @@ pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
     }
 }
 
+/// Performs blocked matrix multiplication with block size `bsize`. See the API for the
+/// [matmul](crate::linalg::matmul).
 pub fn matmul_blocked(
     a: &[f64],
     b: &[f64],

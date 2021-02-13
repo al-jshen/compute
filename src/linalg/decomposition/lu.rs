@@ -1,3 +1,5 @@
+//! Implements [LU decomposition](https://en.wikipedia.org/wiki/LU_decomposition) and system solving with the decomposition.
+
 use std::cmp;
 
 #[cfg(feature = "lapack")]

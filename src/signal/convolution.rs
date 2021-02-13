@@ -1,5 +1,10 @@
 use crate::linalg::dot;
 
+/// Performs a discrete linear
+/// [convolution](https://en.wikipedia.org/wiki/Convolution)
+/// of two 1D arrays. Swaps arrays `f` and `w` if `w` is longer than `f`.
+/// The resulting convolution has length `n+m-1`, where `n` is the length
+/// of `f` and `m` is the length of `w`.
 pub fn convolve(f: &[f64], w: &[f64], dt: f64) -> Vec<f64> {
     let (mut a, mut weight) = if w.len() > f.len() {
         (w.to_vec(), f.to_vec())
@@ -14,7 +19,6 @@ pub fn convolve(f: &[f64], w: &[f64], dt: f64) -> Vec<f64> {
     signal.extend(&a);
 
     weight.reverse();
-    // weight.iter_mut().for_each(|x| *x *= dt);
 
     (0..(f.len() + m - 1))
         .into_iter()

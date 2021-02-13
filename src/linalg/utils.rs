@@ -26,6 +26,37 @@ pub fn is_square(m: &[f64]) -> Result<usize, String> {
     }
 }
 
+pub fn is_matrix(m: &[f64], nrows: usize) -> Result<usize, String> {
+    let ncols = m.len() / nrows;
+    if nrows * ncols == m.len() {
+        Ok(ncols)
+    } else {
+        Err("Not a matrix".to_string())
+    }
+}
+
+pub fn row_to_col_major(a: &[f64], nrows: usize) -> Vec<f64> {
+    let ncols = is_matrix(a, nrows).unwrap();
+    let mut x = a.to_vec();
+    for i in 0..nrows {
+        for j in 0..ncols {
+            x[j * nrows + i] = a[i * ncols + j];
+        }
+    }
+    x
+}
+
+pub fn col_to_row_major(a: &[f64], nrows: usize) -> Vec<f64> {
+    let ncols = is_matrix(a, nrows).unwrap();
+    let mut x = a.to_vec();
+    for i in 0..nrows {
+        for j in 0..ncols {
+            x[i * ncols + j] = a[j * nrows + i];
+        }
+    }
+    x
+}
+
 /// Transpose a matrix.
 pub fn transpose(a: &[f64], nrows: usize) -> Vec<f64> {
     assert!((a.len() / nrows) % 1 == 0, "shape not correct for a matrix");
@@ -48,14 +79,19 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
         let mut a = matrix.to_vec();
         let mut ipiv = vec![0; n as usize];
         let mut info: i32 = 0;
-        let lwork: i32 = 64 * n; // optimal size as given by lwork=-1
-        let mut work = vec![0.; lwork as usize];
+        let mut work = vec![0.; 1];
+        unsafe {
+            dgetri(n, &mut a, n, &mut ipiv, &mut work, -1, &mut info);
+            assert_eq!(info, 0, "dgetri failed");
+        }
+        let lwork = work[0] as usize;
+        work.extend_from_slice(&vec![0.; lwork - 1]);
         unsafe {
             dgetrf(n, n, &mut a, n, &mut ipiv, &mut info);
             assert_eq!(info, 0, "dgetrf failed");
         }
         unsafe {
-            dgetri(n, &mut a, n, &mut ipiv, &mut work, lwork, &mut info);
+            dgetri(n, &mut a, n, &mut ipiv, &mut work, lwork as i32, &mut info);
             assert_eq!(info, 0, "dgetri failed");
         }
         return a;
@@ -248,12 +284,11 @@ pub fn design(x: &[f64], rows: i32) -> Vec<f64> {
 
 /// Given some length m data x, create an nth order
 /// [Vandermonde matrix](https://en.wikipedia.org/wiki/Vandermonde_matrix).
-/// Note that this returns a vector with column-major ordering.
 pub fn vandermonde(x: &[f64], n: usize) -> Vec<f64> {
     let mut vm = Vec::with_capacity(x.len() * n);
 
-    for i in 0..n {
-        for v in x.iter() {
+    for v in x.iter() {
+        for i in 0..n {
             vm.push(v.powi(i as i32));
         }
     }

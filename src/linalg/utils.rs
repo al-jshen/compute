@@ -14,7 +14,7 @@ use blas::{ddot, dgemm};
 use lapack::{dgesv, dgetrf, dgetri};
 
 #[cfg(not(feature = "lapack"))]
-use super::lu;
+use crate::linalg::decomposition::lu::*;
 
 /// Check if matrix is square.
 pub fn is_square(m: &[f64]) -> Result<usize, String> {
@@ -104,11 +104,11 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
     {
         let mut ones = vec![0.; n];
         let mut inverse = vec![0.; n * n];
-        let lup = lu(&matrix);
+        let (lu, piv) = lu(&matrix);
 
         for i in 0..n {
             ones[i] = 1.;
-            let sol = lu_solve(&lup, &ones);
+            let sol = lu_solve(&lu, &piv, &ones);
             assert_eq!(sol.len(), n);
             for j in 0..n {
                 inverse[j * n + i] = sol[j];
@@ -136,15 +136,55 @@ pub fn xtx(x: &[f64], k: usize) -> Vec<f64> {
     matmul(x, x, k, k, true, false)
 }
 
+pub fn solve_sys(a: &[f64], b: &[f64]) -> Vec<f64> {
+    let n = is_square(a).unwrap();
+    let nsys = is_matrix(b, n).unwrap();
+
+    #[cfg(feature = "lapack")]
+    {
+        let mut A = row_to_col_major(&a, n);
+        let mut B = row_to_col_major(&b, n);
+        let mut ipiv = vec![0; n as usize];
+        let mut info = 0;
+        unsafe {
+            dgesv(
+                n as i32,
+                nsys as i32,
+                &mut A,
+                n as i32,
+                &mut ipiv,
+                &mut B,
+                n as i32,
+                &mut info,
+            );
+            assert_eq!(info, 0, "dgesv failed");
+        }
+        return col_to_row_major(&B, n);
+    }
+
+    #[cfg(not(feature = "lapack"))]
+    {
+        let mut solutions = Vec::with_capacity(b.len());
+        let (lu, piv) = lu(a);
+        let B = row_to_col_major(&b, n);
+
+        for i in 0..nsys {
+            let sol = lu_solve(&lu, &piv, &B[(i * n)..((i + 1) * n)]);
+            assert_eq!(sol.len(), n);
+            solutions.extend_from_slice(&sol);
+        }
+        col_to_row_major(&solutions, n)
+    }
+}
+
 /// Solve the linear system Ax = b with LU decomposition.
 pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
     let n = b.len();
     assert!(a.len() == n * n);
 
-    // this is slower than the non-lapack version
     #[cfg(feature = "lapack")]
     {
-        let mut lu = transpose(&a, n);
+        let mut lu = row_to_col_major(&a, n);
         let mut ipiv = vec![0; n as usize];
         let mut result = b.to_vec();
         let mut info = 0;
@@ -165,36 +205,10 @@ pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
     }
 
     #[cfg(not(feature = "lapack"))]
-    lu_solve(&lu(&a), b)
-}
-
-/// Solve the linear system Ax = b given a LU decomposed matrix A. The first argument should be a
-/// tuple, where the first element is the LU decomposed matrix and the second element is the pivots
-/// P.
-pub fn lu_solve(lup: &(Vec<f64>, Vec<i32>), b: &[f64]) -> Vec<f64> {
-    let (lu, pivots) = lup;
-    let n = b.len();
-    assert!(lu.len() == n * n);
-
-    let mut x = vec![0.; n];
-    for i in 0..pivots.len() {
-        x[i] = b[pivots[i] as usize];
+    {
+        let (lu, piv) = lu(&a);
+        lu_solve(&lu, &piv, b)
     }
-
-    for k in 0..n {
-        for i in (k + 1)..n {
-            x[i] -= x[k] * lu[i * n + k];
-        }
-    }
-
-    for k in (0..n).rev() {
-        x[k] /= lu[k * n + k];
-        for i in 0..k {
-            x[i] -= x[k] * lu[i * n + k];
-        }
-    }
-
-    return x;
 }
 
 pub fn matmul_blocked(
@@ -388,7 +402,7 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
         let chunks = (n - (n % 8)) / 8;
         let mut s = 0.;
 
-        // unroll as many as possible
+        // unroll
         for i in 0..chunks {
             let idx = i * 8;
             assert!(n > idx + 7);
@@ -417,7 +431,55 @@ pub fn norm(x: &[f64]) -> f64 {
 }
 
 mod tests {
+    use approx_eq::assert_approx_eq;
+
     use super::*;
+
+    #[test]
+    fn test_invert() {
+        let x = [
+            -0.46519316,
+            -3.1042875,
+            -5.01766541,
+            -1.86300107,
+            2.7692825,
+            2.3097699,
+            -12.3854289,
+            -8.70520295,
+            6.02201052,
+            -6.71212792,
+            -1.74683781,
+            -6.08893455,
+            -2.53731118,
+            2.72112893,
+            4.70204472,
+            -1.03387848,
+        ];
+        let inv = invert_matrix(&x);
+
+        let inv_ref = [
+            -0.25572126,
+            0.03156201,
+            0.06146028,
+            -0.16691749,
+            -0.16856104,
+            0.07197315,
+            -0.0498292,
+            -0.00880639,
+            -0.05192178,
+            -0.033113,
+            0.0482877,
+            0.08798427,
+            -0.0522019,
+            -0.03862469,
+            -0.06237155,
+            -0.18061673,
+        ];
+
+        for i in 0..x.len() {
+            assert_approx_eq!(inv[i], inv_ref[i]);
+        }
+    }
 
     #[test]
     fn test_matmul() {
@@ -454,5 +516,35 @@ mod tests {
         assert_eq!(xty2, vec![139., 104., 198., 142., 116., 97., 166., 122.]);
         assert_eq!(xty1, xty1b);
         assert_eq!(xty2, xty2b);
+    }
+
+    #[test]
+    fn test_solve() {
+        let A = vec![
+            -0.46519316,
+            -3.1042875,
+            -5.01766541,
+            -1.86300107,
+            2.7692825,
+            2.3097699,
+            -12.3854289,
+            -8.70520295,
+            6.02201052,
+            -6.71212792,
+            -1.74683781,
+            -6.08893455,
+            -2.53731118,
+            2.72112893,
+            4.70204472,
+            -1.03387848,
+        ];
+        let b = vec![-4.13075599, -1.28124453, 4.65406058, 3.69106842];
+
+        let x = solve(&A, &b);
+        let x_ref = vec![0.68581948, 0.33965616, 0.8063919, -0.69182874];
+
+        for i in 0..4 {
+            assert_approx_eq!(x[i], x_ref[i]);
+        }
     }
 }

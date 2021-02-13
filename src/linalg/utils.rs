@@ -427,11 +427,17 @@ mod tests {
         let nrows = 4;
         let ncols = is_matrix(&x, nrows).unwrap();
         assert_eq!(ncols, 5);
+
         let xtx1 = matmul(&x, &x, 4, 4, true, false);
         let xtx2 = matmul(&transpose(&x, 4), &x, 5, 4, false, false);
+        let xtx1b = matmul_blocked(&x, &x, 4, 4, true, false, 4);
+        let xtx2b = matmul_blocked(&transpose(&x, 4), &x, 5, 4, false, false, 4);
+
         let y = vec![5., 5., 4., 6., 8., 5., 6., 4., 3., 6.];
         let xty1 = matmul(&x, &y, 4, 5, false, false);
         let xty2 = matmul(&y, &x, 2, 4, false, true);
+        let xty1b = matmul_blocked(&x, &y, 4, 5, false, false, 4);
+        let xty2b = matmul_blocked(&y, &x, 2, 4, false, true, 4);
 
         assert_eq!(
             xtx1,
@@ -441,7 +447,12 @@ mod tests {
             ]
         );
         assert_eq!(xtx1, xtx2);
+        assert_eq!(xtx1, xtx1b);
+        assert_eq!(xtx2, xtx2b);
+        assert_eq!(xtx1b, xtx2b);
         assert_eq!(xty1, vec![136., 127., 127., 108., 182., 182., 143., 133.]);
         assert_eq!(xty2, vec![139., 104., 198., 142., 116., 97., 166., 122.]);
+        assert_eq!(xty1, xty1b);
+        assert_eq!(xty2, xty2b);
     }
 }

@@ -33,25 +33,29 @@ pub fn jackknife(data: &[f64]) -> Vec<Vec<f64>> {
     resamples
 }
 
-/// Shuffle an array in-place.
-pub fn shuffle(data: &mut [f64]) {
+/// Shuffle an array.
+pub fn shuffle(data: &[f64]) -> Vec<f64> {
+    let mut shuf = data.to_vec();
     let randomizer = DiscreteUniform::new(0, data.len() as i64 - 1);
-    for _ in 0..data.len() * 2 {
+    for _ in 0..shuf.len() * 2 {
         let (a, b) = (randomizer.sample(), randomizer.sample());
-        data.swap(a as usize, b as usize);
+        shuf.swap(a as usize, b as usize);
     }
+    shuf
 }
 
-/// Shuffle two array in-place. The same shuffling is applied to both arrays. That is, a pair (x_i,
+/// Shuffle two arrays. The same shuffling is applied to both arrays. That is, a pair (x_i,
 /// y_i) will still be paired together as (x_j, y_j) after shuffling.
-pub fn shuffle_two(arr1: &mut [f64], arr2: &mut [f64]) {
+pub fn shuffle_two(arr1: &[f64], arr2: &[f64]) -> (Vec<f64>, Vec<f64>) {
     assert_eq!(arr1.len(), arr2.len());
+    let (mut shuf1, mut shuf2) = (arr1.to_vec(), arr2.to_vec());
     let randomizer = DiscreteUniform::new(0, arr1.len() as i64 - 1);
     for _ in 0..arr1.len() * 2 {
         let (a, b) = (randomizer.sample(), randomizer.sample());
-        arr1.swap(a as usize, b as usize);
-        arr2.swap(a as usize, b as usize);
+        shuf1.swap(a as usize, b as usize);
+        shuf2.swap(a as usize, b as usize);
     }
+    (shuf1, shuf2)
 }
 
 #[cfg(test)]

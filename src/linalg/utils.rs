@@ -453,6 +453,7 @@ pub fn inf_norm(x: &[f64], nrows: usize) -> f64 {
     max(&abs_row_sums)
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use approx_eq::assert_approx_eq;

@@ -91,6 +91,7 @@ pub fn lu_solve(lu: &[f64], pivots: &[i32], b: &[f64]) -> Vec<f64> {
     x
 }
 
+#[cfg(test)]
 mod tests {
     use super::super::lu_solve;
     use super::*;

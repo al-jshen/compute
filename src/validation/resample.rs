@@ -42,6 +42,18 @@ pub fn shuffle(data: &mut [f64]) {
     }
 }
 
+/// Shuffle two array in-place. The same shuffling is applied to both arrays. That is, a pair (x_i,
+/// y_i) will still be paired together as (x_j, y_j) after shuffling.
+pub fn shuffle_two(arr1: &mut [f64], arr2: &mut [f64]) {
+    assert_eq!(arr1.len(), arr2.len());
+    let randomizer = DiscreteUniform::new(0, arr1.len() as i64 - 1);
+    for _ in 0..arr1.len() * 2 {
+        let (a, b) = (randomizer.sample(), randomizer.sample());
+        arr1.swap(a as usize, b as usize);
+        arr2.swap(a as usize, b as usize);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

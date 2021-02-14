@@ -6,23 +6,28 @@ use crate::validation::shuffle_two;
 use approx_eq::rel_diff;
 use autodiff::F1;
 
-/// Implements the Stochastic Gradient Descent optimizer with momentum.
+/// Implements the Stochastic Gradient Descent optimizer with (Nesterov) momentum.
 #[derive(Debug, Clone, Copy)]
 pub struct SGD {
     stepsize: f64,    // step size
     momentum: f64,    // momentum
+    nesterov: bool,   // whether to use Nesterov accelerated gradient
     batchsize: usize, // batch size to use for gradients
     gradfn: GradFn,   // gradient function type
 }
 
 impl SGD {
     /// Create a new SGD optimizer.
+    ///
     /// stepsize: step size
+    /// momentum: momentum factor
+    /// nesterov: whether to use Nesterov momentum
     /// batchsize: size of each mini-batch
-    pub fn new(stepsize: f64, momentum: f64, batchsize: usize) -> Self {
+    pub fn new(stepsize: f64, momentum: f64, nesterov: bool, batchsize: usize) -> Self {
         Self {
             stepsize,
             momentum,
+            nesterov,
             batchsize,
             gradfn: GradFn::Residual,
         }
@@ -34,6 +39,7 @@ impl Default for SGD {
         Self {
             stepsize: 1e-5,
             momentum: 0.9,
+            nesterov: true,
             batchsize: 16,
             gradfn: GradFn::Residual,
         }
@@ -71,7 +77,14 @@ impl Optimizer for SGD {
             for batch in (0..n).collect::<Vec<_>>().chunks(self.batchsize) {
                 let mut grad = vec![0.; param_len];
                 for i in 0..batch.len() {
-                    let g_i = gradient(f, &[yshuf[i], xshuf[i]], &params);
+                    let g_i = if self.nesterov {
+                        let future_params = (0..param_len)
+                            .map(|j| params[j] - self.momentum * update_vec[j])
+                            .collect::<Vec<_>>();
+                        gradient(f, &[yshuf[i], xshuf[i]], &future_params)
+                    } else {
+                        gradient(f, &[yshuf[i], xshuf[i]], &params)
+                    };
                     for k in 0..param_len {
                         grad[k] += g_i[k];
                     }
@@ -80,7 +93,7 @@ impl Optimizer for SGD {
                     update_vec[p] = self.momentum * update_vec[p] + self.stepsize * grad[p];
                     params[p] -= update_vec[p]
                 }
-                println!("{:?}", params);
+                // println!("{:?}", params);
             }
 
             if crate::statistics::max(
@@ -132,7 +145,7 @@ mod tests {
 
         let fres = |x: &[F1]| (x[0] - (x[1] * x[3] + x[2])).powi(2);
 
-        let optim = SGD::new(2e-5, 0.9, 2);
+        let optim = SGD::new(1e-5, 0.9, true, 4);
         let est_params = optim.optimize(&x, &y, fres, &[1., 1.], 1000);
 
         for i in 0..2 {

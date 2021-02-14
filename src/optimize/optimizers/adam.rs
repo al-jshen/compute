@@ -86,7 +86,7 @@ impl Optimizer for Adam {
                         grad[k] += g_i[k];
                     }
                 }
-                println!("{:?}", grad);
+                // println!("{:?}", grad);
                 for p in 0..param_len {
                     m[p] = self.beta1 * m[p] + (1. - self.beta1) * grad[p]; // biased first moment estimate
                     v[p] = self.beta2 * v[p] + (1. - self.beta2) * grad[p].powi(2); // biased second moment estimate
@@ -95,14 +95,14 @@ impl Optimizer for Adam {
                     params[p] -= self.stepsize * mhat / (vhat.sqrt() + self.epsilon);
                 }
 
-                println!("{:?}", params);
+                // println!("{:?}", params);
             }
 
             if crate::statistics::max(
                 &(0..param_len)
                     .map(|i| rel_diff(params[i], prev_params[i]))
                     .collect::<Vec<_>>(),
-            ) < 1e-8
+            ) < f64::EPSILON
             {
                 converged = true;
             }

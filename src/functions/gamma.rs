@@ -1,5 +1,7 @@
 //! Gamma and related functions.
 
+#![allow(clippy::excessive_precision)]
+
 use std::f64::consts::PI;
 
 const G: f64 = 4.7421875 + 1.;

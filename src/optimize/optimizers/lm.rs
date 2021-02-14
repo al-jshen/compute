@@ -62,8 +62,8 @@ impl Optimizer for LM {
             .collect();
 
         let mut jacobian = Vec::with_capacity(n * param_len);
-        for i in 0..n {
-            let j_i = gradient(f, &[xs[i]], &params);
+        for x in xs {
+            let j_i = gradient(f, &[*x], &params);
             jacobian.extend(j_i);
         }
 
@@ -123,14 +123,12 @@ impl Optimizer for LM {
 
             if rho > 0. {
                 // good step, accept the new parameters and update all variables
-                for i in 0..param_len {
-                    params[i] = new_params[i];
-                }
+                params[..param_len].clone_from_slice(&new_params[..param_len]);
 
                 jacobian.clear();
 
-                for i in 0..n {
-                    let j_i = gradient(f, &[xs[i]], &new_params);
+                for x in xs {
+                    let j_i = gradient(f, &[*x], &new_params);
                     jacobian.extend(j_i);
                 }
                 jtj = xtx(&jacobian, n);

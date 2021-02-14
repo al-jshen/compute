@@ -1,9 +1,8 @@
 use super::GradFn;
 use super::Optimizer;
-use crate::linalg::norm;
 use crate::optimize::gradient::gradient;
 use crate::validation::shuffle_two;
-use approx_eq::{assert_approx_eq, rel_diff};
+use approx_eq::rel_diff;
 use autodiff::F1;
 
 /// Implements the Adam optimizer. See [Kingma and Ba 2014](https://arxiv.org/abs/1412.6980) for
@@ -98,7 +97,7 @@ impl Optimizer for Adam {
 
             if crate::statistics::max(
                 &(0..param_len)
-                    .map(|i| (params[i] - prev_params[i]).abs())
+                    .map(|i| rel_diff(params[i], prev_params[i]))
                     .collect::<Vec<_>>(),
             ) < 1e-8
             {
@@ -116,6 +115,7 @@ impl Optimizer for Adam {
 mod tests {
     use super::*;
     use crate::predict::{PolynomialRegressor, Predictor};
+    use approx_eq::assert_approx_eq;
 
     #[test]
     fn test_adam_slr() {

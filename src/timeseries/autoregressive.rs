@@ -45,11 +45,11 @@ impl AR {
         let n = data.len();
         let coeff_len = self.coeffs.len();
         if n >= coeff_len {
-            return dot(&data[n - coeff_len..], &self.coeffs);
+            dot(&data[n - coeff_len..], &self.coeffs)
         } else {
             // maybe panic instead? or return NA
             // return std::f64::NAN;
-            return dot(&data, &self.coeffs[..n]);
+            dot(&data, &self.coeffs[..n])
         }
     }
 

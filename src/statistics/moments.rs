@@ -19,7 +19,7 @@ fn welford_update(existing_aggregate: (usize, f64, f64), new_val: &f64) -> (usiz
 /// Uses the Welford online algorithm to calculate the count, mean, and m2 of an array of data
 /// points. This is the driver for the `mean`, `variance`, and `sample_variance` functions.
 fn welford_statistics(data: &[f64]) -> (usize, f64, f64) {
-    let mut aggregate = (0 as usize, 0., 0.);
+    let mut aggregate = (0_usize, 0., 0.);
     for i in data {
         aggregate = welford_update(aggregate, i);
     }

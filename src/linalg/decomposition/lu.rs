@@ -48,13 +48,9 @@ pub fn lu(matrix: &[f64]) -> (Vec<f64>, Vec<i32>) {
 
         if p != j {
             for k in 0..n {
-                let t = lu[p * n + k];
-                lu[p * n + k] = lu[j * n + k];
-                lu[j * n + k] = t;
+                lu.swap(p * n + k, j * n + k)
             }
-            let k = pivots[p];
-            pivots[p] = pivots[j];
-            pivots[j] = k;
+            pivots.swap(p, j);
         }
 
         if j < n && lu[j * n + j] != 0. {

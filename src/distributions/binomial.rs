@@ -161,7 +161,7 @@ pub fn binomial_btpe(n: u64, p: f64) -> u64 {
                 loop {
                     i += 1.;
                     f *= (a / i) - s;
-                    if i == y {
+                    if (i - y).abs() < f64::EPSILON {
                         break;
                     }
                 }
@@ -170,7 +170,7 @@ pub fn binomial_btpe(n: u64, p: f64) -> u64 {
                 loop {
                     i += 1.;
                     f /= (a / i) - s;
-                    if i == m {
+                    if (i - m).abs() < f64::EPSILON {
                         break;
                     }
                 }

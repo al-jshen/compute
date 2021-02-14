@@ -103,7 +103,7 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
         let mut info: i32 = 0;
         let mut work = vec![0.; 1];
         unsafe {
-            dgetri(n, &mut a, n, &mut ipiv, &mut work, -1, &mut info);
+            dgetri(n, &mut a, n, &ipiv, &mut work, -1, &mut info);
             assert_eq!(info, 0, "dgetri failed");
         }
         let lwork = work[0] as usize;
@@ -113,7 +113,7 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
             assert_eq!(info, 0, "dgetrf failed");
         }
         unsafe {
-            dgetri(n, &mut a, n, &mut ipiv, &mut work, lwork as i32, &mut info);
+            dgetri(n, &mut a, n, &ipiv, &mut work, lwork as i32, &mut info);
             assert_eq!(info, 0, "dgetri failed");
         }
         return a;
@@ -167,7 +167,7 @@ pub fn solve_sys(a: &[f64], b: &[f64]) -> Vec<f64> {
             );
             assert_eq!(info, 0, "dgesv failed");
         }
-        return col_to_row_major(&B, n);
+        col_to_row_major(&B, n)
     }
 
     #[cfg(not(feature = "lapack"))]
@@ -209,7 +209,7 @@ pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
             );
             assert_eq!(info, 0, "dgesv failed");
         }
-        return result;
+        result
     }
 
     #[cfg(not(feature = "lapack"))]
@@ -323,7 +323,7 @@ pub fn matmul(
         }
 
         // this is expensive?
-        return transpose(&c, n);
+        transpose(&c, n)
     }
 
     #[cfg(not(feature = "blas"))]
@@ -355,7 +355,7 @@ pub fn matmul(
             }
         }
 
-        return c;
+        c
     }
 }
 
@@ -401,9 +401,7 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
 
     #[cfg(feature = "blas")]
     {
-        unsafe {
-            return ddot(x.len() as i32, x, 1, y, 1);
-        }
+        unsafe { ddot(x.len() as i32, x, 1, y, 1) }
     }
 
     #[cfg(not(feature = "blas"))]
@@ -431,7 +429,7 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
             s += x[j] * y[j];
         }
 
-        return s;
+        s
     }
 }
 

@@ -1,6 +1,6 @@
 //! Various models for data fitting and forecasting.
 
-mod logistic;
+// mod logistic;
 mod polynomial;
 use crate::optimize::optimizers::Optimizer;
 
@@ -13,5 +13,5 @@ pub trait Predictor {
     fn predict(&self, x: &[f64]) -> Vec<f64>;
 }
 
-pub use self::logistic::*;
+// pub use self::logistic::*;
 pub use self::polynomial::*;

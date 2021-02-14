@@ -81,6 +81,16 @@ pub fn transpose(a: &[f64], nrows: usize) -> Vec<f64> {
     at
 }
 
+/// Extract the diagonal elements of a matrix.
+pub fn diag(a: &[f64]) -> Vec<f64> {
+    let n = is_square(a).unwrap();
+    let mut results = Vec::with_capacity(n);
+    for i in 0..n {
+        results.push(a[i * n + i]);
+    }
+    results
+}
+
 /// Given an n by n matrix, invert it. The resulting matrix is returned as a flattened array.
 pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
     let n = is_square(&matrix).unwrap();

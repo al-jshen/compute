@@ -1,9 +1,10 @@
 use super::Optimizer;
 use crate::statistics::max;
-use ::approx_eq::*;
+use approx_eq::{assert_approx_eq, rel_diff};
 
 /// Implements the Adam optimizer. See [Kingma and Ba 2014](https://arxiv.org/abs/1412.6980) for
 /// details about the algorithm.
+#[derive(Debug, Clone, Copy)]
 pub struct Adam {
     stepsize: f64, // step size
     beta1: f64,    // exponential decay rate for first moment

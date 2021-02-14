@@ -36,9 +36,19 @@ where
     g
 }
 
-pub fn gradient<G>(f: G, x: &[f64]) -> Vec<f64>
+pub fn gradient<G>(f: G, at: &[f64], params: &[f64]) -> Vec<f64>
 where
     G: Fn(&[F1]) -> F1,
 {
-    grad(f, x)
+    let at_grad = at.iter().map(|&x| F1::cst(x));
+    let params_grad = params.iter().map(|&x| F1::cst(x));
+    let mut vars_grad: Vec<F1> = at_grad.chain(params_grad).collect();
+    let mut results = Vec::with_capacity(params.len());
+    let offset = at.len();
+    for i in offset..(params.len() + offset) {
+        vars_grad[i] = F1::var(vars_grad[i]);
+        results.push(f(&vars_grad).deriv());
+        vars_grad[i] = F1::cst(vars_grad[i]);
+    }
+    results
 }

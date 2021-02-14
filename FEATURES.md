@@ -1,11 +1,11 @@
 ## Existing features
 
 - optimization methods
-  - numerical differentiation, partial derivatives
+  - numerical differentiation, partial derivatives, automatic differentiation (currently with autodiff crate)
   - loss functions
     - MSE
   - optimizers
-    - Adam
+    - Adam, Levenberg-Marquardt
 - numerical integration of functions
   - trapezoid, Romberg, 5-point Gauss-Legendre quadrature
 - basic statistical distributions

@@ -1,7 +1,7 @@
 use super::Predictor;
 use crate::linalg::*;
-use crate::optimize::{optimizers::GradFn, optimizers::Optimizer};
-use autodiff::{Float, F1};
+// use crate::optimize::{optimizers::GradFn, optimizers::Optimizer};
+// use autodiff::{Float, F1};
 
 /// Implements a [polynomial regressor](https://en.wikipedia.org/wiki/Polynomial_regression).
 ///

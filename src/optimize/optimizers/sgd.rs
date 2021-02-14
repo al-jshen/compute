@@ -1,55 +1,46 @@
 use super::GradFn;
 use super::Optimizer;
-use crate::optimize::gradient::gradient;
+use crate::linalg::norm;
+use crate::optimize::gradient::{eval, gradient};
 use crate::validation::shuffle_two;
 use approx_eq::rel_diff;
 use autodiff::F1;
 
-/// Implements the Adam optimizer. See [Kingma and Ba 2014](https://arxiv.org/abs/1412.6980) for
-/// details about the algorithm.
+/// Implements the Stochastic Gradient Descent optimizer with momentum.
 #[derive(Debug, Clone, Copy)]
-pub struct Adam {
+pub struct SGD {
     stepsize: f64,    // step size
-    beta1: f64,       // exponential decay rate for first moment
-    beta2: f64,       // exponential decay rate for second moment
-    epsilon: f64,     // small number to prevent division by zero
+    momentum: f64,    // momentum
     batchsize: usize, // batch size to use for gradients
     gradfn: GradFn,   // gradient function type
 }
 
-impl Adam {
-    /// Create a new Adam optimizer.
+impl SGD {
+    /// Create a new SGD optimizer.
     /// stepsize: step size
-    /// beta1: exponential decay rate for first moment
-    /// beta2: exponential decay rate for second moment
-    /// epsilon: small number to prevent division by zero
-    pub fn new(stepsize: f64, beta1: f64, beta2: f64, epsilon: f64, batchsize: usize) -> Self {
-        Adam {
+    /// batchsize: size of each mini-batch
+    pub fn new(stepsize: f64, momentum: f64, batchsize: usize) -> Self {
+        Self {
             stepsize,
-            beta1,
-            beta2,
-            epsilon,
+            momentum,
             batchsize,
             gradfn: GradFn::Residual,
         }
     }
 }
 
-impl Default for Adam {
-    /// Uses the defaults recommended by Kingma and Ba 2014
+impl Default for SGD {
     fn default() -> Self {
-        Adam {
-            stepsize: 0.001,
-            beta1: 0.9,
-            beta2: 0.999,
-            epsilon: 1e-8,
+        Self {
+            stepsize: 1e-5,
+            momentum: 0.9,
             batchsize: 16,
             gradfn: GradFn::Residual,
         }
     }
 }
 
-impl Optimizer for Adam {
+impl Optimizer for SGD {
     /// Run the optimization algorithm, given a vector of parameters to optimize and a function which calculates the residuals.
     fn optimize<F>(
         &self,
@@ -64,12 +55,11 @@ impl Optimizer for Adam {
     {
         assert_eq!(xs.len(), ys.len());
         let n = xs.len();
+        let param_len = parameters.len();
         let mut params = parameters.to_vec();
-        let param_len = params.len();
+        let mut update_vec = vec![0.; param_len];
 
         let mut t: usize = 0;
-        let mut m = vec![0.; param_len];
-        let mut v = vec![0.; param_len];
         let mut converged = false;
 
         while t < maxsteps && !converged {
@@ -86,15 +76,10 @@ impl Optimizer for Adam {
                         grad[k] += g_i[k];
                     }
                 }
-                println!("{:?}", grad);
                 for p in 0..param_len {
-                    m[p] = self.beta1 * m[p] + (1. - self.beta1) * grad[p]; // biased first moment estimate
-                    v[p] = self.beta2 * v[p] + (1. - self.beta2) * grad[p].powi(2); // biased second moment estimate
-                    let mhat = m[p] / (1. - self.beta1.powi(t as i32)); // bias-corrected first moment estimate
-                    let vhat = v[p] / (1. - self.beta2.powi(t as i32)); // bias-corrected second moment estimate
-                    params[p] -= self.stepsize * mhat / (vhat.sqrt() + self.epsilon);
+                    update_vec[p] = self.momentum * update_vec[p] + self.stepsize * grad[p];
+                    params[p] -= update_vec[p]
                 }
-
                 println!("{:?}", params);
             }
 
@@ -102,13 +87,14 @@ impl Optimizer for Adam {
                 &(0..param_len)
                     .map(|i| rel_diff(params[i], prev_params[i]))
                     .collect::<Vec<_>>(),
-            ) < 1e-8
+            ) < f64::EPSILON
             {
                 converged = true;
             }
         }
         params
     }
+
     fn grad_fn_type(&self) -> GradFn {
         self.gradfn
     }
@@ -121,7 +107,7 @@ mod tests {
     use autodiff::Float;
 
     #[test]
-    fn test_adam_slr() {
+    fn test_sgd_slr() {
         let x = vec![
             0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12., 13., 14., 15., 16., 17., 18.,
             19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35.,
@@ -146,7 +132,7 @@ mod tests {
 
         let fres = |x: &[F1]| (x[0] - (x[1] * x[3] + x[2])).powi(2);
 
-        let optim = Adam::new(8e-4, 0.99, 0.999, 1e-6, 2);
+        let optim = SGD::new(2e-5, 0.9, 2);
         let est_params = optim.optimize(&x, &y, fres, &[1., 1.], 1000);
 
         for i in 0..2 {

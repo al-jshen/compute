@@ -52,3 +52,14 @@ where
     }
     results
 }
+
+/// Evaluate the differentiable function.
+pub fn eval<G>(f: G, at: &[f64], params: &[f64]) -> f64
+where
+    G: Fn(&[F1]) -> F1,
+{
+    let at_grad = at.iter().map(|&x| F1::cst(x));
+    let params_grad = params.iter().map(|&x| F1::cst(x));
+    let vars_grad: Vec<F1> = at_grad.chain(params_grad).collect();
+    f(&vars_grad).value()
+}

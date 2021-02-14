@@ -4,6 +4,7 @@ use autodiff::F1;
 
 mod adam;
 mod lm;
+mod sgd;
 
 pub trait Optimizer {
     fn optimize<F>(
@@ -27,3 +28,4 @@ pub enum GradFn {
 
 pub use self::adam::*;
 pub use self::lm::*;
+pub use self::sgd::*;

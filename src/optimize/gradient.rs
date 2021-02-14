@@ -16,7 +16,7 @@ where
     G: Fn(&[F1]) -> F1,
 {
     let v = x
-        .into_iter()
+        .iter()
         .enumerate()
         .map(|(idx, val)| if idx == i { F::var(*val) } else { F::cst(*val) })
         .collect::<Vec<_>>();

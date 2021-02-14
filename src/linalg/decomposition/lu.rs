@@ -2,10 +2,10 @@
 
 use std::cmp;
 
-#[cfg(feature = "lapack")]
-use lapack::dgetrf;
+// #[cfg(feature = "lapack")]
+// use lapack::dgetrf;
 
-use crate::linalg::{is_square, row_to_col_major, transpose};
+use crate::linalg::is_square;
 
 /// Computes the pivoted LU decomposition of a square matrix. For some matrix A, this decomposition
 /// is A = PLU. The resulting matrix has U in its upper triangle and L in its lower triangle.
@@ -88,7 +88,7 @@ pub fn lu_solve(lu: &[f64], pivots: &[i32], b: &[f64]) -> Vec<f64> {
         }
     }
 
-    return x;
+    x
 }
 
 mod tests {

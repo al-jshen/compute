@@ -116,7 +116,7 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
             dgetri(n, &mut a, n, &ipiv, &mut work, lwork as i32, &mut info);
             assert_eq!(info, 0, "dgetri failed");
         }
-        return a;
+        a
     }
 
     #[cfg(not(feature = "lapack"))]
@@ -454,9 +454,8 @@ pub fn inf_norm(x: &[f64], nrows: usize) -> f64 {
 }
 
 mod tests {
-    use approx_eq::assert_approx_eq;
-
     use super::*;
+    use approx_eq::assert_approx_eq;
 
     #[test]
     fn test_invert() {

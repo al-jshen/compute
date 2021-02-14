@@ -17,16 +17,16 @@ pub fn binom_coeff(n: u64, k: u64) -> u64 {
         }
         c = c / i * (n - i + 1) + c % i * (n - i + 1) / i;
     }
-    return c;
+    c
 }
 
 /// An alternative method for computing binomial coefficients. There is no significant difference
 /// between the compute time using the `binom_coeff` method and this method. This method becomes
 /// slightly inaccurate (by 1 or 2) starting at `n ~ 50`.
 pub fn binom_coeff_alt(n: u64, k: u64) -> u64 {
-    return (gamma(n as f64 + 1.).ln() - gamma(k as f64 + 1.).ln() - gamma((n - k) as f64 + 1.).ln())
+    (gamma(n as f64 + 1.).ln() - gamma(k as f64 + 1.).ln() - gamma((n - k) as f64 + 1.).ln())
         .exp()
-        .round() as u64;
+        .round() as u64
 }
 
 #[cfg(test)]

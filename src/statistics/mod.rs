@@ -3,9 +3,9 @@
 mod covariance;
 mod moments;
 mod order;
-mod tests;
+// mod tests;
 
 pub use self::covariance::*;
 pub use self::moments::*;
 pub use self::order::*;
-pub use self::tests::*;
+// pub use self::tests::*;

@@ -45,7 +45,7 @@ impl Distribution for Binomial {
     fn sample(&self) -> f64 {
         if self.n == 0 || self.p == 0. {
             return 0.;
-        } else if self.p == 1. {
+        } else if (self.p - 1.).abs() <= f64::EPSILON {
             return self.n as f64;
         }
 

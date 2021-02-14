@@ -23,6 +23,15 @@ use lapack::{dgesv, dgetrf, dgetri};
 use crate::linalg::decomposition::lu::*;
 use crate::prelude::max;
 
+/// Generates evenly spaced values within a given interval. Values generated in the half-open
+/// interval [start, stop). That is, the stop point is not included.
+pub fn arange(start: f64, stop: f64, step: f64) -> Vec<f64> {
+    let n = (stop - start) / step + 1.;
+    (0..n as usize)
+        .map(|i| start as f64 + i as f64 * step)
+        .collect::<Vec<_>>()
+}
+
 /// Checks whether a 1D array is a valid square matrix.
 pub fn is_square(m: &[f64]) -> Result<usize, String> {
     let n = (m.len() as f32).sqrt();
@@ -334,7 +343,6 @@ pub fn matmul(
 
         let mut c = vec![0.; m * n];
 
-        // this is kind of dumb? TODO: figure out the indexing for transpose
         let a = if transpose_a {
             transpose(&a, rows_a)
         } else {

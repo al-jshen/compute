@@ -57,7 +57,16 @@ pub fn criterion_matmul(c: &mut Criterion) {
     c.bench_function("512x512 matmul", |b| {
         b.iter(|| matmul(&a3, &a3, 512, 512, false, false))
     });
-    c.bench_function("512x512 blocked matmul, blocksize 5", |b| {
+    c.bench_function("512x512 matmul with transpose", |b| {
+        b.iter(|| matmul(&a3, &a3, 512, 512, true, true))
+    });
+}
+
+pub fn criterion_matmul_blocked(c: &mut Criterion) {
+    let normgen = Normal::new(2., 50.);
+    let a3 = normgen.sample_vec(512 * 512);
+
+    c.bench_function("512x512 blocked matmul, blocksize 25", |b| {
         b.iter(|| matmul_blocked(&a3, &a3, 512, 512, false, false, 25))
     });
     c.bench_function("512x512 blocked matmul, blocksize 100", |b| {
@@ -73,5 +82,5 @@ pub fn criterion_xtx(c: &mut Criterion) {
     c.bench_function("20x6 xtx", |b| b.iter(|| xtx(&a_20_6, 20)));
 }
 
-criterion_group!(benches, criterion_matmul);
+criterion_group!(benches, criterion_matmul_blocked);
 criterion_main!(benches);

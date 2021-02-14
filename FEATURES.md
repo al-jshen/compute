@@ -5,7 +5,7 @@
   - loss functions
     - MSE
   - optimizers
-    - Adam, Levenberg-Marquardt, SGD with momentum
+    - Adam, Levenberg-Marquardt, SGD with (Nesterov) momentum
 - numerical integration of functions
   - trapezoid, Romberg, 5-point Gauss-Legendre quadrature
 - basic statistical distributions

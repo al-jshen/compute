@@ -33,6 +33,15 @@ pub fn jackknife(data: &[f64]) -> Vec<Vec<f64>> {
     resamples
 }
 
+/// Shuffle an array in-place.
+pub fn shuffle(data: &mut [f64]) {
+    let randomizer = DiscreteUniform::new(0, data.len() as i64 - 1);
+    for _ in 0..data.len() * 2 {
+        let (a, b) = (randomizer.sample(), randomizer.sample());
+        data.swap(a as usize, b as usize);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

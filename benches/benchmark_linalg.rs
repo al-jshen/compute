@@ -1,4 +1,5 @@
 use compute::distributions::{Distribution, Normal, Uniform};
+use compute::linalg::lu::*;
 use compute::linalg::*;
 use criterion::{criterion_group, criterion_main, Criterion};
 

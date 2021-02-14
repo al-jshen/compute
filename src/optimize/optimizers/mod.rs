@@ -1,15 +1,29 @@
-//! Various optimization algorithms (eg. Adam, SGD).
+//! Various optimization algorithms (eg. Adam, SGD, Levenberg-Marquardt).
+
+use autodiff::F1;
 
 mod adam;
-// mod gauss_newton;
 mod lm;
 
 pub trait Optimizer {
-    fn optimize<F>(&mut self, grad_fn: F, params: Vec<f64>, steps: usize) -> Vec<f64>
+    fn optimize<F>(
+        &self,
+        xs: &[f64],
+        ys: &[f64],
+        f: F,
+        parameters: &[f64],
+        maxsteps: usize,
+    ) -> Vec<f64>
     where
-        F: Fn(&[f64], usize) -> f64;
+        F: Fn(&[F1]) -> F1 + Copy;
+    fn grad_fn_type(&self) -> GradFn;
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum GradFn {
+    Predictive,
+    Residual,
 }
 
 pub use self::adam::*;
-// pub use self::gauss_newton::*;
 pub use self::lm::*;

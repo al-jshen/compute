@@ -1,15 +1,21 @@
+use super::GradFn;
 use super::Optimizer;
-use crate::statistics::max;
+use crate::linalg::norm;
+use crate::optimize::gradient::gradient;
+use crate::validation::shuffle_two;
 use approx_eq::{assert_approx_eq, rel_diff};
+use autodiff::F1;
 
 /// Implements the Adam optimizer. See [Kingma and Ba 2014](https://arxiv.org/abs/1412.6980) for
 /// details about the algorithm.
 #[derive(Debug, Clone, Copy)]
 pub struct Adam {
-    stepsize: f64, // step size
-    beta1: f64,    // exponential decay rate for first moment
-    beta2: f64,    // exponential decay rate for second moment
-    epsilon: f64,  // small number to prevent division by zero
+    stepsize: f64,    // step size
+    beta1: f64,       // exponential decay rate for first moment
+    beta2: f64,       // exponential decay rate for second moment
+    epsilon: f64,     // small number to prevent division by zero
+    batchsize: usize, // batch size to use for gradients
+    gradfn: GradFn,   // gradient function type
 }
 
 impl Adam {
@@ -18,12 +24,14 @@ impl Adam {
     /// beta1: exponential decay rate for first moment
     /// beta2: exponential decay rate for second moment
     /// epsilon: small number to prevent division by zero
-    pub fn new(stepsize: f64, beta1: f64, beta2: f64, epsilon: f64) -> Self {
+    pub fn new(stepsize: f64, beta1: f64, beta2: f64, epsilon: f64, batchsize: usize) -> Self {
         Adam {
             stepsize,
             beta1,
             beta2,
             epsilon,
+            batchsize,
+            gradfn: GradFn::Residual,
         }
     }
 }
@@ -36,42 +44,71 @@ impl Default for Adam {
             beta1: 0.9,
             beta2: 0.999,
             epsilon: 1e-8,
+            batchsize: 16,
+            gradfn: GradFn::Residual,
         }
     }
 }
 
 impl Optimizer for Adam {
-    /// Run the optimization algorithm, given a vector of parameters to optimize and a gradient function.
-    fn optimize<F>(&mut self, grad_fn: F, mut params: Vec<f64>, steps: usize) -> Vec<f64>
+    /// Run the optimization algorithm, given a vector of parameters to optimize and a function which calculates the residuals.
+    fn optimize<F>(
+        &self,
+        xs: &[f64],
+        ys: &[f64],
+        f: F,
+        parameters: &[f64],
+        maxsteps: usize,
+    ) -> Vec<f64>
     where
-        F: Fn(&[f64], usize) -> f64,
+        F: Fn(&[F1]) -> F1 + Copy,
     {
+        assert_eq!(xs.len(), ys.len());
+        let n = xs.len();
+        let mut params = parameters.to_vec();
+        let param_len = params.len();
+
         let mut t: usize = 0;
-        let mut m = vec![0.; params.len()];
-        let mut v = vec![0.; params.len()];
-        while t < steps {
+        let mut m = vec![0.; param_len];
+        let mut v = vec![0.; param_len];
+        let mut converged = false;
+
+        while t < maxsteps && !converged {
             t += 1;
             let prev_params = params.clone();
-            for p in 0..params.len() {
-                let gradient = grad_fn(&params, p); // takes parameters vector and index of changed parameter
-                m[p] = self.beta1 * m[p] + (1. - self.beta1) * gradient; // biased first moment estimate
-                v[p] = self.beta2 * v[p] + (1. - self.beta2) * gradient.powi(2); // biased second moment estimate
-                let mhat = m[p] / (1. - self.beta1.powi(t as i32)); // bias-corrected first moment estimate
-                let vhat = v[p] / (1. - self.beta2.powi(t as i32)); // bias-corrected second moment estimate
-                params[p] -= self.stepsize * mhat / (vhat.sqrt() + self.epsilon);
+
+            let (xshuf, yshuf) = shuffle_two(xs, ys);
+
+            for batch in (0..n).collect::<Vec<_>>().chunks(self.batchsize) {
+                let mut grad = vec![0.; param_len];
+                for i in 0..batch.len() {
+                    let g_i = gradient(f, &[yshuf[i], xshuf[i]], &params);
+                    for k in 0..param_len {
+                        grad[k] += g_i[k];
+                    }
+                }
+                for p in 0..param_len {
+                    m[p] = self.beta1 * m[p] + (1. - self.beta1) * grad[p]; // biased first moment estimate
+                    v[p] = self.beta2 * v[p] + (1. - self.beta2) * grad[p].powi(2); // biased second moment estimate
+                    let mhat = m[p] / (1. - self.beta1.powi(t as i32)); // bias-corrected first moment estimate
+                    let vhat = v[p] / (1. - self.beta2.powi(t as i32)); // bias-corrected second moment estimate
+                    params[p] -= self.stepsize * mhat / (vhat.sqrt() + self.epsilon);
+                }
             }
-            // println!("{:?}", params);
-            // check for convergence
-            // TODO: find a better convergence test
-            if max(&(0..params.len())
-                .map(|i| rel_diff(params[i], prev_params[i]))
-                .collect::<Vec<_>>())
-                < 1e-7
+
+            if crate::statistics::max(
+                &(0..param_len)
+                    .map(|i| (params[i] - prev_params[i]).abs())
+                    .collect::<Vec<_>>(),
+            ) < 1e-8
             {
-                break;
+                converged = true;
             }
         }
         params
+    }
+    fn grad_fn_type(&self) -> GradFn {
+        self.gradfn
     }
 }
 
@@ -105,12 +142,12 @@ mod tests {
         ];
 
         let mut slr = PolynomialRegressor::new(1);
-        let optimizer = Adam::new(1e-3, 0.9, 0.999, 1e-8);
-        slr.fit_with_optimizer(&x, &y, optimizer);
+        let optimizer = Adam::new(1e-3, 0.9, 0.999, 1e-8, 2);
+        slr.fit_with_optimizer(&x, &y, optimizer, 1000);
 
         let preds = slr.get_coeffs();
         for i in 0..preds.len() {
-            assert_approx_eq!(preds[i], coeffs[i], 1e-4);
+            assert_approx_eq!(preds[i], coeffs[i], 1e-2);
         }
     }
 }

@@ -3,6 +3,8 @@ use crate::optimize::gradient::gradient;
 use crate::statistics::max;
 use autodiff::F1;
 
+use super::{GradFn, Optimizer};
+
 /// Implements a [Levenberg-Marquardt optimizer](https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm)
 /// for solving (non-linear) least squares problems.
 #[derive(Debug, Clone, Copy)]
@@ -10,6 +12,7 @@ pub struct LM {
     pub eps1: f64, // tolerance for norm of residuals
     pub eps2: f64, // tolerance for change in parameters
     pub tau: f64,  // initial scaling for damping factor
+    gradfn: GradFn,
 }
 
 impl Default for LM {
@@ -18,6 +21,7 @@ impl Default for LM {
             eps1: 1e-6,
             eps2: 1e-6,
             tau: 1e-2,
+            gradfn: GradFn::Predictive,
         }
     }
 }
@@ -25,10 +29,17 @@ impl Default for LM {
 impl LM {
     /// Create a new Levenberg-Marquardt optimizer.
     pub fn new(eps1: f64, eps2: f64, tau: f64) -> Self {
-        LM { eps1, eps2, tau }
+        LM {
+            eps1,
+            eps2,
+            tau,
+            gradfn: GradFn::Predictive,
+        }
     }
+}
 
-    pub fn optimize<F>(
+impl Optimizer for LM {
+    fn optimize<F>(
         &self,
         xs: &[f64],
         ys: &[f64],
@@ -142,5 +153,8 @@ impl LM {
         params
 
         // TODO: implement uncertainty calculation. requires inverse cdf for t distribution.
+    }
+    fn grad_fn_type(&self) -> GradFn {
+        self.gradfn
     }
 }

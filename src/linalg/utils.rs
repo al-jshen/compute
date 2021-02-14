@@ -21,6 +21,7 @@ use lapack::{dgesv, dgetrf, dgetri};
 
 #[cfg(not(feature = "lapack"))]
 use crate::linalg::decomposition::lu::*;
+use crate::prelude::max;
 
 /// Checks whether a 1D array is a valid square matrix.
 pub fn is_square(m: &[f64]) -> Result<usize, String> {
@@ -437,6 +438,21 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
 /// Calculates the norm of a vector.
 pub fn norm(x: &[f64]) -> f64 {
     dot(&x, &x).sqrt()
+}
+
+/// Calculates the infinity norm of a matrix. That is, it sums the absolute values along each row,
+/// and then returns the largest of these values.
+pub fn inf_norm(x: &[f64], nrows: usize) -> f64 {
+    let ncols = is_matrix(x, nrows).unwrap();
+    let mut abs_row_sums = Vec::with_capacity(nrows);
+    for i in 0..nrows {
+        let mut s = 0.;
+        for j in 0..ncols {
+            s += x[i * ncols + j].abs();
+        }
+        abs_row_sums.push(s);
+    }
+    max(&abs_row_sums)
 }
 
 mod tests {

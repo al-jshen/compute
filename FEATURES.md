@@ -40,13 +40,11 @@
 
 ## Planned features
 
-- automatic differentiation (replacing numerical differentiation)
 - distributions: CDFs, fitting to data
-- more time series models (SARIMA, exponential smoothing models)
-- non-linear least squares algorithms (Levenberg-Marquardt)
+- more time series models (SARIMA, exponential smoothing models, trend decomposition)
+- non-linear optimizers (BFGS)
 - ODE integrators (leapfrog, RK4)
 - clustering algorithms (k-means/EM, DBSCAN)
-- more optimizers (SGD, Adagrad)
 - more regression models (GLMs, mixed models, GP, penalized models)
 - prediction trees (CART, random forests, gradient boosted trees)
 - order statistics (quantiles)
@@ -54,4 +52,4 @@
 - statistical tests (t-test, ANOVA, Kolmogorov-Smirnov, Anderson-Darling)
 - data preprocessing (outlier detection, standardization, dimensionality reduction (PCA))
 - more linear algebra decompositions (QR, SVD, Cholesky)
-- samplers: rejection, RWM, HMC, NUTS, (dynamic) nested sampling
+- samplers? rejection, RWM, HMC, NUTS, (dynamic) nested sampling

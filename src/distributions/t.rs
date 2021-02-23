@@ -1,7 +1,7 @@
 use crate::distributions::*;
 use crate::functions::gamma;
 
-/// Implements the [Chi square](https://en.wikipedia.org/wiki/Chi-square_distribution) distribution.
+/// Implements the [Student's T](https://en.wikipedia.org/wiki/Student%27s_t-distribution) distribution.
 #[derive(Debug, Clone, Copy)]
 pub struct T {
     /// Degrees of freedom

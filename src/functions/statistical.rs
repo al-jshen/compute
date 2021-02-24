@@ -45,6 +45,29 @@ pub fn softmax(x: &[f64]) -> Vec<f64> {
     x.iter().map(|i| i.exp() / sum_exp).collect()
 }
 
+const ERF_P: f64 = 0.3275911;
+const ERF_A1: f64 = 0.254829592;
+const ERF_A2: f64 = -0.284496736;
+const ERF_A3: f64 = 1.421413741;
+const ERF_A4: f64 = -1.453152027;
+const ERF_A5: f64 = 1.061405429;
+
+/// Calculates the [error function](https://en.wikipedia.org/wiki/Error_function) erf(x).
+///
+/// # Remarks
+/// Uses Equation 7.1.26 in Stegun in combination with Horner's Rule.
+pub fn erf(x: f64) -> f64 {
+    if x >= 0. {
+        let t = 1. / (1. + ERF_P * x);
+        1. - (((((ERF_A5 * t + ERF_A4) * t) + ERF_A3) * t + ERF_A2) * t + ERF_A1)
+            * t
+            * (-x * x).exp()
+    } else {
+        // erf is an odd function
+        -erf(-x)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -100,5 +123,41 @@ mod tests {
             assert_approx_eq!(smv[i], tfm[i]);
         }
         assert_approx_eq!(smv.iter().sum(), 1.);
+    }
+
+    #[test]
+    fn test_erf() {
+        assert_approx_eq!(erf(0.), 0., 1e-5);
+        assert_approx_eq!(erf(0.02), 0.022564575, 1e-5);
+        assert_approx_eq!(erf(0.04), 0.045111106, 1e-5);
+        assert_approx_eq!(erf(0.06), 0.067621594, 1e-5);
+        assert_approx_eq!(erf(0.08), 0.090078126, 1e-5);
+        assert_approx_eq!(erf(0.1), 0.112462916, 1e-5);
+        assert_approx_eq!(erf(0.2), 0.222702589, 1e-5);
+        assert_approx_eq!(erf(0.3), 0.328626759, 1e-5);
+        assert_approx_eq!(erf(0.4), 0.428392355, 1e-5);
+        assert_approx_eq!(erf(0.5), 0.520499878, 1e-5);
+        assert_approx_eq!(erf(0.6), 0.603856091, 1e-5);
+        assert_approx_eq!(erf(0.7), 0.677801194, 1e-5);
+        assert_approx_eq!(erf(0.8), 0.742100965, 1e-5);
+        assert_approx_eq!(erf(0.9), 0.796908212, 1e-5);
+        assert_approx_eq!(erf(1.), 0.842700793, 1e-5);
+        assert_approx_eq!(erf(1.1), 0.88020507, 1e-5);
+        assert_approx_eq!(erf(1.2), 0.910313978, 1e-5);
+        assert_approx_eq!(erf(1.3), 0.934007945, 1e-5);
+        assert_approx_eq!(erf(1.4), 0.95228512, 1e-5);
+        assert_approx_eq!(erf(1.5), 0.966105146, 1e-5);
+        assert_approx_eq!(erf(1.6), 0.976348383, 1e-5);
+        assert_approx_eq!(erf(1.7), 0.983790459, 1e-5);
+        assert_approx_eq!(erf(1.8), 0.989090502, 1e-5);
+        assert_approx_eq!(erf(1.9), 0.992790429, 1e-5);
+        assert_approx_eq!(erf(2.), 0.995322265, 1e-5);
+        assert_approx_eq!(erf(2.1), 0.997020533, 1e-5);
+        assert_approx_eq!(erf(2.2), 0.998137154, 1e-5);
+        assert_approx_eq!(erf(2.3), 0.998856823, 1e-5);
+        assert_approx_eq!(erf(2.4), 0.999311486, 1e-5);
+        assert_approx_eq!(erf(2.5), 0.999593048, 1e-5);
+        assert_approx_eq!(erf(3.), 0.99997791, 1e-5);
+        assert_approx_eq!(erf(3.5), 0.999999257, 1e-5);
     }
 }

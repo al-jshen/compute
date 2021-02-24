@@ -1,6 +1,6 @@
 #![allow(clippy::many_single_char_names)]
 
-use crate::distributions::*;
+use crate::{distributions::*, prelude::erf};
 use std::f64::consts::PI;
 
 /// Implements the [Normal](https://en.wikipedia.org/wiki/Normal_distribution) distribution.
@@ -33,6 +33,10 @@ impl Normal {
         }
         self.sigma = sigma;
         self
+    }
+    /// TODO: make `cdf` a method of the `Continuous` trait.
+    pub fn cdf(&self, x: f64) -> f64 {
+        0.5 * (1. + erf((x - self.mu) / (self.sigma * 2_f64.sqrt())))
     }
 }
 
@@ -406,5 +410,28 @@ mod tests {
         let data2 = Normal::new(10., 20.).sample_vec(1e6 as usize);
         assert_approx_eq!(10., mean(&data2), 1e-2);
         assert_approx_eq!(20., std(&data2), 1e-2);
+    }
+
+    #[test]
+    fn test_cdf() {
+        let x = vec![-4., -3.9, -2.81, -2.67, -2.01, 0.01, 0.75, 1.5, 1.79];
+        let y = vec![
+            3.167124183311986e-05,
+            4.8096344017602614e-05,
+            0.002477074998785861,
+            0.0037925623476854887,
+            0.022215594429431475,
+            0.5039893563146316,
+            0.7733726476231317,
+            0.9331927987311419,
+            0.9632730443012737,
+        ];
+        assert_eq!(x.len(), y.len());
+
+        let sn = Normal::new(0., 1.);
+
+        for i in 0..x.len() {
+            assert_approx_eq!(sn.cdf(x[i]), y[i], 1e-3);
+        }
     }
 }

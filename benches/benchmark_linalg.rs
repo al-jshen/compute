@@ -4,9 +4,12 @@ use compute::linalg::*;
 use criterion::{criterion_group, criterion_main, Criterion};
 
 pub fn criterion_dot(c: &mut Criterion) {
-    let v1 = Normal::new(0., 100.).sample_vec(1e5 as usize);
-    let v2 = Normal::new(0., 100.).sample_vec(1e5 as usize);
-    c.bench_function("dot product 1e5", |b| b.iter(|| dot(&v1, &v2)));
+    let v1 = Normal::new(0., 100.).sample_vec(1e6 as usize);
+    let v2 = Normal::new(0., 100.).sample_vec(1e6 as usize);
+    let v3 = Normal::new(0., 100.).sample_vec(1e4 as usize);
+    let v4 = Normal::new(0., 100.).sample_vec(1e4 as usize);
+    c.bench_function("dot product 1e6", |b| b.iter(|| dot(&v1, &v2)));
+    c.bench_function("dot product 1e4", |b| b.iter(|| dot(&v3, &v4)));
 }
 
 pub fn criterion_norm(c: &mut Criterion) {
@@ -82,5 +85,5 @@ pub fn criterion_xtx(c: &mut Criterion) {
     c.bench_function("20x6 xtx", |b| b.iter(|| xtx(&a_20_6, 20)));
 }
 
-criterion_group!(benches, criterion_matmul_blocked);
+criterion_group!(benches, criterion_dot);
 criterion_main!(benches);

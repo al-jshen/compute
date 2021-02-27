@@ -18,6 +18,14 @@ extern crate openblas_src;
 use blas::{ddot, dgemm};
 #[cfg(feature = "lapack")]
 use lapack::{dgesv, dgetrf, dgetri};
+#[cfg(feature = "simd")]
+use simdeez::avx2::*;
+#[cfg(feature = "simd")]
+use simdeez::scalar::*;
+#[cfg(feature = "simd")]
+use simdeez::sse2::*;
+#[cfg(feature = "simd")]
+use simdeez::sse41::*;
 
 #[cfg(not(feature = "lapack"))]
 use crate::linalg::decomposition::lu::*;
@@ -411,8 +419,10 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
     {
         unsafe { ddot(x.len() as i32, x, 1, y, 1) }
     }
+    #[cfg(all(not(feature = "blas"), feature = "simd"))]
+    return simd_dot_runtime_select(x, y);
 
-    #[cfg(not(feature = "blas"))]
+    #[cfg(all(not(feature = "blas"), not(feature = "simd")))]
     {
         let n = x.len();
         let chunks = (n - (n % 8)) / 8;
@@ -440,6 +450,41 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
         s
     }
 }
+
+#[cfg(feature = "simd")]
+simd_runtime_generate!(
+    fn simd_dot(x: &[f64], y: &[f64]) -> f64 {
+        let mut res = 0.;
+        assert_eq!(x.len(), y.len());
+        let n_iter = x.len() / S::VF64_WIDTH;
+        let mut temp = vec![0.; S::VF64_WIDTH];
+        for i in 0..n_iter {
+            let xv = S::loadu_pd(&x[i * S::VF64_WIDTH]);
+            let yv = S::loadu_pd(&y[i * S::VF64_WIDTH]);
+            let prod = S::mul_pd(xv, yv);
+            S::storeu_pd(&mut temp[0], prod);
+            match S::VF64_WIDTH {
+                8 => {
+                    res += temp[0]
+                        + temp[1]
+                        + temp[2]
+                        + temp[3]
+                        + temp[4]
+                        + temp[5]
+                        + temp[6]
+                        + temp[7]
+                }
+                4 => res += temp[0] + temp[1] + temp[2] + temp[3],
+                2 => res += temp[0] + temp[1],
+                _ => res += temp[0],
+            }
+        }
+        for i in (n_iter * S::VF64_WIDTH)..x.len() {
+            res += x[i] * y[i];
+        }
+        res
+    }
+);
 
 /// Calculates the norm of a vector.
 pub fn norm(x: &[f64]) -> f64 {

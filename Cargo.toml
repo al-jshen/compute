@@ -18,9 +18,11 @@ approx_eq = "0.1"
 autodiff = "0.2"
 blas = {version = "0.20", optional = true}
 lapack = {version = "0.16", optional = true}
+simdeez = {version = "1.0", optional = true}
 
 [features]
-# default = ["blas", "lapack"]
+# default = ["blas", "lapack", "simd"]
+simd = ["simdeez"]
 
 [target.'cfg(target_os = "macos")'.dependencies]
 accelerate-src = "0.3"

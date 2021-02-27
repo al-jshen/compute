@@ -454,32 +454,40 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
 #[cfg(feature = "simd")]
 simd_runtime_generate!(
     fn simd_dot(x: &[f64], y: &[f64]) -> f64 {
-        let mut res = 0.;
         assert_eq!(x.len(), y.len());
+
+        let mut res = 0.;
+        let mut temp1 = vec![0.; S::VF64_WIDTH];
+        let mut temp2 = vec![0.; S::VF64_WIDTH];
+
         let n_iter = x.len() / S::VF64_WIDTH;
-        let mut temp = vec![0.; S::VF64_WIDTH];
-        for i in 0..n_iter {
-            let xv = S::loadu_pd(&x[i * S::VF64_WIDTH]);
-            let yv = S::loadu_pd(&y[i * S::VF64_WIDTH]);
+
+        for i in 0..n_iter / 2 {
+            let xv = S::loadu_pd(&x[(2 * i) * S::VF64_WIDTH]);
+            let yv = S::loadu_pd(&y[(2 * i) * S::VF64_WIDTH]);
             let prod = S::mul_pd(xv, yv);
-            S::storeu_pd(&mut temp[0], prod);
+            S::storeu_pd(&mut temp1[0], prod);
+            let xv = S::loadu_pd(&x[(2 * i + 1) * S::VF64_WIDTH]);
+            let yv = S::loadu_pd(&y[(2 * i + 1) * S::VF64_WIDTH]);
+            let prod = S::mul_pd(xv, yv);
+            S::storeu_pd(&mut temp2[0], prod);
             match S::VF64_WIDTH {
-                8 => {
-                    res += temp[0]
-                        + temp[1]
-                        + temp[2]
-                        + temp[3]
-                        + temp[4]
-                        + temp[5]
-                        + temp[6]
-                        + temp[7]
+                4 => {
+                    res += temp1[0]
+                        + temp1[1]
+                        + temp1[2]
+                        + temp1[3]
+                        + temp2[0]
+                        + temp2[1]
+                        + temp2[2]
+                        + temp2[3]
                 }
-                4 => res += temp[0] + temp[1] + temp[2] + temp[3],
-                2 => res += temp[0] + temp[1],
-                _ => res += temp[0],
+                2 => res += temp1[0] + temp1[1] + temp2[0] + temp2[1],
+                _ => res += temp1[0] + temp2[0],
             }
         }
-        for i in (n_iter * S::VF64_WIDTH)..x.len() {
+
+        for i in (2 * n_iter * S::VF64_WIDTH)..x.len() {
             res += x[i] * y[i];
         }
         res

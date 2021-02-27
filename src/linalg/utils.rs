@@ -457,39 +457,19 @@ simd_runtime_generate!(
         assert_eq!(x.len(), y.len());
 
         let mut res = 0.;
-        let mut temp1 = vec![0.; S::VF64_WIDTH];
-        let mut temp2 = vec![0.; S::VF64_WIDTH];
 
         let n_iter = x.len() / S::VF64_WIDTH;
 
-        for i in 0..n_iter / 2 {
-            let xv = S::loadu_pd(&x[(2 * i) * S::VF64_WIDTH]);
-            let yv = S::loadu_pd(&y[(2 * i) * S::VF64_WIDTH]);
-            let prod = S::mul_pd(xv, yv);
-            S::storeu_pd(&mut temp1[0], prod);
-            let xv = S::loadu_pd(&x[(2 * i + 1) * S::VF64_WIDTH]);
-            let yv = S::loadu_pd(&y[(2 * i + 1) * S::VF64_WIDTH]);
-            let prod = S::mul_pd(xv, yv);
-            S::storeu_pd(&mut temp2[0], prod);
-            match S::VF64_WIDTH {
-                4 => {
-                    res += temp1[0]
-                        + temp1[1]
-                        + temp1[2]
-                        + temp1[3]
-                        + temp2[0]
-                        + temp2[1]
-                        + temp2[2]
-                        + temp2[3]
-                }
-                2 => res += temp1[0] + temp1[1] + temp2[0] + temp2[1],
-                _ => res += temp1[0] + temp2[0],
-            }
+        for i in 0..n_iter {
+            let xv = S::loadu_pd(&x[i * S::VF64_WIDTH]);
+            let yv = S::loadu_pd(&y[i * S::VF64_WIDTH]);
+            res += S::horizontal_add_pd(xv * yv);
         }
 
-        for i in (2 * n_iter * S::VF64_WIDTH)..x.len() {
+        for i in (n_iter * S::VF64_WIDTH)..x.len() {
             res += x[i] * y[i];
         }
+
         res
     }
 );

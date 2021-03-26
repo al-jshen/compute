@@ -118,6 +118,16 @@ pub fn diag(a: &[f64]) -> Vec<f64> {
     results
 }
 
+/// Create a diagonal matrix with the given elements along the elements.
+pub fn diag_matrix(a: &[f64]) -> Vec<f64> {
+    let n = a.len();
+    let mut new = vec![0.; n * n];
+    for i in 0..n {
+        new[i * n + i] = a[i];
+    }
+    new
+}
+
 /// Given an n by n matrix, invert it. The resulting matrix is returned as a flattened array.
 pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
     let n = is_square(&matrix).unwrap();

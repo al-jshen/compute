@@ -470,6 +470,7 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
     }
 }
 
+/// Vector operations.
 #[macro_export]
 macro_rules! impl_vops {
     ($opname: ident, $op:tt) => {
@@ -508,6 +509,45 @@ impl_vops!(vadd, +);
 impl_vops!(vsub, -);
 impl_vops!(vmul, *);
 impl_vops!(vdiv, /);
+
+/// Scalar operations.
+#[macro_export]
+macro_rules! impl_svops {
+    ($opname: ident, $op:tt) => {
+        pub fn $opname(scalar: f64, v1: &[f64]) -> Vec<f64> {
+            let n = v1.len();
+
+            let mut v = vec![0.; n];
+            let chunks = (n - (n % 8)) / 8;
+
+            // unroll
+            for i in 0..chunks {
+                let idx = i * 8;
+                assert!(n > idx + 7);
+                v[i] = v1[idx] $op scalar;
+                v[i + 1] = v1[idx + 1] $op scalar;
+                v[i + 2] = v1[idx + 2] $op scalar;
+                v[i + 3] = v1[idx + 3] $op scalar;
+                v[i + 4] = v1[idx + 4] $op scalar;
+                v[i + 5] = v1[idx + 5] $op scalar;
+                v[i + 6] = v1[idx + 6] $op scalar;
+                v[i + 7] = v1[idx + 7] $op scalar;
+            }
+
+            // do the rest
+            for j in (chunks * 8)..n {
+                v[j] = v1[j] $op scalar;
+            }
+
+            v
+        }
+    }
+}
+
+impl_svops!(svadd, +);
+impl_svops!(svsub, -);
+impl_svops!(svmul, *);
+impl_svops!(svdiv, /);
 
 #[cfg(feature = "simd")]
 simd_runtime_generate!(

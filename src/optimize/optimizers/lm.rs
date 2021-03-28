@@ -1,4 +1,4 @@
-use crate::linalg::{diag, dot, inf_norm, matmul, norm, solve, xtx};
+use crate::linalg::{diag, dot, inf_norm, matmul, norm, solve, svmul, vadd, xtx};
 use crate::optimize::gradient::gradient;
 use crate::statistics::max;
 use autodiff::F1;
@@ -95,7 +95,8 @@ impl Optimizer for LM {
             }
 
             // calculations using new proposed parameters
-            let new_params: Vec<f64> = (0..param_len).map(|i| params[i] + delta[i]).collect();
+            // let new_params: Vec<f64> = (0..param_len).map(|i| params[i] + delta[i]).collect();
+            let new_params = vadd(&params, &delta);
             let new_const_params: Vec<F1> = new_params.iter().map(|&x| F1::cst(x)).collect();
             let new_residuals: Vec<f64> = (0..n)
                 .map(|i| {
@@ -107,9 +108,7 @@ impl Optimizer for LM {
             let new_res_norm = dot(&new_residuals, &new_residuals);
             let pred_reduction = matmul(
                 &delta,
-                &(0..param_len)
-                    .map(|i| mu * delta[i] + jtr[i])
-                    .collect::<Vec<_>>(),
+                &vadd(&svmul(mu, &delta), &jtr),
                 param_len,
                 param_len,
                 true,

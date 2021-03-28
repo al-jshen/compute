@@ -470,6 +470,45 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
     }
 }
 
+#[macro_export]
+macro_rules! impl_vops {
+    ($opname: ident, $op:tt) => {
+        pub fn $opname(v1: &[f64], v2: &[f64]) -> Vec<f64> {
+            assert_eq!(v1.len(), v2.len());
+            let n = v1.len();
+
+            let mut v = vec![0.; n];
+            let chunks = (n - (n % 8)) / 8;
+
+            // unroll
+            for i in 0..chunks {
+                let idx = i * 8;
+                assert!(n > idx + 7);
+                v[i] = v1[idx] $op v2[idx];
+                v[i + 1] = v1[idx + 1] $op v2[idx + 1];
+                v[i + 2] = v1[idx + 2] $op v2[idx + 2];
+                v[i + 3] = v1[idx + 3] $op v2[idx + 3];
+                v[i + 4] = v1[idx + 4] $op v2[idx + 4];
+                v[i + 5] = v1[idx + 5] $op v2[idx + 5];
+                v[i + 6] = v1[idx + 6] $op v2[idx + 6];
+                v[i + 7] = v1[idx + 7] $op v2[idx + 7];
+            }
+
+            // do the rest
+            for j in (chunks * 8)..n {
+                v[j] = v1[j] $op v2[j];
+            }
+
+            v
+        }
+    }
+}
+
+impl_vops!(vadd, +);
+impl_vops!(vsub, -);
+impl_vops!(vmul, *);
+impl_vops!(vdiv, /);
+
 #[cfg(feature = "simd")]
 simd_runtime_generate!(
     fn simd_dot(x: &[f64], y: &[f64]) -> f64 {

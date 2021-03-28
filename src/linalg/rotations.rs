@@ -7,38 +7,37 @@ pub enum Axis {
 }
 
 /// Returns a 3D rotation matrix along the `axis` axis (either X, Y, or Z) with a given angle in
-/// degrees.
+/// radians.
 pub fn rotation_matrix(angle: f64, axis: Axis) -> Vec<f64> {
-    let theta = angle.to_radians();
     match axis {
         Axis::X => vec![
             1.,
             0.,
             0.,
             0.,
-            theta.cos(),
-            -theta.sin(),
+            angle.cos(),
+            -angle.sin(),
             0.,
-            theta.sin(),
-            -theta.cos(),
+            angle.sin(),
+            -angle.cos(),
         ],
         Axis::Y => vec![
-            theta.cos(),
+            angle.cos(),
             0.,
-            theta.sin(),
+            angle.sin(),
             0.,
             1.,
             0.,
-            -theta.sin(),
+            -angle.sin(),
             0.,
-            theta.cos(),
+            angle.cos(),
         ],
         Axis::Z => vec![
-            theta.cos(),
-            -theta.sin(),
+            angle.cos(),
+            -angle.sin(),
             0.,
-            theta.sin(),
-            theta.cos(),
+            angle.sin(),
+            angle.cos(),
             0.,
             0.,
             0.,

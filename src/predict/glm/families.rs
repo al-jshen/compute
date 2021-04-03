@@ -1,32 +1,32 @@
 use crate::linalg::{norm, svsub, vmul, vsdiv, vsmul, vssub, vsub};
 
-pub trait HasVariance {
-    fn variance(&self, mu: &[f64]) -> Vec<f64>;
-}
+// pub trait HasVariance {
+//     fn variance(&self, mu: &[f64]) -> Vec<f64>;
+// }
 
-pub trait HasInvLink {
-    fn inv_link(&self, nu: &[f64]) -> Vec<f64>;
-    fn d_inv_link(&self, nu: &[f64], mu: &[f64]) -> Vec<f64>;
-}
+// pub trait HasInvLink {
+//     fn inv_link(&self, nu: &[f64]) -> Vec<f64>;
+//     fn d_inv_link(&self, nu: &[f64], mu: &[f64]) -> Vec<f64>;
+// }
 
-pub trait HasDeviance {
-    fn deviance(&self, y: &[f64], mu: &[f64]) -> f64;
-}
+// pub trait HasDeviance {
+//     fn deviance(&self, y: &[f64], mu: &[f64]) -> f64;
+// }
 
-pub trait HasPenalizedDeviance: HasDeviance {
-    fn penalized_deviance(&self, y: &[f64], mu: &[f64], alpha: f64, coef: &[f64]) -> f64 {
-        self.deviance(&y, mu) + alpha * norm(&coef[1..])
-    }
-}
+// pub trait HasPenalizedDeviance: HasDeviance {
+//     fn penalized_deviance(&self, y: &[f64], mu: &[f64], alpha: f64, coef: &[f64]) -> f64 {
+//         self.deviance(&y, mu) + alpha * norm(&coef[1..])
+//     }
+// }
 
-pub trait HasDispersion {
-    fn has_dispersion(&self) -> bool;
-}
+// pub trait HasDispersion {
+//     fn has_dispersion(&self) -> bool;
+// }
 
-pub trait HasInitialValues {
-    fn initial_working_response(&self, y: &[f64]) -> Option<Vec<f64>>;
-    fn initial_working_weights(&self, y: &[f64]) -> Option<Vec<f64>>;
-}
+// pub trait HasInitialValues {
+//     fn initial_working_response(&self, y: &[f64]) -> Option<Vec<f64>>;
+//     fn initial_working_weights(&self, y: &[f64]) -> Option<Vec<f64>>;
+// }
 
 pub enum ExponentialFamily {
     Gaussian,
@@ -37,7 +37,7 @@ pub enum ExponentialFamily {
     Exponential,
 }
 
-impl HasDispersion for ExponentialFamily {
+impl ExponentialFamily {
     fn has_dispersion(&self) -> bool {
         match self {
             ExponentialFamily::Gaussian => true,
@@ -48,9 +48,7 @@ impl HasDispersion for ExponentialFamily {
             ExponentialFamily::Exponential => false,
         }
     }
-}
 
-impl HasVariance for ExponentialFamily {
     fn variance(&self, mu: &[f64]) -> Vec<f64> {
         match self {
             ExponentialFamily::Gaussian => vec![1.; mu.len()],
@@ -61,9 +59,7 @@ impl HasVariance for ExponentialFamily {
             ExponentialFamily::Exponential => vmul(&mu, &mu),
         }
     }
-}
 
-impl HasInvLink for ExponentialFamily {
     fn inv_link(&self, nu: &[f64]) -> Vec<f64> {
         match self {
             ExponentialFamily::Gaussian => nu.to_vec(),
@@ -85,9 +81,7 @@ impl HasInvLink for ExponentialFamily {
             ExponentialFamily::Exponential => mu.to_vec(),
         }
     }
-}
 
-impl HasDeviance for ExponentialFamily {
     fn deviance(&self, y: &[f64], mu: &[f64]) -> f64 {
         match self {
             ExponentialFamily::Gaussian => norm(&vsub(y, mu)),
@@ -132,9 +126,7 @@ impl HasDeviance for ExponentialFamily {
             }
         }
     }
-}
 
-impl HasInitialValues for ExponentialFamily {
     fn initial_working_response(&self, y: &[f64]) -> Option<Vec<f64>> {
         match self {
             ExponentialFamily::Gaussian => Some(y.to_vec()),

@@ -1,5 +1,8 @@
 ## Existing features
 
+- regression methods
+  - polynomial
+  - GLMs: logistic, (quasi-)Poisson, Gamma, exponential
 - optimization methods
   - numerical differentiation, partial derivatives, automatic differentiation (currently with autodiff crate)
   - loss functions

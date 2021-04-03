@@ -93,6 +93,17 @@ println!("{}", quad5(f, 0., 1.));             // gaussian quadrature integration
 println!("{}", romberg(f, 0., 1., 1e-8, 10)); // romberg integration with tolerance and max steps
 ```
 
+### Signal processing
+
+```rust
+use compute::signal::*;
+
+let sig = vec![0.973, 0.361, 0.715, -1.158, 1.392, 0.415, 2.304, -0.844, 0.805, 0.242];
+let smoothed = savitzky_golay(&sig, 5, 3) // LOESS, cubic smoothing with 5 points
+let impulse = delta(5, 0.5);              // delta function with 5 steps and dt = 0.5
+let res = convolve(&sig, &impulse, 0.5);  // impulse response of signal
+```
+
 ### Linear algebra
 
 ```rust

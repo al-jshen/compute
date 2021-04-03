@@ -266,11 +266,9 @@ impl GLM {
 
     pub fn predict(&self, x: &[f64]) -> Result<Vec<f64>, &str> {
         let coef = self.coef()?;
-        assert!(
-            is_design(x, self.n.unwrap()),
-            "x is not a valid design matrix"
-        );
-        let result = matmul(&x, coef, self.n.unwrap(), self.p.unwrap(), false, false);
+        let n = is_matrix(x, self.p.unwrap()).unwrap();
+        assert!(is_design(x, n), "x is not a valid design matrix");
+        let result = matmul(&x, coef, n, self.p.unwrap(), false, false);
         if let Some(offset) = &self.offsets {
             Ok(self.family.inv_link(&vadd(&result, offset)))
         } else {
@@ -310,5 +308,14 @@ mod tests {
         assert_approx_eq!(coef[1], 1.5046, 1e-3);
         assert_approx_eq!(errors[0], 1.7610, 1e-3);
         assert_approx_eq!(errors[1], 0.6287, 1e-3);
+
+        let new_obs = vec![1., 2., 3., 4., 5.];
+        let new_obs_design = design(&new_obs, 5);
+        let new_obs_pred = glm.predict(&new_obs_design).unwrap();
+        assert_approx_eq!(new_obs_pred[0], 0.07, 1e-1);
+        assert_approx_eq!(new_obs_pred[1], 0.26, 1e-1);
+        assert_approx_eq!(new_obs_pred[2], 0.61, 1e-1);
+        assert_approx_eq!(new_obs_pred[3], 0.87, 1e-1);
+        assert_approx_eq!(new_obs_pred[4], 0.97, 1e-1);
     }
 }

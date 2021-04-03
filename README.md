@@ -48,7 +48,7 @@ println!("{}", p.sample()); // sample single value
 println!("{}", p.pmf(2));  // probability mass function
 ```
 
-### Regression
+### Polynomial Regression and GLMs
 
 ```rust
 use compute::prelude::*;
@@ -64,7 +64,9 @@ println!("{:?}", clf.coef);                // get model coefficients
 let y_bin = vec![0., 0., 1., 1.];
 let mut glm = GLM::new(ExponentialFamily::Bernoulli);  // logistic regression
 glm.set_penalty(1.);                                   // ridge regression
-glm.fit(&xd, &y, 25);                                  // fit with scoring algorithm (MLE), cap iterations at 25
+glm.fit(&xd, &y, 25).unwrap();                         // fit with scoring algorithm (MLE), cap iterations at 25
+glm.coef().unwrap()                                    // get estimated coefficients
+glm.coef().coef_covariance_matrix().unwrap()           // get covariance matrix for estimated coefficients
 ```
 
 ### Time series models

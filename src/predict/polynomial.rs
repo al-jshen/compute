@@ -1,4 +1,3 @@
-use super::Predictor;
 use crate::linalg::*;
 use crate::optimize::{optimizers::GradFn, optimizers::Optimizer};
 use autodiff::{Float, F1};
@@ -9,19 +8,15 @@ use autodiff::{Float, F1};
 /// where the first parameter is the intercept, and the second is the slope.
 #[derive(Debug)]
 pub struct PolynomialRegressor {
-    coeffs: Vec<f64>,
+    pub coef: Vec<f64>,
 }
 
 impl PolynomialRegressor {
     /// Create a new polynomial regressor with degree `deg` (e.g., deg = 1 is a linear model).
     pub fn new(deg: usize) -> Self {
         PolynomialRegressor {
-            coeffs: vec![0.; deg + 1],
+            coef: vec![0.; deg + 1],
         }
-    }
-    /// Prints the coefficients of the polynomial regressor.
-    pub fn get_coeffs(&self) -> Vec<f64> {
-        self.coeffs.clone()
     }
 
     /// Fit the polynomial regressor to some observed data `y` given some explanatory variables `x`
@@ -40,57 +35,43 @@ impl PolynomialRegressor {
             GradFn::Residual => |x: &[F1]| (x[0] - (x[1] * x[3] + x[2])).powi(2),
             GradFn::Predictive => |x: &[F1]| (x[0] * x[2] + x[1]),
         };
-        self.coeffs = optimizer.optimize(x, y, resid_fn, &self.coeffs, maxsteps);
+        self.coef = optimizer.optimize(x, y, resid_fn, &self.coef, maxsteps);
         self
     }
-}
-
-impl Predictor for PolynomialRegressor {
     /// Update the coefficients of the polynomial regressor.
     fn update(&mut self, params: &[f64]) -> &mut Self {
-        self.coeffs = params.to_owned();
+        self.coef = params.to_owned();
         self
     }
 
     /// Returns `c0 + c[1] * x + c[2] * x^2 ... + cn + x^n`, where `c[i]` are the coefficients of the
-    /// polynomial regressor, and `x` is some vector of explanatory variables.
+    /// polynomial regressor, and `x` is some vector of explanatory variables. Evaluation is done
+    /// using [Horner's method](https://en.wikipedia.org/wiki/Horner%27s_method).
     fn predict(&self, x: &[f64]) -> Vec<f64> {
+        let n = self.coef.len();
         x.iter()
             .map(|val| {
-                (0..self.coeffs.len())
-                    .into_iter()
-                    .map(|ith| self.coeffs[ith] * val.powi(ith as i32))
-                    .sum::<f64>()
+                self.coef
+                    .iter()
+                    .rev()
+                    .fold(0., |acc, coeff| acc * val + coeff)
             })
             .collect::<Vec<_>>()
     }
-}
 
-// fn diff_pred(x: &[F1], coeffs: &[F1]) -> Vec<F1> {
-//     x.iter()
-//         .map(|val| {
-//             (0..coeffs.len())
-//                 .into_iter()
-//                 .map(|ith| F1::var(coeffs[ith]) * F1::cst(*val).powi(ith as i32))
-//                 .sum::<F1>()
-//         })
-//         .collect::<Vec<F1>>()
-// }
-
-impl PolynomialRegressor {
     /// Fit the polynomial regressor to some observed data `y` given some explanatory variables
     /// `x`. Uses least squares fitting.
     pub fn fit(&mut self, x: &[f64], y: &[f64]) -> &mut Self {
         assert_eq!(x.len(), y.len());
-        let xv = vandermonde(x, self.coeffs.len());
+        let xv = vandermonde(x, self.coef.len());
         let xtx = xtx(&xv, x.len());
         let xtxinv = invert_matrix(&xtx);
         let xty = matmul(&xv, y, x.len(), y.len(), true, false);
         let coeffs = matmul(
             &xtxinv,
             &xty,
-            self.coeffs.len(),
-            self.coeffs.len(),
+            self.coef.len(),
+            self.coef.len(),
             false,
             false,
         );
@@ -137,7 +118,7 @@ mod tests {
 
         let mut p = PolynomialRegressor::new(1);
         p.fit(&x, &yv);
-        let coeffs1 = p.get_coeffs();
+        let coeffs1 = p.coef;
 
         // p.update(&[2., 2.]);
         // let o = LM::default();

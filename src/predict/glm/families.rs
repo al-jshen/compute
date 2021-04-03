@@ -1,5 +1,8 @@
 use crate::linalg::{norm, svsub, vmul, vsdiv, vsmul, vssub, vsub};
 
+/// An enum to represent the [exponential
+/// family](https://en.wikipedia.org/wiki/Exponential_family) set of distributions. These are
+/// intended for use with [GLM](../predict/struct.GLM.html).
 #[derive(Debug, Clone, Copy)]
 pub enum ExponentialFamily {
     Gaussian,

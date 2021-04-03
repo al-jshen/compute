@@ -69,6 +69,18 @@ pub fn is_matrix(m: &[f64], nrows: usize) -> Result<usize, String> {
     }
 }
 
+/// Checks whether a 1D array is a valid design matrix, given its number of rows.
+pub fn is_design(m: &[f64], nrows: usize) -> bool {
+    let mut is_design = true;
+    let ncols = is_matrix(m, nrows).unwrap();
+    for i in 0..nrows {
+        if m[i * ncols] != 1. {
+            is_design = false;
+        }
+    }
+    is_design
+}
+
 /// Convert a 1D matrix from row-major ordering into column-major ordering.
 pub fn row_to_col_major(a: &[f64], nrows: usize) -> Vec<f64> {
     let ncols = is_matrix(a, nrows).unwrap();

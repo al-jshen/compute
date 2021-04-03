@@ -1,9 +1,10 @@
-use crate::prelude::{is_matrix, matmul, mean, solve, vadd, vdiv, vmul, vsub};
+use crate::prelude::{is_design, is_matrix, matmul, mean, solve, vadd, vdiv, vmul, vsub};
 
 use super::ExponentialFamily;
 use super::Formula;
 use std::collections::HashMap;
 
+/// Implements a [generalized linear model](https://en.wikipedia.org/wiki/Generalized_linear_model).
 #[derive(Debug, Clone)]
 pub struct GLM {
     pub family: ExponentialFamily,
@@ -11,12 +12,15 @@ pub struct GLM {
     pub tolerance: f64,
     pub weights: Option<Vec<f64>>,
     pub offsets: Option<Vec<f64>>,
-    pub coefficients: Option<Vec<f64>>,
+    pub coef: Option<Vec<f64>>,
     pub deviance: Option<f64>,
     pub information_matrix: Option<Vec<f64>>,
 }
 
 impl GLM {
+    /// Create a new general linear model with the given exponential family.
+    /// `alpha` sets the ridge regression penalty strength, and `tolerance` sets the convergence
+    /// tolerance.
     pub fn new(family: ExponentialFamily, alpha: f64, tolerance: f64) -> Self {
         Self {
             family,
@@ -24,14 +28,21 @@ impl GLM {
             tolerance,
             weights: None,
             offsets: None,
-            coefficients: None,
+            coef: None,
             deviance: None,
             information_matrix: None,
         }
     }
 
+    /// Set the sample weights (usually measurement errors).
     pub fn set_weights(&mut self, weights: &[f64]) -> &mut Self {
         self.weights = Some(weights.to_vec());
+        self
+    }
+
+    /// Set the offsets (usually used in Poisson regression models).
+    pub fn set_offset(&mut self, offset: &[f64]) -> &mut Self {
+        self.offsets = Some(offset.to_vec());
         self
     }
 
@@ -110,13 +121,17 @@ impl GLM {
         }
     }
 
+    /// Fit the GLM using the [scoring algorithm](https://en.wikipedia.org/wiki/Score_(statistics)#Scoring_algorithm),
+    /// which gives the maximumum likelihood estimate. It performs a maximum of `max_iter` iterations.
+    /// Note that `x` must be a design matrix (i.e., the first column must contain all 1's).
     pub fn fit(&mut self, x: &[f64], y: &[f64], max_iter: usize) -> &mut Self {
         // check that the matrices are the right sizes
         let n = y.len();
         let p = is_matrix(x, n).unwrap();
+        assert!(is_design(x, n), "x is not a design matrix");
 
         let weights = if let Some(w) = &self.weights {
-            assert_eq!(w.len(), n);
+            assert_eq!(w.len(), n, "wrong number of weights");
             w.to_vec()
         } else {
             vec![1.; n]
@@ -141,7 +156,7 @@ impl GLM {
             // println!("{} {:?}", n_iter, coef);
             nu = matmul(x, &coef, n, p, false, false);
             if let Some(offset) = &self.offsets {
-                assert_eq!(offset.len(), n);
+                assert_eq!(offset.len(), n, "wrong number of offsets");
                 nu = vadd(&nu, offset);
             }
             // println!("{:?}", nu);
@@ -188,7 +203,7 @@ impl GLM {
             }
         }
 
-        self.coefficients = Some(coef);
+        self.coef = Some(coef);
         self.deviance = Some(self.family.deviance(&y, &mu));
         self.information_matrix = Some(self.compute_ddbeta(x, y, &dmu, &var, &weights));
 

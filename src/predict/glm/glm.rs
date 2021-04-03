@@ -21,17 +21,29 @@ impl GLM {
     /// Create a new general linear model with the given exponential family.
     /// `alpha` sets the ridge regression penalty strength, and `tolerance` sets the convergence
     /// tolerance.
-    pub fn new(family: ExponentialFamily, alpha: f64, tolerance: f64) -> Self {
+    pub fn new(family: ExponentialFamily) -> Self {
         Self {
             family,
-            alpha,
-            tolerance,
+            alpha: 0.,
+            tolerance: 1e-5,
             weights: None,
             offsets: None,
             coef: None,
             deviance: None,
             information_matrix: None,
         }
+    }
+
+    /// Set the lasso penalty strength.
+    pub fn set_penalty(&mut self, alpha: f64) -> &mut Self {
+        self.alpha = alpha;
+        self
+    }
+
+    /// Set the convergence tolerance.
+    pub fn set_tolerance(&mut self, tolerance: f64) -> &mut Self {
+        self.tolerance = tolerance;
+        self
     }
 
     /// Set the sample weights (usually measurement errors).

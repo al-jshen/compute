@@ -510,11 +510,11 @@ impl_vops!(vsub, -);
 impl_vops!(vmul, *);
 impl_vops!(vdiv, /);
 
-/// Scalar operations.
+/// Vector-scalar operations.
 #[macro_export]
-macro_rules! impl_svops {
+macro_rules! impl_vsops {
     ($opname: ident, $op:tt) => {
-        pub fn $opname(scalar: f64, v1: &[f64]) -> Vec<f64> {
+        pub fn $opname(v1: &[f64], scalar: f64) -> Vec<f64> {
             let n = v1.len();
 
             let mut v = vec![0.; n];
@@ -537,6 +537,45 @@ macro_rules! impl_svops {
             // do the rest
             for j in (chunks * 8)..n {
                 v[j] = v1[j] $op scalar;
+            }
+
+            v
+        }
+    }
+}
+
+impl_vsops!(vsadd, +);
+impl_vsops!(vssub, -);
+impl_vsops!(vsmul, *);
+impl_vsops!(vsdiv, /);
+
+/// Scalar-vector operations.
+#[macro_export]
+macro_rules! impl_svops {
+    ($opname: ident, $op:tt) => {
+        pub fn $opname(scalar: f64, v1: &[f64]) -> Vec<f64> {
+            let n = v1.len();
+
+            let mut v = vec![0.; n];
+            let chunks = (n - (n % 8)) / 8;
+
+            // unroll
+            for i in 0..chunks {
+                let idx = i * 8;
+                assert!(n > idx + 7);
+                v[i] = v1[idx] $op scalar;
+                v[i + 1] = scalar $op v1[idx + 1];
+                v[i + 2] = scalar $op v1[idx + 2];
+                v[i + 3] = scalar $op v1[idx + 3];
+                v[i + 4] = scalar $op v1[idx + 4];
+                v[i + 5] = scalar $op v1[idx + 5];
+                v[i + 6] = scalar $op v1[idx + 6];
+                v[i + 7] = scalar $op v1[idx + 7];
+            }
+
+            // do the rest
+            for j in (chunks * 8)..n {
+                v[j] = scalar $op v1[j];
             }
 
             v

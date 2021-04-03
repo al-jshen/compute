@@ -23,14 +23,6 @@ impl PolynomialRegressor {
     pub fn get_coeffs(&self) -> Vec<f64> {
         self.coeffs.clone()
     }
-}
-
-impl Predictor for PolynomialRegressor {
-    /// Update the coefficients of the polynomial regressor.
-    fn update(&mut self, params: &[f64]) -> &mut Self {
-        self.coeffs = params.to_owned();
-        self
-    }
 
     /// Fit the polynomial regressor to some observed data `y` given some explanatory variables `x`
     /// using the given optimizer. See [Optimizer](/compute/optimize/trait.Optimizer.html).
@@ -49,6 +41,14 @@ impl Predictor for PolynomialRegressor {
             GradFn::Predictive => |x: &[F1]| (x[0] * x[2] + x[1]),
         };
         self.coeffs = optimizer.optimize(x, y, resid_fn, &self.coeffs, maxsteps);
+        self
+    }
+}
+
+impl Predictor for PolynomialRegressor {
+    /// Update the coefficients of the polynomial regressor.
+    fn update(&mut self, params: &[f64]) -> &mut Self {
+        self.coeffs = params.to_owned();
         self
     }
 

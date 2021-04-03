@@ -485,14 +485,14 @@ macro_rules! impl_vops {
             for i in 0..chunks {
                 let idx = i * 8;
                 assert!(n > idx + 7);
-                v[i] = v1[idx] $op v2[idx];
-                v[i + 1] = v1[idx + 1] $op v2[idx + 1];
-                v[i + 2] = v1[idx + 2] $op v2[idx + 2];
-                v[i + 3] = v1[idx + 3] $op v2[idx + 3];
-                v[i + 4] = v1[idx + 4] $op v2[idx + 4];
-                v[i + 5] = v1[idx + 5] $op v2[idx + 5];
-                v[i + 6] = v1[idx + 6] $op v2[idx + 6];
-                v[i + 7] = v1[idx + 7] $op v2[idx + 7];
+                v[idx] = v1[idx] $op v2[idx];
+                v[idx + 1] = v1[idx + 1] $op v2[idx + 1];
+                v[idx + 2] = v1[idx + 2] $op v2[idx + 2];
+                v[idx + 3] = v1[idx + 3] $op v2[idx + 3];
+                v[idx + 4] = v1[idx + 4] $op v2[idx + 4];
+                v[idx + 5] = v1[idx + 5] $op v2[idx + 5];
+                v[idx + 6] = v1[idx + 6] $op v2[idx + 6];
+                v[idx + 7] = v1[idx + 7] $op v2[idx + 7];
             }
 
             // do the rest
@@ -524,14 +524,14 @@ macro_rules! impl_vsops {
             for i in 0..chunks {
                 let idx = i * 8;
                 assert!(n > idx + 7);
-                v[i] = v1[idx] $op scalar;
-                v[i + 1] = v1[idx + 1] $op scalar;
-                v[i + 2] = v1[idx + 2] $op scalar;
-                v[i + 3] = v1[idx + 3] $op scalar;
-                v[i + 4] = v1[idx + 4] $op scalar;
-                v[i + 5] = v1[idx + 5] $op scalar;
-                v[i + 6] = v1[idx + 6] $op scalar;
-                v[i + 7] = v1[idx + 7] $op scalar;
+                v[idx] = v1[idx] $op scalar;
+                v[idx + 1] = v1[idx + 1] $op scalar;
+                v[idx + 2] = v1[idx + 2] $op scalar;
+                v[idx + 3] = v1[idx + 3] $op scalar;
+                v[idx + 4] = v1[idx + 4] $op scalar;
+                v[idx + 5] = v1[idx + 5] $op scalar;
+                v[idx + 6] = v1[idx + 6] $op scalar;
+                v[idx + 7] = v1[idx + 7] $op scalar;
             }
 
             // do the rest
@@ -563,14 +563,14 @@ macro_rules! impl_svops {
             for i in 0..chunks {
                 let idx = i * 8;
                 assert!(n > idx + 7);
-                v[i] = v1[idx] $op scalar;
-                v[i + 1] = scalar $op v1[idx + 1];
-                v[i + 2] = scalar $op v1[idx + 2];
-                v[i + 3] = scalar $op v1[idx + 3];
-                v[i + 4] = scalar $op v1[idx + 4];
-                v[i + 5] = scalar $op v1[idx + 5];
-                v[i + 6] = scalar $op v1[idx + 6];
-                v[i + 7] = scalar $op v1[idx + 7];
+                v[idx] = v1[idx] $op scalar;
+                v[idx + 1] = scalar $op v1[idx + 1];
+                v[idx + 2] = scalar $op v1[idx + 2];
+                v[idx + 3] = scalar $op v1[idx + 3];
+                v[idx + 4] = scalar $op v1[idx + 4];
+                v[idx + 5] = scalar $op v1[idx + 5];
+                v[idx + 6] = scalar $op v1[idx + 6];
+                v[idx + 7] = scalar $op v1[idx + 7];
             }
 
             // do the rest

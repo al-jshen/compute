@@ -28,7 +28,7 @@ impl ExponentialFamily {
     pub fn variance(&self, mu: &[f64]) -> Vec<f64> {
         match self {
             ExponentialFamily::Gaussian => vec![1.; mu.len()],
-            ExponentialFamily::Bernoulli => vmul(&mu, &svsub(1., &mu)),
+            ExponentialFamily::Bernoulli => mu.iter().map(|x| x * (1. - x)).collect(),
             ExponentialFamily::QuasiPoisson => mu.to_vec(),
             ExponentialFamily::Poisson => mu.to_vec(),
             ExponentialFamily::Gamma => vmul(&mu, &mu),

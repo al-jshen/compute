@@ -1,4 +1,7 @@
-use crate::prelude::{is_design, is_matrix, matmul, mean, solve, vadd, vdiv, vmul, vsub};
+use crate::prelude::{
+    diag, invert_matrix, is_design, is_matrix, matmul, mean, solve, sum, svmul, vadd, vdiv, vmul,
+    vsub,
+};
 
 use super::ExponentialFamily;
 use super::Formula;
@@ -15,6 +18,8 @@ pub struct GLM {
     pub coef: Option<Vec<f64>>,
     pub deviance: Option<f64>,
     pub information_matrix: Option<Vec<f64>>,
+    pub n: Option<usize>,
+    pub p: Option<usize>,
 }
 
 impl GLM {
@@ -31,6 +36,8 @@ impl GLM {
             coef: None,
             deviance: None,
             information_matrix: None,
+            n: None,
+            p: None,
         }
     }
 
@@ -97,19 +104,19 @@ impl GLM {
         dbeta
     }
 
-    fn compute_ddbeta(
-        &self,
-        x: &[f64],
-        y: &[f64],
-        dmu: &[f64],
-        var: &[f64],
-        weights: &[f64],
-    ) -> Vec<f64> {
-        let n = y.len();
+    fn compute_ddbeta(&self, x: &[f64], dmu: &[f64], var: &[f64], weights: &[f64]) -> Vec<f64> {
+        let n = dmu.len();
         let p = is_matrix(x, n).unwrap();
 
         // weights * dmu**2 / var
+        // let working_weights = (0..n)
+        //     .map(|i| weights[i] * dmu[i] * dmu[i] / var[i])
+        //     .collect::<Vec<_>>();
         let working_weights = vdiv(&vmul(weights, &vmul(dmu, dmu)), var);
+        // println!("weights {:?}", weights);
+        // println!("dmu {:?}", dmu);
+        // println!("var {:?}", var);
+        // println!("working weights {:?}", working_weights);
         let mut weighted_x = x.to_vec();
 
         for i_n in 0..n {
@@ -136,7 +143,7 @@ impl GLM {
     /// Fit the GLM using the [scoring algorithm](https://en.wikipedia.org/wiki/Score_(statistics)#Scoring_algorithm),
     /// which gives the maximumum likelihood estimate. It performs a maximum of `max_iter` iterations.
     /// Note that `x` must be a design matrix (i.e., the first column must contain all 1's).
-    pub fn fit(&mut self, x: &[f64], y: &[f64], max_iter: usize) -> &mut Self {
+    pub fn fit(&mut self, x: &[f64], y: &[f64], max_iter: usize) -> Result<(), &str> {
         // check that the matrices are the right sizes
         let n = y.len();
         let p = is_matrix(x, n).unwrap();
@@ -171,7 +178,7 @@ impl GLM {
                 assert_eq!(offset.len(), n, "wrong number of offsets");
                 nu = vadd(&nu, offset);
             }
-            // println!("{:?}", nu);
+            // println!("nu {:?}", nu);
 
             mu = self.family.inv_link(&nu);
             // println!("mu {:?}", mu);
@@ -181,7 +188,7 @@ impl GLM {
             // println!("var {:?}", var);
 
             dbeta = self.compute_dbeta(x, y, &mu, &dmu, &var, &weights);
-            ddbeta = self.compute_ddbeta(x, y, &dmu, &var, &weights);
+            ddbeta = self.compute_ddbeta(x, &dmu, &var, &weights);
 
             // println!("dbeta {:?}", dbeta);
             // println!("ddbeta {:?}", ddbeta);
@@ -217,9 +224,52 @@ impl GLM {
 
         self.coef = Some(coef);
         self.deviance = Some(self.family.deviance(&y, &mu));
-        self.information_matrix = Some(self.compute_ddbeta(x, y, &dmu, &var, &weights));
+        self.information_matrix = Some(self.compute_ddbeta(x, &dmu, &var, &weights));
+        self.n = Some(sum(&weights).round() as usize);
+        self.p = Some(p);
 
-        self
+        if n_iter >= max_iter && !is_converged {
+            return Err("reached maximum number of iterations without converging");
+        }
+        Ok(())
+    }
+
+    pub fn coef(&self) -> Result<&[f64], &str> {
+        if let Some(coef) = &self.coef {
+            Ok(coef)
+        } else {
+            Err("model has not been fitted yet")
+        }
+    }
+
+    pub fn dispersion(&self) -> Result<f64, &str> {
+        if let Some(dev) = self.deviance {
+            if self.family.has_dispersion() {
+                // ok to unwrap because if deviance is Some then these are also Some
+                // and deviance can only be Some after `fit` because it is private
+                let n = self.n.unwrap();
+                let p = self.p.unwrap();
+                Ok(dev / (n - p) as f64)
+            } else {
+                Ok(1.)
+            }
+        } else {
+            Err("model has not been fitted yet")
+        }
+    }
+
+    pub fn coef_covariance_matrix(&self) -> Result<Vec<f64>, &str> {
+        let disp = self.dispersion()?;
+        Ok(svmul(
+            disp,
+            &invert_matrix(self.information_matrix.as_ref().unwrap()),
+        ))
+    }
+
+    pub fn coef_standard_error(&self) -> Result<Vec<f64>, &str> {
+        let cov_mat = self.coef_covariance_matrix()?;
+        let variances = diag(&cov_mat);
+        Ok(variances.iter().map(|x| x.sqrt()).collect())
     }
 }
 
@@ -242,9 +292,10 @@ mod tests {
         let n = y.len();
         let xd = design(&x, n);
 
-        let mut glm = GLM::new(ExponentialFamily::Bernoulli, 0., 1e-6);
-        glm.fit(&xd, &y, 25);
-        let coef = glm.coef.unwrap();
+        let mut glm = GLM::new(ExponentialFamily::Bernoulli);
+        glm.fit(&xd, &y, 25).unwrap();
+        let coef = glm.coef().unwrap();
+        let errors = glm.coef_standard_error().unwrap();
         assert_approx_eq!(coef[0], -4.0777, 1e-3);
         assert_approx_eq!(coef[1], 1.5046, 1e-3);
     }

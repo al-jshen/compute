@@ -1,7 +1,7 @@
 use super::Predictor;
 use crate::linalg::*;
-// use crate::optimize::{optimizers::GradFn, optimizers::Optimizer};
-// use autodiff::{Float, F1};
+use crate::optimize::{optimizers::GradFn, optimizers::Optimizer};
+use autodiff::{Float, F1};
 
 /// Implements a [polynomial regressor](https://en.wikipedia.org/wiki/Polynomial_regression).
 ///
@@ -32,26 +32,25 @@ impl Predictor for PolynomialRegressor {
         self
     }
 
-    // /// Fit the polynomial regressor to some observed data `y` given some explanatory variables `x`
-    // /// using the given optimizer. See [Optimizer](/compute/optimize/trait.Optimizer.html).
-    // fn fit_with_optimizer<O>(
-    //     &mut self,
-    //     x: &[f64],
-    //     y: &[f64],
-    //     optimizer: O,
-    //     maxsteps: usize,
-    // ) -> &mut Self
-    // where
-    //     O: Optimizer,
-    // {
-    //     let resid_fn = match optimizer.grad_fn_type() {
-    //         GradFn::Residual => |x: &[F1]| (x[0] - (x[1] * x[3] + x[2])).powi(2),
-    //         GradFn::Predictive => |x: &[F1]| (x[0] * x[2] + x[1]),
-    //         // GradFn::Predictive => |x: &[F1]| diff_pred(&x)
-    //     };
-    //     self.coeffs = optimizer.optimize(x, y, resid_fn, &self.coeffs, maxsteps);
-    //     self
-    // }
+    /// Fit the polynomial regressor to some observed data `y` given some explanatory variables `x`
+    /// using the given optimizer. See [Optimizer](/compute/optimize/trait.Optimizer.html).
+    fn fit_with_optimizer<O>(
+        &mut self,
+        x: &[f64],
+        y: &[f64],
+        optimizer: O,
+        maxsteps: usize,
+    ) -> &mut Self
+    where
+        O: Optimizer,
+    {
+        let resid_fn = match optimizer.grad_fn_type() {
+            GradFn::Residual => |x: &[F1]| (x[0] - (x[1] * x[3] + x[2])).powi(2),
+            GradFn::Predictive => |x: &[F1]| (x[0] * x[2] + x[1]),
+        };
+        self.coeffs = optimizer.optimize(x, y, resid_fn, &self.coeffs, maxsteps);
+        self
+    }
 
     /// Returns `c0 + c[1] * x + c[2] * x^2 ... + cn + x^n`, where `c[i]` are the coefficients of the
     /// polynomial regressor, and `x` is some vector of explanatory variables.

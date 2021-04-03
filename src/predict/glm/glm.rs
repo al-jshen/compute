@@ -14,12 +14,12 @@ pub struct GLM {
     pub alpha: f64,
     pub tolerance: f64,
     pub weights: Option<Vec<f64>>,
-    pub offsets: Option<Vec<f64>>,
-    pub coef: Option<Vec<f64>>,
-    pub deviance: Option<f64>,
-    pub information_matrix: Option<Vec<f64>>,
-    pub n: Option<usize>,
-    pub p: Option<usize>,
+    offsets: Option<Vec<f64>>,
+    coef: Option<Vec<f64>>,
+    deviance: Option<f64>,
+    information_matrix: Option<Vec<f64>>,
+    n: Option<usize>,
+    p: Option<usize>,
 }
 
 impl GLM {
@@ -263,6 +263,24 @@ impl GLM {
         let variances = diag(&cov_mat);
         Ok(variances.iter().map(|x| x.sqrt()).collect())
     }
+
+    pub fn predict(&self, x: &[f64]) -> Result<Vec<f64>, &str> {
+        let coef = self.coef()?;
+        assert!(
+            is_design(x, self.n.unwrap()),
+            "x is not a valid design matrix"
+        );
+        let result = matmul(&x, coef, self.n.unwrap(), self.p.unwrap(), false, false);
+        if let Some(offset) = &self.offsets {
+            Ok(self.family.inv_link(&vadd(&result, offset)))
+        } else {
+            Ok(self.family.inv_link(&result))
+        }
+    }
+
+    pub fn score(&self, x: &[f64], y: &[f64]) -> f64 {
+        self.family.deviance(y, &self.predict(x).unwrap())
+    }
 }
 
 #[cfg(test)]
@@ -290,5 +308,7 @@ mod tests {
         let errors = glm.coef_standard_error().unwrap();
         assert_approx_eq!(coef[0], -4.0777, 1e-3);
         assert_approx_eq!(coef[1], 1.5046, 1e-3);
+        assert_approx_eq!(errors[0], 1.7610, 1e-3);
+        assert_approx_eq!(errors[1], 0.6287, 1e-3);
     }
 }

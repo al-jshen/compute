@@ -108,15 +108,7 @@ impl GLM {
         let n = dmu.len();
         let p = is_matrix(x, n).unwrap();
 
-        // weights * dmu**2 / var
-        // let working_weights = (0..n)
-        //     .map(|i| weights[i] * dmu[i] * dmu[i] / var[i])
-        //     .collect::<Vec<_>>();
         let working_weights = vdiv(&vmul(weights, &vmul(dmu, dmu)), var);
-        // println!("weights {:?}", weights);
-        // println!("dmu {:?}", dmu);
-        // println!("var {:?}", var);
-        // println!("working weights {:?}", working_weights);
         let mut weighted_x = x.to_vec();
 
         for i_n in 0..n {

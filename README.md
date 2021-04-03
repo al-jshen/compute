@@ -51,14 +51,20 @@ println!("{}", p.pmf(2));  // probability mass function
 ### Regression
 
 ```rust
-use compute::predict::*;
+use compute::prelude::*;
 
 let x = vec![1., 2., 3., 4.];
+let xd = design(&x, x.len()); // make a design matrix
 let y = vec![3., 5., 7., 9.];
 
-let mut clf = PolynomialRegressor::new(1); // degree 1 (i.e. linear regressor)
+let mut clf = PolynomialRegressor::new(2); // degree 2 (i.e. quadratic)
 clf.fit(&x, &y);                           // linear least squares fitting
-println!("{:?}", clf.get_coeffs());        // get model coefficients
+println!("{:?}", clf.coef);                // get model coefficients
+
+let y_bin = vec![0., 0., 1., 1.];
+let mut glm = GLM::new(ExponentialFamily::Bernoulli);  // logistic regression
+glm.set_penalty(1.);                                   // ridge regression
+glm.fit(&xd, &y, 25);                                  // fit with scoring algorithm (MLE), cap iterations at 25
 ```
 
 ### Time series models

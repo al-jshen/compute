@@ -575,7 +575,7 @@ macro_rules! impl_svops {
             for i in 0..chunks {
                 let idx = i * 8;
                 assert!(n > idx + 7);
-                v[idx] = v1[idx] $op scalar;
+                v[idx] = scalar $op v1[idx];
                 v[idx + 1] = scalar $op v1[idx + 1];
                 v[idx + 2] = scalar $op v1[idx + 2];
                 v[idx + 3] = scalar $op v1[idx + 3];

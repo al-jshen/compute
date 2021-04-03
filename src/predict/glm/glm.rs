@@ -210,3 +210,30 @@ impl GLM {
         self
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::linalg::design;
+    use approx_eq::assert_approx_eq;
+
+    /// This test is taken from [Wikipedia](https://en.wikipedia.org/wiki/Logistic_regression#Probability_of_passing_an_exam_versus_hours_of_study).
+    #[test]
+    fn test_glm_logistic() {
+        let x = vec![
+            0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00, 3.25, 3.50,
+            4.00, 4.25, 4.50, 4.75, 5.00, 5.50,
+        ];
+        let y = vec![
+            0., 0., 0., 0., 0., 0., 1., 0., 1., 0., 1., 0., 1., 0., 1., 1., 1., 1., 1., 1.,
+        ];
+        let n = y.len();
+        let xd = design(&x, n);
+
+        let mut glm = GLM::new(ExponentialFamily::Bernoulli, 0., 1e-6);
+        glm.fit(&xd, &y, 25);
+        let coef = glm.coef.unwrap();
+        assert_approx_eq!(coef[0], -4.0777, 1e-3);
+        assert_approx_eq!(coef[1], 1.5046, 1e-3);
+    }
+}

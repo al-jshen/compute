@@ -1,5 +1,4 @@
 /// Vector-vector operations.
-#[macro_export]
 macro_rules! impl_vops_binary {
     ($opname: ident, $op:tt) => {
         pub fn $opname(v1: &[f64], v2: &[f64]) -> Vec<f64> {
@@ -39,7 +38,6 @@ impl_vops_binary!(vmul, *);
 impl_vops_binary!(vdiv, /);
 
 /// Single vector operations.
-#[macro_export]
 macro_rules! impl_vops_unary {
     ($opname: ident, $op:ident) => {
         pub fn $opname(v1: &[f64]) -> Vec<f64> {
@@ -100,7 +98,6 @@ impl_vops_unary!(vtodegrees, to_degrees);
 impl_vops_unary!(vrecip, recip);
 
 /// Vector-scalar operations.
-#[macro_export]
 macro_rules! impl_vsops {
         ($opname: ident, $op:tt) => {
             pub fn $opname(v1: &[f64], scalar: f64) -> Vec<f64> {
@@ -139,7 +136,6 @@ impl_vsops!(vsmul, *);
 impl_vsops!(vsdiv, /);
 
 /// Scalar-vector operations.
-#[macro_export]
 macro_rules! impl_svops {
     ($opname: ident, $op:tt) => {
         pub fn $opname(scalar: f64, v1: &[f64]) -> Vec<f64> {

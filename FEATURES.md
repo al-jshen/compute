@@ -5,8 +5,6 @@
   - GLMs: logistic, (quasi-)Poisson, Gamma, exponential
 - optimization methods
   - numerical differentiation, partial derivatives, automatic differentiation (currently with autodiff crate)
-  - loss functions
-    - MSE
   - optimizers
     - Adam, Levenberg-Marquardt, SGD with (Nesterov) momentum
 - numerical integration of functions
@@ -33,13 +31,14 @@
     - bootstrap, jackknife
 - linear algebra: both BLAS/LAPACK and Rust implementations
   - general utilities
-    - dot product, (blocked) matrix multiplication, matrix inversion, Toeplitz matrix, Vandermonde matrix, norm, linear solve
-  - decompositions
-    - LU
+    - dot product, (blocked) matrix multiplication, matrix inversion, Toeplitz matrix, Vandermonde matrix, (infinity) norm, linear solve, transpose, design matrix
+    - vector-vector, scalar-vector, vector-scalar operations with loop unrolling
+  - decompositions and solvers
+    - LU, Cholesky
 - signal processing
   - convolutions
   - filters
-    - Savitzky-Golay
+    - Savitzky-Golay (LOESS)
 
 ## Planned features
 
@@ -48,11 +47,10 @@
 - non-linear optimizers (BFGS)
 - ODE integrators (leapfrog, RK4)
 - clustering algorithms (k-means/EM, DBSCAN)
-- more regression models (GLMs, mixed models, GP, penalized models)
+- more regression models (mixed models, GP, penalized models, splines)
 - prediction trees (CART, random forests, gradient boosted trees)
 - order statistics (quantiles)
-- interpolation (polynomial, spline)
 - statistical tests (t-test, ANOVA, Kolmogorov-Smirnov, Anderson-Darling)
 - data preprocessing (outlier detection, standardization, dimensionality reduction (PCA))
-- more linear algebra decompositions (QR, SVD, Cholesky)
+- more linear algebra decompositions (QR, SVD)
 - samplers? rejection, RWM, HMC, NUTS, (dynamic) nested sampling

@@ -20,7 +20,7 @@ use blas::{ddot, dgemm};
 use lapack::{dgesv, dgetrf, dgetri};
 
 #[cfg(not(feature = "lapack"))]
-use crate::linalg::decomposition::lu::*;
+use crate::linalg::decomposition::*;
 use crate::prelude::max;
 
 /// Generates evenly spaced values within a given interval. Values generated in the half-open
@@ -81,6 +81,20 @@ pub fn is_symmetric(m: &[f64]) -> bool {
             if m[i * n + j] != m[j * n + i] {
                 return false;
             }
+        }
+    }
+    true
+}
+
+/// Checks whether a 1d array is a valid positive definite matrix.
+pub fn is_positive_definite(m: &[f64]) -> bool {
+    if !is_symmetric(m) {
+        return false;
+    }
+    let n = is_square(m).unwrap();
+    for i in 0..n {
+        if m[i * n + i] <= 0. {
+            return false;
         }
     }
     true
@@ -174,20 +188,8 @@ pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
 
     #[cfg(not(feature = "lapack"))]
     {
-        let mut ones = vec![0.; n];
-        let mut inverse = vec![0.; n * n];
-        let (lu, piv) = lu(&matrix);
-
-        for i in 0..n {
-            ones[i] = 1.;
-            let sol = lu_solve(&lu, &piv, &ones);
-            assert_eq!(sol.len(), n);
-            for j in 0..n {
-                inverse[j * n + i] = sol[j];
-            }
-            ones[i] = 0.;
-        }
-        inverse
+        let ones = diag_matrix(&vec![1.; n]);
+        solve_sys(matrix, &ones)
     }
 }
 
@@ -226,14 +228,24 @@ pub fn solve_sys(a: &[f64], b: &[f64]) -> Vec<f64> {
     #[cfg(not(feature = "lapack"))]
     {
         let mut solutions = Vec::with_capacity(b.len());
-        let (lu, piv) = lu(a);
         let B = row_to_col_major(&b, n);
 
-        for i in 0..nsys {
-            let sol = lu_solve(&lu, &piv, &B[(i * n)..((i + 1) * n)]);
-            assert_eq!(sol.len(), n);
-            solutions.extend_from_slice(&sol);
+        if is_positive_definite(a) {
+            let l = cholesky(a);
+            for i in 0..nsys {
+                let sol = cholesky_solve(&l, &B[(i * n)..((i + 1) * n)]);
+                assert_eq!(sol.len(), n);
+                solutions.extend_from_slice(&sol);
+            }
+        } else {
+            let (lu, piv) = lu(a);
+            for i in 0..nsys {
+                let sol = lu_solve(&lu, &piv, &B[(i * n)..((i + 1) * n)]);
+                assert_eq!(sol.len(), n);
+                solutions.extend_from_slice(&sol);
+            }
         }
+
         col_to_row_major(&solutions, n)
     }
 }
@@ -267,8 +279,13 @@ pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
 
     #[cfg(not(feature = "lapack"))]
     {
-        let (lu, piv) = lu(&a);
-        lu_solve(&lu, &piv, b)
+        if is_positive_definite(&a) {
+            let l = cholesky(&a);
+            cholesky_solve(&l, b)
+        } else {
+            let (lu, piv) = lu(&a);
+            lu_solve(&lu, &piv, b)
+        }
     }
 }
 

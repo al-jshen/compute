@@ -24,8 +24,8 @@ pub struct GLM {
 
 impl GLM {
     /// Create a new general linear model with the given exponential family.
-    /// `alpha` sets the ridge regression penalty strength, and `tolerance` sets the convergence
-    /// tolerance.
+    /// `alpha` sets the L2 (ridge regression) regularization strength, and
+    /// `tolerance` sets the convergence tolerance.
     pub fn new(family: ExponentialFamily) -> Self {
         Self {
             family,
@@ -41,7 +41,7 @@ impl GLM {
         }
     }
 
-    /// Set the lasso penalty strength.
+    /// Set the L2 (ridge regression) regularization strength.
     pub fn set_penalty(&mut self, alpha: f64) -> &mut Self {
         self.alpha = alpha;
         self

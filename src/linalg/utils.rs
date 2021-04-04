@@ -18,14 +18,6 @@ extern crate openblas_src;
 use blas::{ddot, dgemm};
 #[cfg(feature = "lapack")]
 use lapack::{dgesv, dgetrf, dgetri};
-#[cfg(feature = "simd")]
-use simdeez::avx2::*;
-#[cfg(feature = "simd")]
-use simdeez::scalar::*;
-#[cfg(feature = "simd")]
-use simdeez::sse2::*;
-#[cfg(feature = "simd")]
-use simdeez::sse41::*;
 
 #[cfg(not(feature = "lapack"))]
 use crate::linalg::decomposition::lu::*;
@@ -450,10 +442,8 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
     {
         unsafe { ddot(x.len() as i32, x, 1, y, 1) }
     }
-    #[cfg(all(not(feature = "blas"), feature = "simd"))]
-    return simd_dot_runtime_select(x, y);
 
-    #[cfg(all(not(feature = "blas"), not(feature = "simd")))]
+    #[cfg(not(feature = "blas"))]
     {
         let n = x.len();
         let chunks = (n - (n % 8)) / 8;
@@ -660,29 +650,6 @@ impl_svops!(svadd, +);
 impl_svops!(svsub, -);
 impl_svops!(svmul, *);
 impl_svops!(svdiv, /);
-
-#[cfg(feature = "simd")]
-simd_runtime_generate!(
-    fn simd_dot(x: &[f64], y: &[f64]) -> f64 {
-        assert_eq!(x.len(), y.len());
-
-        let mut res = 0.;
-
-        let n_iter = x.len() / S::VF64_WIDTH;
-
-        for i in 0..n_iter {
-            let xv = S::loadu_pd(&x[i * S::VF64_WIDTH]);
-            let yv = S::loadu_pd(&y[i * S::VF64_WIDTH]);
-            res += S::horizontal_add_pd(xv * yv);
-        }
-
-        for i in (n_iter * S::VF64_WIDTH)..x.len() {
-            res += x[i] * y[i];
-        }
-
-        res
-    }
-);
 
 /// Calculates the norm of a vector.
 pub fn norm(x: &[f64]) -> f64 {

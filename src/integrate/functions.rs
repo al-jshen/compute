@@ -46,26 +46,26 @@ where
 
 /// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
 /// `w` for the n-point Gauss-Legendre quadrature.
-pub fn gau_leg_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+fn gau_leg_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
     unimplemented!();
 }
 
 ///
 /// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
 /// `w` for the n-point Gauss-Laguerre quadrature.
-pub fn gau_lag_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+fn gau_lag_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
     unimplemented!();
 }
 
 /// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
 /// `w` for the n-point Gauss-Jacobi quadrature.
-pub fn gau_jac_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+fn gau_jac_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
     unimplemented!();
 }
 
 /// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
 /// `w` for the n-point Gauss-Hermite quadrature.
-pub fn gau_her_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+fn gau_her_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
     unimplemented!();
 }
 

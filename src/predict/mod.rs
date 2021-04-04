@@ -1,4 +1,4 @@
-//! Various models for data fitting and forecasting.
+//! Various statistical models for data fitting and prediction.
 
 mod glm;
 mod polynomial;

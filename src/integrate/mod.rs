@@ -1,7 +1,7 @@
 //! Algorithms for integrating functions and ODEs.
 
 mod functions;
-mod odes;
+// mod odes;
 
 pub use functions::*;
-pub use odes::*;
+// pub use odes::*;

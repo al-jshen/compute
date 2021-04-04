@@ -73,6 +73,19 @@ pub fn is_design(m: &[f64], nrows: usize) -> bool {
     is_design
 }
 
+/// Checks whether a 1D array is a valid symmetric matrix.
+pub fn is_symmetric(m: &[f64]) -> bool {
+    let n = is_square(m).unwrap();
+    for i in 0..n {
+        for j in i..n {
+            if m[i * n + j] != m[j * n + i] {
+                return false;
+            }
+        }
+    }
+    true
+}
+
 /// Convert a 1D matrix from row-major ordering into column-major ordering.
 pub fn row_to_col_major(a: &[f64], nrows: usize) -> Vec<f64> {
     let ncols = is_matrix(a, nrows).unwrap();
@@ -684,5 +697,13 @@ mod tests {
         for i in 0..60 {
             assert_approx_eq!(r2[i], e2[i]);
         }
+    }
+
+    #[test]
+    fn test_symmetric() {
+        let x = vec![1., 2., 3., 2., 4., 5., 3., 5., 8.];
+        let y = vec![1., 2., 3., 1., 2., 3., 1., 2., 3.];
+        assert!(is_symmetric(&x));
+        assert_eq!(is_symmetric(&y), false);
     }
 }

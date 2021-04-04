@@ -250,7 +250,7 @@ pub fn solve_sys(a: &[f64], b: &[f64]) -> Vec<f64> {
     }
 }
 
-/// Solve the linear system Ax = b with LU decomposition.
+/// Solve the linear system Ax = b.
 pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
     let n = b.len();
     assert!(a.len() == n * n);

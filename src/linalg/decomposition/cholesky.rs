@@ -1,6 +1,8 @@
 //! Implements [Cholesky decomposition](https://en.wikipedia.org/wiki/Cholesky_decomposition).
 
-use crate::linalg::{dot, is_square, is_symmetric};
+use crate::linalg::{
+    backward_substitution, dot, forward_substitution, is_square, is_symmetric, transpose,
+};
 
 /// Computes the Cholesky decomposition of the matrix `a` using the Cholesky-Banachiewicz
 /// algorithm.
@@ -23,6 +25,19 @@ pub fn cholesky(a: &[f64]) -> Vec<f64> {
     }
 
     l
+}
+
+/// Solves the system Lx=b, where L is a lower triangular matrix (e.g., a Cholesky decomposed
+/// matrix), and b is a one dimensional vector.
+pub fn cholesky_solve(l: &[f64], b: &[f64]) -> Vec<f64> {
+    let n = is_square(l).unwrap();
+    assert_eq!(b.len(), n, "sizes of L and b do not match up");
+
+    let y = forward_substitution(l, b);
+
+    // back substitution
+    let lt = transpose(&l, n);
+    backward_substitution(&lt, &y)
 }
 
 #[cfg(test)]
@@ -63,7 +78,6 @@ mod tests {
         let l3 = cholesky(&a3);
         let b3 = vec![5., 0., 0., 3., 3., 0., -1., 1., 3.];
 
-        let a = [a1, a2, a3];
         let l = [l1, l2, l3];
         let b = [b1, b2, b3];
 
@@ -71,6 +85,19 @@ mod tests {
             for j in 0..l.len() {
                 assert_approx_eq!(l[i][j], b[i][j], 1e-2);
             }
+        }
+    }
+
+    #[test]
+    fn test_cholesky_solve() {
+        let a = vec![
+            9., 3., 1., 5., 3., 7., 5., 1., 1., 5., 9., 2., 5., 1., 2., 6.,
+        ];
+        let l = cholesky(&a);
+        let x = cholesky_solve(&l, &[1., 1., 1., 1.]);
+        let sol = [-0.01749271, 0.11953353, 0.01166181, 0.1574344];
+        for i in 0..4 {
+            assert_approx_eq!(x[i], sol[i], 1e-2);
         }
     }
 }

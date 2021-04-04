@@ -1,4 +1,4 @@
-use crate::linalg::{norm, svsub, vmul, vsdiv, vsmul, vssub, vsub};
+use crate::linalg::{norm, svsub, vexp, vmul, vrecip, vsdiv, vsmul, vssub, vsub};
 
 /// An enum to represent the [exponential
 /// family](https://en.wikipedia.org/wiki/Exponential_family) set of distributions. These are
@@ -28,7 +28,7 @@ impl ExponentialFamily {
     pub fn variance(&self, mu: &[f64]) -> Vec<f64> {
         match self {
             ExponentialFamily::Gaussian => vec![1.; mu.len()],
-            ExponentialFamily::Bernoulli => mu.iter().map(|x| x * (1. - x)).collect(),
+            ExponentialFamily::Bernoulli => vmul(mu, &svsub(1., mu)),
             ExponentialFamily::QuasiPoisson => mu.to_vec(),
             ExponentialFamily::Poisson => mu.to_vec(),
             ExponentialFamily::Gamma => vmul(&mu, &mu),
@@ -36,20 +36,20 @@ impl ExponentialFamily {
         }
     }
 
-    pub fn inv_link(&self, nu: &[f64]) -> Vec<f64> {
+    pub fn inv_link(&self, eta: &[f64]) -> Vec<f64> {
         match self {
-            ExponentialFamily::Gaussian => nu.to_vec(),
-            ExponentialFamily::Bernoulli => nu.iter().map(|x| 1. / (1. + (-x).exp())).collect(),
-            ExponentialFamily::QuasiPoisson => nu.iter().map(|x| x.exp()).collect(),
-            ExponentialFamily::Poisson => nu.iter().map(|x| x.exp()).collect(),
-            ExponentialFamily::Gamma => nu.iter().map(|x| x.exp()).collect(),
-            ExponentialFamily::Exponential => nu.iter().map(|x| x.exp()).collect(),
+            ExponentialFamily::Gaussian => eta.to_vec(),
+            ExponentialFamily::Bernoulli => eta.iter().map(|x| 1. / (1. + (-x).exp())).collect(),
+            ExponentialFamily::QuasiPoisson => vexp(eta), //eta.iter().map(|x| x.exp()).collect(),
+            ExponentialFamily::Poisson => vexp(eta),      //eta.iter().map(|x| x.exp()).collect(),
+            ExponentialFamily::Gamma => vexp(eta),        //eta.iter().map(|x| x.exp()).collect(),
+            ExponentialFamily::Exponential => vexp(eta),  //eta.iter().map(|x| x.exp()).collect(),
         }
     }
 
-    pub fn d_inv_link(&self, nu: &[f64], mu: &[f64]) -> Vec<f64> {
+    pub fn d_inv_link(&self, eta: &[f64], mu: &[f64]) -> Vec<f64> {
         match self {
-            ExponentialFamily::Gaussian => vec![1.; nu.len()],
+            ExponentialFamily::Gaussian => vec![1.; eta.len()],
             ExponentialFamily::Bernoulli => vmul(&mu, &svsub(1., &mu)),
             ExponentialFamily::QuasiPoisson => mu.to_vec(),
             ExponentialFamily::Poisson => mu.to_vec(),
@@ -116,9 +116,9 @@ impl ExponentialFamily {
     }
     pub fn initial_working_weights(&self, y: &[f64]) -> Option<Vec<f64>> {
         match self {
-            ExponentialFamily::Gaussian => Some(vsdiv(&vec![1.; y.len()], y.len() as f64)),
+            ExponentialFamily::Gaussian => Some(vrecip(&vec![y.len() as f64; y.len()])),
             ExponentialFamily::Bernoulli => {
-                Some(vsmul(&vsdiv(&vec![1.; y.len()], y.len() as f64), 0.25))
+                Some(vsmul(&vrecip(&vec![y.len() as f64; y.len()]), 0.25))
             }
             ExponentialFamily::QuasiPoisson => None,
             ExponentialFamily::Poisson => None,

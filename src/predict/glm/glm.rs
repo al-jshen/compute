@@ -1,6 +1,6 @@
 use crate::prelude::{
     diag, invert_matrix, is_design, is_matrix, matmul, mean, solve, sum, svmul, vadd, vdiv, vmul,
-    vsub,
+    vsqrt, vsub,
 };
 
 use super::ExponentialFamily;
@@ -156,7 +156,7 @@ impl GLM {
         let mut is_converged = false;
         let mut n_iter = 0;
 
-        let mut nu;
+        let mut eta;
         let mut mu;
         let mut dmu;
         let mut var;
@@ -165,16 +165,16 @@ impl GLM {
 
         loop {
             // println!("{} {:?}", n_iter, coef);
-            nu = matmul(x, &coef, n, p, false, false);
+            eta = matmul(x, &coef, n, p, false, false);
             if let Some(offset) = &self.offsets {
                 assert_eq!(offset.len(), n, "wrong number of offsets");
-                nu = vadd(&nu, offset);
+                eta = vadd(&eta, offset);
             }
-            // println!("nu {:?}", nu);
+            // println!("eta {:?}", eta);
 
-            mu = self.family.inv_link(&nu);
+            mu = self.family.inv_link(&eta);
             // println!("mu {:?}", mu);
-            dmu = self.family.d_inv_link(&nu, &mu);
+            dmu = self.family.d_inv_link(&eta, &mu);
             // println!("dmu {:?}", dmu);
             var = self.family.variance(&mu);
             // println!("var {:?}", var);
@@ -261,7 +261,7 @@ impl GLM {
     pub fn coef_standard_error(&self) -> Result<Vec<f64>, &str> {
         let cov_mat = self.coef_covariance_matrix()?;
         let variances = diag(&cov_mat);
-        Ok(variances.iter().map(|x| x.sqrt()).collect())
+        Ok(vsqrt(&variances))
     }
 
     pub fn predict(&self, x: &[f64]) -> Result<Vec<f64>, &str> {

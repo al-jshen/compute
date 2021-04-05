@@ -37,7 +37,7 @@ compute = {version = "0.1", features = ["blas"]}
 use compute::distributions::*;
 
 let beta = Beta::new(2., 2.);
-let betadata: Vec<f64> = b.sample_vec(1000); // vector of 1000 variates
+let betadata = b.sample_vec(1000); // vector of 1000 variates
 
 println!("{}", beta.mean());
 println!("{}", beta.var());
@@ -66,8 +66,8 @@ let y_bin = vec![0., 0., 1., 1.];
 let mut glm = GLM::new(ExponentialFamily::Bernoulli);  // logistic regression
 glm.set_penalty(1.);                                   // ridge regression
 glm.fit(&xd, &y, 25).unwrap();                         // fit with scoring algorithm (MLE), cap iterations at 25
-glm.coef().unwrap()                                    // get estimated coefficients
-glm.coef().coef_covariance_matrix().unwrap()           // get covariance matrix for estimated coefficients
+println!("{:?}", glm.coef().unwrap());                          // get estimated coefficients
+println!("{:?}", glm.coef().coef_covariance_matrix().unwrap()); // get covariance matrix for estimated coefficients
 ```
 
 ### Time series models
@@ -75,7 +75,7 @@ glm.coef().coef_covariance_matrix().unwrap()           // get covariance matrix 
 ```rust
 use compute::timeseries::*;
 
-let x = vec![-2.582184,-3.44017,-1.979827,-0.268826,1.162776,0.9260983,-1.075229,0.7232999,0.9659502,0.2425384];
+let x = vec![-2.584, -3.474, -1.977, -0.226, 1.166, 0.923, -1.075, 0.732, 0.959];
 
 let mut ar = AR::new(1);             // AR(1) model
 ar.fit(&x);                          // fit model with Yule-Walker equations

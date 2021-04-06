@@ -64,7 +64,7 @@ println!("{:?}", clf.coef);                // get model coefficients
 
 let y_bin = vec![0., 0., 1., 1.];
 let mut glm = GLM::new(ExponentialFamily::Bernoulli);  // logistic regression
-glm.set_penalty(1.);                                   // ridge regression
+glm.set_penalty(1.);                                   // L2 penalty
 glm.fit(&xd, &y, 25).unwrap();                         // fit with scoring algorithm (MLE), cap iterations at 25
 println!("{:?}", glm.coef().unwrap());                          // get estimated coefficients
 println!("{:?}", glm.coef().coef_covariance_matrix().unwrap()); // get covariance matrix for estimated coefficients

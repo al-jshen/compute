@@ -22,7 +22,7 @@ For the latest version, add the following to your `Cargo.toml` file:
 compute = { git = "https://github.com/al-jshen/compute" }
 ```
 
-There are many functions which rely on linear algebra methods. You can either use the provided Rust methods (default), or use BLAS and/or LAPACK. To do so, activate the `"blas"` and/or the `"lapack"` feature flags in `Cargo.toml`:
+There are many functions which rely on linear algebra methods. You can either use the provided Rust methods (default), or use BLAS and/or LAPACK by activating the `"blas"` and/or the `"lapack"` feature flags in `Cargo.toml`:
 
 ```rust
 // example with BLAS only

@@ -22,7 +22,7 @@ For the latest version, add the following to your `Cargo.toml` file:
 compute = { git = "https://github.com/al-jshen/compute" }
 ```
 
-There are many functions which rely on linear algebra methods. You can either use the provided Rust methods (default), or use BLAS and/or LAPACK. To do so, activate the `"blas"` and/or the `"lapack"` feature flags in `Cargo.toml`:
+There are many functions which rely on linear algebra methods. You can either use the provided Rust methods (default), or use BLAS and/or LAPACK by activating the `"blas"` and/or the `"lapack"` feature flags in `Cargo.toml`:
 
 ```rust
 // example with BLAS only
@@ -64,7 +64,7 @@ println!("{:?}", clf.coef);                // get model coefficients
 
 let y_bin = vec![0., 0., 1., 1.];
 let mut glm = GLM::new(ExponentialFamily::Bernoulli);  // logistic regression
-glm.set_penalty(1.);                                   // ridge regression
+glm.set_penalty(1.);                                   // L2 penalty
 glm.fit(&xd, &y, 25).unwrap();                         // fit with scoring algorithm (MLE), cap iterations at 25
 println!("{:?}", glm.coef().unwrap());                          // get estimated coefficients
 println!("{:?}", glm.coef().coef_covariance_matrix().unwrap()); // get covariance matrix for estimated coefficients

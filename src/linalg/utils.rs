@@ -1,6 +1,6 @@
 //! Provides general linear algebra utilities like dot products, matrix multiplication, matrix
 //! inversion, and the creation of Vandermonde matrices. Matrix operations are generally performed on 1D
-//! arrays with the number of rows specified, whether the matrix is in row-major ordering. If the
+//! arrays with the number of rows specified, where the matrix is in row-major ordering. If the
 //! `blas` and/or `lapack` features are enabled, then those will be used. Otherwise, native Rust
 //! alternatives are available as defaults.
 

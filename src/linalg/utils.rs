@@ -352,11 +352,17 @@ pub fn matmul(
     #[cfg(feature = "blas")]
     {
         // some swapping to use row-major ordering
+        // uses the identity AB = (B^T A^T)^T
+        // with B^T and A^T being passed as transpose flags to BLAS
+        // in order to avoid two column to row major conversions
+        // so, we need to transpose if the user wants no transpose,
+        // and vice versa
         let (cols_a, rows_a) = (rows_a, cols_a);
         let (cols_b, rows_b) = (rows_b, cols_b);
 
         let (transpose_a, transpose_b) = (!transpose_a, !transpose_b);
 
+        // build arguments for dgemm
         let m = if transpose_a { cols_a } else { rows_a };
         let n = if transpose_b { rows_b } else { cols_b };
         let k = if transpose_a { rows_a } else { cols_a };
@@ -371,6 +377,7 @@ pub fn matmul(
         let ldb = rows_b;
         let ldc = m;
 
+        // check to see that the sizes are okay
         if transpose_a {
             assert!(lda >= k, "lda={} must be at least as large as k={}", lda, k);
         } else {
@@ -392,7 +399,7 @@ pub fn matmul(
             );
         }
 
-        // this is expensive?
+        // one final transpose to get back to row major ordering
         transpose(&c, n)
     }
 

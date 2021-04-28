@@ -7,6 +7,40 @@ use super::{GradFn, Optimizer};
 
 /// Implements a [Levenberg-Marquardt optimizer](https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm)
 /// for solving (non-linear) least squares problems.
+///
+/// # Example
+///
+/// ```
+/// use compute::optimize::{LM, Optimizer};
+/// use compute::prelude::F1;
+///
+/// // pairs of points (x_i, y_i)
+/// let x = vec![1., 2., 3., 4., 5., 6., 7., 8., 9.];
+/// let y = vec![11., 22., 33., 44., 55., 66., 77., 88., 99.];
+///
+/// // define a function to optimize:
+/// // function must have signature Fn(&[F1]) -> F1,
+/// // with f(x, params).
+/// //
+/// // so the first argument in the (function input) list must be x
+/// // and the rest of the arguments in the list are parameters to optimize
+/// // the output of the function is f(x, params)
+/// let eq_line = |x: &[F1]| x[0] * x[2] + x[1]; // x * b + a
+///
+/// // create an instance of the optimizer
+/// let lm = LM::default();
+///
+/// // initial parameters (guess)
+/// let params = [1., 2.];
+///
+/// // run for max of 50 steps and find the best parameters
+/// let opt = lm.optimize(&x, &y, eq_line, &params, 50);
+/// println!("{:?}", opt);
+///
+/// assert!((opt[0] - 0.).abs() < 0.01);
+/// assert!((opt[1] - 11.).abs() < 0.01);
+/// ```
+
 #[derive(Debug, Clone, Copy)]
 pub struct LM {
     pub eps1: f64, // tolerance for norm of residuals

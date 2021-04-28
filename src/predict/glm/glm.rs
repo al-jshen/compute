@@ -226,6 +226,7 @@ impl GLM {
         Ok(())
     }
 
+    /// Return the maximum likelihood estimates for the parameters.
     pub fn coef(&self) -> Result<&[f64], &str> {
         if let Some(coef) = &self.coef {
             Ok(coef)
@@ -234,22 +235,43 @@ impl GLM {
         }
     }
 
-    pub fn dispersion(&self) -> Result<f64, &str> {
+    /// Return the deviance of the model.
+    pub fn deviance(&self) -> Result<f64, &str> {
         if let Some(dev) = self.deviance {
-            if self.family.has_dispersion() {
-                // ok to unwrap because if deviance is Some then these are also Some
-                // and deviance can only be Some after `fit` because it is private
-                let n = self.n.unwrap();
-                let p = self.p.unwrap();
-                Ok(dev / (n - p) as f64)
-            } else {
-                Ok(1.)
-            }
+            Ok(dev)
         } else {
             Err("model has not been fitted yet")
         }
     }
 
+    /// Calculates the [Akaike information criterion](https://en.wikipedia.org/wiki/Akaike_information_criterion) for the model.
+    pub fn aic(&self) -> Result<f64, &str> {
+        let dev = self.deviance()?;
+        Ok(dev + 2. * self.p.unwrap() as f64)
+    }
+
+    /// Calculates the [Bayesian information
+    /// criterion](https://en.wikipedia.org/wiki/Bayesian_information_criterion) for the model.
+    pub fn bic(&self) -> Result<f64, &str> {
+        let dev = self.deviance()?;
+        Ok(dev + self.p.unwrap() as f64 * (self.n.unwrap() as f64).ln())
+    }
+
+    /// Calculates the dispersion of the model.
+    pub fn dispersion(&self) -> Result<f64, &str> {
+        let dev = self.deviance()?;
+        if self.family.has_dispersion() {
+            // ok to unwrap because if deviance is Some then these are also Some
+            // and deviance can only be Some after `fit` because it is private
+            let n = self.n.unwrap();
+            let p = self.p.unwrap();
+            Ok(dev / (n - p) as f64)
+        } else {
+            Ok(1.)
+        }
+    }
+
+    /// Returns the fitted covariance for the estimated parameters.
     pub fn coef_covariance_matrix(&self) -> Result<Vec<f64>, &str> {
         let disp = self.dispersion()?;
         Ok(svmul(
@@ -258,12 +280,15 @@ impl GLM {
         ))
     }
 
+    /// Returns the estimated standard errors on the estimated parameters. This is equivalent to
+    /// the square root of the diagonals of the covariance matrix.
     pub fn coef_standard_error(&self) -> Result<Vec<f64>, &str> {
         let cov_mat = self.coef_covariance_matrix()?;
         let variances = diag(&cov_mat);
         Ok(vsqrt(&variances))
     }
 
+    /// Use the fitted model to make predictions on some new data.
     pub fn predict(&self, x: &[f64]) -> Result<Vec<f64>, &str> {
         let coef = self.coef()?;
         let n = is_matrix(x, self.p.unwrap()).unwrap();
@@ -276,6 +301,8 @@ impl GLM {
         }
     }
 
+    /// Make some new predictions and calculate the score of those predictions based on known
+    /// responses.
     pub fn score(&self, x: &[f64], y: &[f64]) -> f64 {
         self.family.deviance(y, &self.predict(x).unwrap())
     }

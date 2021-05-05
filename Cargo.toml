@@ -1,6 +1,6 @@
 [package]
 name = "compute"
-version = "0.1.26"
+version = "0.1.27"
 authors = ["Jeff Shen <jshen2014@hotmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -16,8 +16,6 @@ keywords = ["statistics", "compute", "data"]
 fastrand = "1"
 approx_eq = "0.1"
 autodiff = "0.3"
-# blas = {version = "0.22", optional = true}
-# lapack = {version = "0.19", optional = true}
 
 [features]
 blas = ["blas_crate", "accelerate-src", "openblas-src"]

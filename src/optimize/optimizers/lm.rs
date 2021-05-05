@@ -10,7 +10,7 @@ use super::{GradFn, Optimizer};
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// use compute::optimize::{LM, Optimizer};
 /// use compute::prelude::F1;
 ///

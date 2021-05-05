@@ -5,9 +5,9 @@
 //! alternatives are available as defaults.
 
 #[cfg(feature = "blas")]
-extern crate blas;
+extern crate blas_crate;
 #[cfg(feature = "lapack")]
-extern crate lapack;
+extern crate lapack_crate;
 
 #[cfg(all(target_os = "macos", any(feature = "blas", feature = "lapack")))]
 extern crate accelerate_src;
@@ -15,9 +15,9 @@ extern crate accelerate_src;
 extern crate openblas_src;
 
 #[cfg(feature = "blas")]
-use blas::{ddot, dgemm};
+use blas_crate::{ddot, dgemm};
 #[cfg(feature = "lapack")]
-use lapack::{dgesv, dgetrf, dgetri};
+use lapack_crate::{dgesv, dgetrf, dgetri};
 
 #[cfg(not(feature = "lapack"))]
 use crate::linalg::decomposition::*;

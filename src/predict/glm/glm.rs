@@ -4,7 +4,7 @@ use crate::prelude::{
 };
 
 use super::ExponentialFamily;
-use super::Formula;
+// use super::Formula;
 use std::collections::HashMap;
 
 /// Implements a [generalized linear model](https://en.wikipedia.org/wiki/Generalized_linear_model).
@@ -65,9 +65,9 @@ impl GLM {
         self
     }
 
-    fn fit_with_formula<'a>(&self, formula: Formula, data: HashMap<&'a str, Vec<f64>>) {
-        todo!();
-    }
+    // fn fit_with_formula<'a>(&self, formula: Formula, data: HashMap<&'a str, Vec<f64>>) {
+    //     todo!();
+    // }
 
     fn has_converged(&self, loss: f64, loss_previous: f64, tolerance: f64) -> bool {
         if loss_previous.is_infinite() {

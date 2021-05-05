@@ -16,17 +16,30 @@ keywords = ["statistics", "compute", "data"]
 fastrand = "1"
 approx_eq = "0.1"
 autodiff = "0.3"
-blas = {version = "0.22", optional = true}
-lapack = {version = "0.19", optional = true}
+# blas = {version = "0.22", optional = true}
+# lapack = {version = "0.19", optional = true}
 
 [features]
-# default = ["blas", "lapack"]
+blas = ["blas_crate", "accelerate-src", "openblas-src"]
+lapack = ["lapack_crate", "accelerate-src", "openblas-src"]
 
-[target.'cfg(target_os = "macos")'.dependencies]
-accelerate-src = "0.3"
+[dependencies.blas_crate]
+package = "blas"
+version = "0.22"
+optional = true
+default-features = false
+
+[dependencies.lapack_crate]
+package = "lapack"
+version = "0.19"
+optional = true
+default-features = false
+
+[target.'cfg(all(target_os = "macos"))'.dependencies]
+accelerate-src = {version = "0.3", optional = true}
 
 [target.'cfg(not(target_os = "macos"))'.dependencies]
-openblas-src = "0.10"
+openblas-src = {version = "0.10", optional = true}
 
 [dev-dependencies]
 criterion = "0.3"

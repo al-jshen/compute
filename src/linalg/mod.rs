@@ -3,9 +3,9 @@
 mod decomposition;
 mod rotations;
 mod utils;
-mod vops;
+mod vec;
 
 pub use decomposition::*;
 pub use rotations::*;
 pub use utils::*;
-pub use vops::*;
+pub use vec::*;

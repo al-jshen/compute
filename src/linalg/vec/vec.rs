@@ -2,6 +2,7 @@ use super::vops::*;
 use crate::linalg::norm;
 use impl_ops::*;
 use std::convert::From;
+use std::iter::IntoIterator;
 use std::ops;
 use std::ops::Deref;
 
@@ -19,6 +20,24 @@ impl Vector {
 impl From<Vec<f64>> for Vector {
     fn from(v: Vec<f64>) -> Self {
         Self { v }
+    }
+}
+
+impl IntoIterator for Vector {
+    type Item = f64;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.v.into_iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a Vector {
+    type Item = &'a f64;
+    type IntoIter = std::slice::Iter<'a, f64>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.v.as_slice().into_iter()
     }
 }
 

@@ -8,6 +8,7 @@ use std::iter::IntoIterator;
 use std::ops;
 use std::ops::Deref;
 
+/// A row-major ordering vector struct with various useful methods.
 #[derive(Debug, Clone)]
 pub struct Vector {
     v: Vec<f64>,
@@ -79,6 +80,9 @@ impl_op_ex!(/ |v: &Vector, f: f64| -> Vector { Vector::from(vsdiv(&v.v, f)) });
 macro_rules! impl_unaryops_vector {
     ($fn: ident, $op: ident) => {
         impl Vector {
+            #[doc = "Apply the `f64` operation `"]
+            #[doc = stringify!($op)]
+            #[doc = "` element-wise to the vector."]
             pub fn $op(&self) -> Self {
                 Self { v: $fn(&self.v) }
             }
@@ -115,13 +119,13 @@ impl_unaryops_vector!(vrecip, recip);
 
 macro_rules! impl_inner_fn {
     ($output_type: ident | $($fn: ident),+) => {
-        $(
-            impl Vector {
+        impl Vector {
+            $(
                 pub fn $fn(&self) -> $output_type {
                     $fn(&self.v)
                 }
-            }
-        )+
+            )+
+        }
     };
 }
 

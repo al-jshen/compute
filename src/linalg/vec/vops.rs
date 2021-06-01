@@ -1,6 +1,9 @@
 /// Vector-vector operations.
 macro_rules! impl_vops_binary {
     ($opname: ident, $op:tt) => {
+        #[doc = "Implements a loop-unrolled version of the `"]
+        #[doc = stringify!($op)]
+        #[doc = "` function to be applied element-wise to two vectors."]
         pub fn $opname(v1: &[f64], v2: &[f64]) -> Vec<f64> {
             assert_eq!(v1.len(), v2.len());
             let n = v1.len();
@@ -40,6 +43,9 @@ impl_vops_binary!(vdiv, /);
 /// Single vector operations.
 macro_rules! impl_vops_unary {
     ($opname: ident, $op:ident) => {
+        #[doc = "Implements a loop-unrolled version of the `"]
+        #[doc = stringify!($op)]
+        #[doc = "` function to be applied element-wise to a vector."]
         pub fn $opname(v1: &[f64]) -> Vec<f64> {
             let n = v1.len();
 
@@ -100,6 +106,10 @@ impl_vops_unary!(vrecip, recip);
 /// Vector-scalar operations.
 macro_rules! impl_vsops {
         ($opname: ident, $op:tt) => {
+            #[doc = "Implements a loop-unrolled version of the `"]
+            #[doc = stringify!($op)]
+            #[doc = "` function to be applied element-wise between"]
+            #[doc = "a vector and a scalar (in that order)."]
             pub fn $opname(v1: &[f64], scalar: f64) -> Vec<f64> {
                 let n = v1.len();
 
@@ -138,6 +148,10 @@ impl_vsops!(vsdiv, /);
 /// Scalar-vector operations.
 macro_rules! impl_svops {
     ($opname: ident, $op:tt) => {
+        #[doc = "Implements a loop-unrolled version of the `"]
+        #[doc = stringify!($op)]
+        #[doc = "` function to be applied element-wise between"]
+        #[doc = "a scalar and a vector (in that order)."]
         pub fn $opname(scalar: f64, v1: &[f64]) -> Vec<f64> {
             let n = v1.len();
 

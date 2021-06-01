@@ -5,8 +5,8 @@ use impl_ops::*;
 use std::convert::From;
 use std::iter::FromIterator;
 use std::iter::IntoIterator;
-use std::ops;
 use std::ops::Deref;
+use std::ops::{self, DerefMut};
 
 /// A row-major ordering vector struct with various useful methods.
 #[derive(Debug, Clone)]
@@ -60,6 +60,12 @@ impl Deref for Vector {
 
     fn deref(&self) -> &Self::Target {
         &self.v
+    }
+}
+
+impl DerefMut for Vector {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.v
     }
 }
 

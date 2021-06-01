@@ -1,7 +1,9 @@
 use super::vops::*;
 use crate::linalg::norm;
+use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, sum, var};
 use impl_ops::*;
 use std::convert::From;
+use std::iter::FromIterator;
 use std::iter::IntoIterator;
 use std::ops;
 use std::ops::Deref;
@@ -38,6 +40,17 @@ impl<'a> IntoIterator for &'a Vector {
 
     fn into_iter(self) -> Self::IntoIter {
         self.v.as_slice().into_iter()
+    }
+}
+
+impl FromIterator<f64> for Vector {
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = f64>,
+    {
+        Self {
+            v: Vec::from_iter(iter),
+        }
     }
 }
 
@@ -99,3 +112,29 @@ impl_unaryops_vector!(vceil, ceil);
 impl_unaryops_vector!(vtoradians, to_radians);
 impl_unaryops_vector!(vtodegrees, to_degrees);
 impl_unaryops_vector!(vrecip, recip);
+
+macro_rules! impl_inner_fn {
+    ($output_type: ident | $($fn: ident),+) => {
+        $(
+            impl Vector {
+                pub fn $fn(&self) -> $output_type {
+                    $fn(&self.v)
+                }
+            }
+        )+
+    };
+}
+
+impl_inner_fn!(
+    f64 | norm,
+    max,
+    mean,
+    min,
+    std,
+    sum,
+    var,
+    sample_std,
+    sample_var
+);
+
+impl_inner_fn!(usize | argmin, argmax);

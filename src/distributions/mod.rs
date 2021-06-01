@@ -14,12 +14,14 @@ mod poisson;
 mod t;
 mod uniform;
 
+use crate::linalg::Vector;
+
 /// The primary trait defining a probability distribution.
 pub trait Distribution: Send + Sync {
     /// Samples from the given probability distribution.
     fn sample(&self) -> f64;
     /// Generates a vector of `n` randomly sampled values from the given probability distribution.
-    fn sample_vec(&self, n: usize) -> Vec<f64> {
+    fn sample_vec(&self, n: usize) -> Vector {
         (0..n).map(|_| self.sample()).collect()
     }
 

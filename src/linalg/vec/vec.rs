@@ -3,10 +3,8 @@ use crate::linalg::norm;
 use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, sum, var};
 use impl_ops::*;
 use std::convert::From;
-use std::iter::FromIterator;
-use std::iter::IntoIterator;
-use std::ops::Deref;
-use std::ops::{self, DerefMut};
+use std::iter::{FromIterator, IntoIterator};
+use std::ops::{self, Deref, DerefMut};
 
 /// A row-major ordering vector struct with various useful methods.
 #[derive(Debug, Clone)]
@@ -49,6 +47,15 @@ impl<'a> IntoIterator for &'a Vector {
 
     fn into_iter(self) -> Self::IntoIter {
         self.v.as_slice().into_iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a mut Vector {
+    type Item = &'a mut f64;
+    type IntoIter = std::slice::IterMut<'a, f64>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.v.iter_mut()
     }
 }
 
@@ -98,7 +105,7 @@ macro_rules! impl_unaryops_vector {
             #[doc = stringify!($op)]
             #[doc = "` element-wise to the vector."]
             pub fn $op(&self) -> Self {
-                Vector::from($fn(&self.v))
+                $fn(&self.v).into()
             }
         }
     };
@@ -141,7 +148,7 @@ macro_rules! impl_unaryops_with_arg_vector {
             #[doc = stringify!($op)]
             #[doc = "` element-wise to the vector."]
             pub fn $op(&self, arg: $argtype) -> Self {
-                Vector::from($fn(&self.v, arg))
+                $fn(&self.v, arg).into()
             }
         }
     };

@@ -17,6 +17,60 @@ pub fn criterion_norm(c: &mut Criterion) {
     c.bench_function("norm 1e3", |b| b.iter(|| norm(&v1)));
 }
 
+pub fn criterion_vops(c: &mut Criterion) {
+    let v1 = Normal::default().sample_vec(1000);
+    let v2 = Normal::default().sample_vec(1000);
+    let s = Normal::default().sample();
+    c.bench_function("vector add", |b| b.iter(|| &v1 + &v2));
+    c.bench_function("normal add", |b| {
+        b.iter(|| v1.iter().zip(&v2).map(|(i, j)| i + j).collect::<Vector>())
+    });
+    c.bench_function("vector multiply", |b| b.iter(|| &v1 * &v2));
+    c.bench_function("normal multiply", |b| {
+        b.iter(|| v1.iter().zip(&v2).map(|(i, j)| i * j).collect::<Vector>())
+    });
+    c.bench_function("vector divide", |b| b.iter(|| &v1 / &v2));
+    c.bench_function("vector ln", |b| b.iter(|| v1.ln()));
+    c.bench_function("normal ln", |b| {
+        b.iter(|| v1.iter().map(|i| i.ln()).collect::<Vector>())
+    });
+    c.bench_function("vector sqrt", |b| b.iter(|| v1.sqrt()));
+    c.bench_function("normal sqrt", |b| {
+        b.iter(|| v1.iter().map(|i| i.sqrt()).collect::<Vector>())
+    });
+    c.bench_function("vector exp", |b| b.iter(|| v1.exp()));
+    c.bench_function("normal exp", |b| {
+        b.iter(|| v1.iter().map(|i| i.exp()).collect::<Vector>())
+    });
+    c.bench_function("vector square", |b| b.iter(|| v1.powi(2)));
+    c.bench_function("normal square", |b| {
+        b.iter(|| Vector::from(v1.iter().map(|i| i.powi(2)).collect::<Vec<f64>>()))
+    });
+    c.bench_function("vector cube", |b| b.iter(|| v1.powi(3)));
+    c.bench_function("normal cube", |b| {
+        b.iter(|| v1.iter().map(|i| i.powi(3)).collect::<Vector>())
+    });
+    c.bench_function("vector float power", |b| b.iter(|| v1.powf(1.25)));
+    c.bench_function("normal float power", |b| {
+        b.iter(|| v1.iter().map(|i| i.powf(1.25)).collect::<Vector>())
+    });
+
+    c.bench_function("unrolled vector-scalar addition", |b| b.iter(|| &v1 + s));
+    c.bench_function("normal vector-scalar addition", |b| {
+        b.iter(|| v1.iter().map(|i| i + s).collect::<Vector>())
+    });
+
+    c.bench_function("unrolled vector-scalar division", |b| b.iter(|| &v1 / s));
+    c.bench_function("normal vector-scalar division", |b| {
+        b.iter(|| v1.iter().map(|i| i / s).collect::<Vector>())
+    });
+
+    c.bench_function("unrolled scalar-vector subtraction", |b| b.iter(|| s - &v1));
+    c.bench_function("normal scalar-vector subtraction", |b| {
+        b.iter(|| v1.iter().map(|i| s - i).collect::<Vector>())
+    });
+}
+
 pub fn criterion_ludecomp(c: &mut Criterion) {
     let v5 = Uniform::new(2., 50.).sample_vec(5 * 5);
     c.bench_function("5x5 lu factorization", |b| b.iter(|| lu(&v5)));
@@ -85,5 +139,5 @@ pub fn criterion_xtx(c: &mut Criterion) {
     c.bench_function("20x6 xtx", |b| b.iter(|| xtx(&a_20_6, 20)));
 }
 
-criterion_group!(benches, criterion_dot);
+criterion_group!(benches, criterion_vops);
 criterion_main!(benches);

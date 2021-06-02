@@ -24,8 +24,11 @@ impl Matrix {
         }
     }
 
-    pub fn new(data: Vector, [nrows, ncols]: [usize; 2]) -> Self {
-        let is_square = match is_square(&data) {
+    pub fn new<T>(data: T, [nrows, ncols]: [usize; 2]) -> Self
+    where
+        T: Into<Vector> + AsRef<[f64]>,
+    {
+        let is_square = match is_square(&data.as_ref()) {
             Ok(val) => {
                 assert!(nrows == ncols && nrows == val, "matrix not square");
                 true
@@ -33,13 +36,13 @@ impl Matrix {
             Err(_) => false,
         };
         let is_symmetric = if is_square {
-            is_symmetric(&data)
+            is_symmetric(&data.as_ref())
         } else {
             false
         };
 
         Self {
-            data,
+            data: data.into(),
             ncols,
             nrows,
             is_square,
@@ -51,6 +54,14 @@ impl Matrix {
 impl Default for Matrix {
     fn default() -> Self {
         Self::empty()
+    }
+}
+
+impl Index<usize> for Matrix {
+    type Output = [f64];
+    fn index(&self, i: usize) -> &Self::Output {
+        assert!(i < self.nrows);
+        &self.data[i * self.ncols..(i + 1) * self.ncols]
     }
 }
 

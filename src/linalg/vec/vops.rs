@@ -1,3 +1,5 @@
+use crate::linalg::Vector;
+
 /// Vector-vector operations.
 macro_rules! impl_vops_binary {
     ($opname: ident, $op:tt) => {
@@ -82,6 +84,7 @@ impl_vops_unary!(vlog10, log10);
 impl_vops_unary!(vlog2, log2);
 impl_vops_unary!(vexp, exp);
 impl_vops_unary!(vexp2, exp2);
+impl_vops_unary!(vexpm1, exp_m1);
 impl_vops_unary!(vsin, sin);
 impl_vops_unary!(vcos, cos);
 impl_vops_unary!(vtan, tan);
@@ -102,43 +105,84 @@ impl_vops_unary!(vceil, ceil);
 impl_vops_unary!(vtoradians, to_radians);
 impl_vops_unary!(vtodegrees, to_degrees);
 impl_vops_unary!(vrecip, recip);
+impl_vops_unary!(vround, round);
+impl_vops_unary!(vsignum, signum);
+
+/// Single vector operations with a single argument.
+macro_rules! impl_vops_unary_with_arg {
+    ($opname: ident, $op:ident, $argtype: ident) => {
+        #[doc = "Implements a loop-unrolled version of the `"]
+        #[doc = stringify!($op)]
+        #[doc = "` function to be applied element-wise to a vector."]
+        pub fn $opname(v1: &[f64], arg: $argtype) -> Vec<f64> {
+            let n = v1.len();
+
+            let mut v = vec![0.; n];
+            let chunks = (n - (n % 8)) / 8;
+
+            // unroll
+            for i in 0..chunks {
+                let idx = i * 8;
+                assert!(n > idx + 7);
+                v[idx] = v1[idx].$op(arg);
+                v[idx + 1] = v1[idx + 1].$op(arg);
+                v[idx + 2] = v1[idx + 2].$op(arg);
+                v[idx + 3] = v1[idx + 3].$op(arg);
+                v[idx + 4] = v1[idx + 4].$op(arg);
+                v[idx + 5] = v1[idx + 5].$op(arg);
+                v[idx + 6] = v1[idx + 6].$op(arg);
+                v[idx + 7] = v1[idx + 7].$op(arg);
+            }
+
+            // do the rest
+            for j in (chunks * 8)..n {
+                v[j] = v1[j].$op(arg);
+            }
+
+            v
+        }
+    };
+}
+
+impl_vops_unary_with_arg!(vpowi, powi, i32);
+impl_vops_unary_with_arg!(vpowf, powf, f64);
 
 /// Vector-scalar operations.
 macro_rules! impl_vsops {
-        ($opname: ident, $op:tt) => {
-            #[doc = "Implements a loop-unrolled version of the `"]
-            #[doc = stringify!($op)]
-            #[doc = "` function to be applied element-wise between"]
-            #[doc = "a vector and a scalar (in that order)."]
-            pub fn $opname(v1: &[f64], scalar: f64) -> Vec<f64> {
-                let n = v1.len();
+    ($opname: ident, $op:tt) => {
+        #[doc = "Implements a loop-unrolled version of the `"]
+        #[doc = stringify!($op)]
+        #[doc = "` function to be applied element-wise between"]
+        #[doc = "a vector and a scalar (in that order)."]
+        pub fn $opname(v1: &[f64], scalar: f64) -> Vec<f64> {
+            let n = v1.len();
 
-                let mut v = vec![0.; n];
-                let chunks = (n - (n % 8)) / 8;
+            let mut v = vec![0.; n];
+            let chunks = (n - (n % 8)) / 8;
 
-                // unroll
-                for i in 0..chunks {
-                    let idx = i * 8;
-                    assert!(n > idx + 7);
-                    v[idx] = v1[idx] $op scalar;
-                    v[idx + 1] = v1[idx + 1] $op scalar;
-                    v[idx + 2] = v1[idx + 2] $op scalar;
-                    v[idx + 3] = v1[idx + 3] $op scalar;
-                    v[idx + 4] = v1[idx + 4] $op scalar;
-                    v[idx + 5] = v1[idx + 5] $op scalar;
-                    v[idx + 6] = v1[idx + 6] $op scalar;
-                    v[idx + 7] = v1[idx + 7] $op scalar;
-                }
-
-                // do the rest
-                for j in (chunks * 8)..n {
-                    v[j] = v1[j] $op scalar;
-                }
-
-                v
+            // unroll
+            for i in 0..chunks {
+                let idx = i * 8;
+                assert!(n > idx + 7);
+                v[idx] = v1[idx] $op scalar;
+                v[idx + 1] = v1[idx + 1] $op scalar;
+                v[idx + 2] = v1[idx + 2] $op scalar;
+                v[idx + 3] = v1[idx + 3] $op scalar;
+                v[idx + 4] = v1[idx + 4] $op scalar;
+                v[idx + 5] = v1[idx + 5] $op scalar;
+                v[idx + 6] = v1[idx + 6] $op scalar;
+                v[idx + 7] = v1[idx + 7] $op scalar;
             }
+
+            // do the rest
+            for j in (chunks * 8)..n {
+                v[j] = v1[j] $op scalar;
+            }
+
+            v
         }
     }
+}
 
 impl_vsops!(vsadd, +);
 impl_vsops!(vssub, -);

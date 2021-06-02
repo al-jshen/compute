@@ -90,7 +90,7 @@ macro_rules! impl_unaryops_vector {
             #[doc = stringify!($op)]
             #[doc = "` element-wise to the vector."]
             pub fn $op(&self) -> Self {
-                Self { v: $fn(&self.v) }
+                Vector::from($fn(&self.v))
             }
         }
     };
@@ -102,6 +102,7 @@ impl_unaryops_vector!(vlog10, log10);
 impl_unaryops_vector!(vlog2, log2);
 impl_unaryops_vector!(vexp, exp);
 impl_unaryops_vector!(vexp2, exp2);
+impl_unaryops_vector!(vexpm1, exp_m1);
 impl_unaryops_vector!(vsin, sin);
 impl_unaryops_vector!(vcos, cos);
 impl_unaryops_vector!(vtan, tan);
@@ -122,6 +123,24 @@ impl_unaryops_vector!(vceil, ceil);
 impl_unaryops_vector!(vtoradians, to_radians);
 impl_unaryops_vector!(vtodegrees, to_degrees);
 impl_unaryops_vector!(vrecip, recip);
+impl_unaryops_vector!(vround, round);
+impl_unaryops_vector!(vsignum, signum);
+
+macro_rules! impl_unaryops_with_arg_vector {
+    ($fn: ident, $op: ident, $argtype: ident) => {
+        impl Vector {
+            #[doc = "Apply the `f64` operation `"]
+            #[doc = stringify!($op)]
+            #[doc = "` element-wise to the vector."]
+            pub fn $op(&self, arg: $argtype) -> Self {
+                Vector::from($fn(&self.v, arg))
+            }
+        }
+    };
+}
+
+impl_unaryops_with_arg_vector!(vpowi, powi, i32);
+impl_unaryops_with_arg_vector!(vpowf, powf, f64);
 
 macro_rules! impl_inner_fn {
     ($output_type: ident | $($fn: ident),+) => {

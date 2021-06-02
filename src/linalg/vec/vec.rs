@@ -1,5 +1,5 @@
 use super::vops::*;
-use crate::linalg::norm;
+use crate::linalg::{dot, norm};
 use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, sum, var};
 use impl_ops::*;
 use std::convert::From;
@@ -13,24 +13,41 @@ pub struct Vector {
 }
 
 impl Vector {
-    pub fn new() -> Vector {
+    pub fn empty() -> Self {
         Self { v: Vec::new() }
     }
-}
-
-impl From<Vec<f64>> for Vector {
-    fn from(v: Vec<f64>) -> Self {
+    pub fn new(v: Vec<f64>) -> Self {
         Self { v }
     }
-}
 
-impl<const N: usize> From<[f64; N]> for Vector {
-    fn from(slice: [f64; N]) -> Self {
-        Self {
-            v: Vec::from(slice),
-        }
+    pub fn dot(&self, other: Self) -> f64 {
+        dot(&self.v, &other)
     }
 }
+
+impl Default for Vector {
+    fn default() -> Self {
+        Self::empty()
+    }
+}
+
+impl<T> From<T> for Vector
+where
+    T: Into<Vec<f64>>,
+{
+    fn from(v: T) -> Self {
+        Self { v: v.into() }
+    }
+}
+
+// impl<T> From<T> for Vector
+// where
+//     T: ToOwned<Owned = Vec<f64>>,
+// {
+//     fn from(v: T) -> Self {
+//         Self { v: v.to_owned() }
+//     }
+// }
 
 impl IntoIterator for Vector {
     type Item = f64;
@@ -158,16 +175,16 @@ impl_unaryops_with_arg_vector!(vpowi, powi, i32);
 impl_unaryops_with_arg_vector!(vpowf, powf, f64);
 
 macro_rules! impl_inner_fn {
-        ($output_type: ident | $($fn: ident),+) => {
-            impl Vector {
-                $(
-                    pub fn $fn(&self) -> $output_type {
-                        $fn(&self.v)
-                    }
-                )+
-            }
-        };
-    }
+    ($output_type: ident | $($fn: ident),+) => {
+        impl Vector {
+            $(
+                pub fn $fn(&self) -> $output_type {
+                    $fn(&self.v)
+                }
+            )+
+        }
+    };
+}
 
 impl_inner_fn!(
     f64 | norm,

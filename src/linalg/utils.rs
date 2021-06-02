@@ -20,25 +20,26 @@ use blas_crate::{ddot, dgemm};
 use lapack_crate::{dgesv, dgetrf, dgetri};
 
 #[cfg(not(feature = "lapack"))]
-use crate::linalg::decomposition::*;
+use super::decomposition::*;
+use super::Vector;
 use crate::prelude::max;
 
 /// Generates evenly spaced values within a given interval. Values generated in the half-open
 /// interval [start, stop). That is, the stop point is not included.
-pub fn arange(start: f64, stop: f64, step: f64) -> Vec<f64> {
+pub fn arange(start: f64, stop: f64, step: f64) -> Vector {
     let n = (stop - start) / step + 1.;
     (0..n as usize)
         .map(|i| start as f64 + i as f64 * step)
-        .collect::<Vec<_>>()
+        .collect::<Vector>()
 }
 
 /// Generates evenly spaced values within a given interval, with a set number of points. Both the
 /// start and stop points are included.
-pub fn linspace(start: f64, stop: f64, num: usize) -> Vec<f64> {
+pub fn linspace(start: f64, stop: f64, num: usize) -> Vector {
     let width = (stop - start) / (num - 1) as f64;
     (0..num)
         .map(|i| start + i as f64 * width)
-        .collect::<Vec<_>>()
+        .collect::<Vector>()
 }
 
 /// Checks whether a 1D array is a valid square matrix.
@@ -101,9 +102,9 @@ pub fn is_positive_definite(m: &[f64]) -> bool {
 }
 
 /// Convert a 1D matrix from row-major ordering into column-major ordering.
-pub fn row_to_col_major(a: &[f64], nrows: usize) -> Vec<f64> {
+pub fn row_to_col_major(a: &[f64], nrows: usize) -> Vector {
     let ncols = is_matrix(a, nrows).unwrap();
-    let mut x = a.to_vec();
+    let mut x = Vector::new(a.to_vec());
     for i in 0..nrows {
         for j in 0..ncols {
             x[j * nrows + i] = a[i * ncols + j];
@@ -128,7 +129,7 @@ pub fn col_to_row_major(a: &[f64], nrows: usize) -> Vec<f64> {
 pub fn transpose(a: &[f64], nrows: usize) -> Vec<f64> {
     let ncols = is_matrix(&a, nrows).unwrap();
 
-    let mut at: Vec<f64> = Vec::with_capacity(a.len());
+    let mut at = Vec::with_capacity(a.len());
 
     for j in 0..ncols {
         for i in 0..nrows {
@@ -140,9 +141,9 @@ pub fn transpose(a: &[f64], nrows: usize) -> Vec<f64> {
 }
 
 /// Extract the diagonal elements of a matrix.
-pub fn diag(a: &[f64]) -> Vec<f64> {
+pub fn diag(a: &[f64]) -> Vector {
     let n = is_square(a).unwrap();
-    let mut results = Vec::with_capacity(n);
+    let mut results = Vector::new(Vec::with_capacity(n));
     for i in 0..n {
         results.push(a[i * n + i]);
     }
@@ -150,9 +151,9 @@ pub fn diag(a: &[f64]) -> Vec<f64> {
 }
 
 /// Create a diagonal matrix with the given elements along the elements.
-pub fn diag_matrix(a: &[f64]) -> Vec<f64> {
+pub fn diag_matrix(a: &[f64]) -> Vector {
     let n = a.len();
-    let mut new = vec![0.; n * n];
+    let mut new = Vector::new(vec![0.; n * n]);
     for i in 0..n {
         new[i * n + i] = a[i];
     }

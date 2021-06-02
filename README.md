@@ -127,15 +127,14 @@ println!("{:?}", matmul(&x, &y, 2, 2, false, true)); // matrix multiply, transpo
 
 ```rust
 use compute::statistics::*;
+use compute::linalg::Vector;
 
-let x = vec![2.2, 3.4, 5., 10., -2.1, 0.1];
-let y = vec![1.,  2., -2., 5.7, -0.7, 5.7];
+let x = Vector::from([2.2, 3.4, 5., 10., -2.1, 0.1]);
 
-println!("{}", mean(&x));
-println!("{}", var(&x));
-println!("{}", max(&y));
-println!("{}", sample_std(&y));
-println!("{}", covariance(&x, &y));
+println!("{}", x.mean());
+println!("{}", x.var());
+println!("{}", x.max());
+println!("{}", x.argmax());
 ```
 
 ### Mathematical and statistical functions

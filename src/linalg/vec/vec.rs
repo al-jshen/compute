@@ -26,6 +26,14 @@ impl From<Vec<f64>> for Vector {
     }
 }
 
+impl<const N: usize> From<[f64; N]> for Vector {
+    fn from(slice: [f64; N]) -> Self {
+        Self {
+            v: Vec::from(slice),
+        }
+    }
+}
+
 impl IntoIterator for Vector {
     type Item = f64;
     type IntoIter = std::vec::IntoIter<Self::Item>;
@@ -143,16 +151,16 @@ impl_unaryops_with_arg_vector!(vpowi, powi, i32);
 impl_unaryops_with_arg_vector!(vpowf, powf, f64);
 
 macro_rules! impl_inner_fn {
-    ($output_type: ident | $($fn: ident),+) => {
-        impl Vector {
-            $(
-                pub fn $fn(&self) -> $output_type {
-                    $fn(&self.v)
-                }
-            )+
-        }
-    };
-}
+        ($output_type: ident | $($fn: ident),+) => {
+            impl Vector {
+                $(
+                    pub fn $fn(&self) -> $output_type {
+                        $fn(&self.v)
+                    }
+                )+
+            }
+        };
+    }
 
 impl_inner_fn!(
     f64 | norm,

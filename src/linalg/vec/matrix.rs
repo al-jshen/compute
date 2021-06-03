@@ -1,4 +1,11 @@
-use std::{array::IntoIter, ops::Index, ops::Range};
+use std::{
+    array::IntoIter,
+    fmt::{write, Display, Formatter, Result},
+    iter::Map,
+    ops::Index,
+    ops::Range,
+    slice::Chunks,
+};
 
 use crate::prelude::{is_square, is_symmetric};
 
@@ -54,6 +61,39 @@ impl Matrix {
         Vector::from(&self[row])
     }
 }
+
+impl Display for Matrix {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        Ok(for (rownum, row) in self.into_iter().enumerate() {
+            if rownum == 0 {
+                writeln!(f, "[{:?} ", row);
+            } else if rownum == self.nrows - 1 {
+                writeln!(f, " {:?}]", row);
+            } else {
+                writeln!(f, " {:?} ", row);
+            }
+        })
+    }
+}
+
+// impl Iterator for Matrix {
+//     type Item = Vector;
+
+//     fn next(&mut self) -> Option<Self::Item> {
+//         if self.iter_counter < self.nrows {
+//             self.iter_counter += 1;
+//             Some(Vector::from(&self[self.iter_counter - 1]))
+//         } else {
+//             None
+//         }
+//         // let iter: Vec<Vector> = self
+//         //     .data
+//         //     .chunks(self.ncols)
+//         //     .map(|x| Vector::from(x))
+//         //     .collect();
+//         // iter.into_iter().next()
+//     }
+// }
 
 impl<'a> IntoIterator for &'a Matrix {
     type Item = &'a [f64];

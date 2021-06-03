@@ -1,7 +1,7 @@
 use crate::linalg::Vector;
 
 /// Vector-vector operations.
-macro_rules! impl_vops_binary {
+macro_rules! makefn_vops_binary {
     ($opname: ident, $op:tt) => {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
@@ -37,13 +37,13 @@ macro_rules! impl_vops_binary {
     }
 }
 
-impl_vops_binary!(vadd, +);
-impl_vops_binary!(vsub, -);
-impl_vops_binary!(vmul, *);
-impl_vops_binary!(vdiv, /);
+makefn_vops_binary!(vadd, +);
+makefn_vops_binary!(vsub, -);
+makefn_vops_binary!(vmul, *);
+makefn_vops_binary!(vdiv, /);
 
 /// Single vector operations.
-macro_rules! impl_vops_unary {
+macro_rules! makefn_vops_unary {
     ($opname: ident, $op:ident) => {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
@@ -78,38 +78,38 @@ macro_rules! impl_vops_unary {
     };
 }
 
-impl_vops_unary!(vln, ln);
-impl_vops_unary!(vln1p, ln_1p);
-impl_vops_unary!(vlog10, log10);
-impl_vops_unary!(vlog2, log2);
-impl_vops_unary!(vexp, exp);
-impl_vops_unary!(vexp2, exp2);
-impl_vops_unary!(vexpm1, exp_m1);
-impl_vops_unary!(vsin, sin);
-impl_vops_unary!(vcos, cos);
-impl_vops_unary!(vtan, tan);
-impl_vops_unary!(vsinh, sinh);
-impl_vops_unary!(vcosh, cosh);
-impl_vops_unary!(vtanh, tanh);
-impl_vops_unary!(vasin, asin);
-impl_vops_unary!(vacos, acos);
-impl_vops_unary!(vatan, atan);
-impl_vops_unary!(vasinh, asinh);
-impl_vops_unary!(vacosh, acosh);
-impl_vops_unary!(vatanh, atanh);
-impl_vops_unary!(vsqrt, sqrt);
-impl_vops_unary!(vcbrt, cbrt);
-impl_vops_unary!(vabs, abs);
-impl_vops_unary!(vfloor, floor);
-impl_vops_unary!(vceil, ceil);
-impl_vops_unary!(vtoradians, to_radians);
-impl_vops_unary!(vtodegrees, to_degrees);
-impl_vops_unary!(vrecip, recip);
-impl_vops_unary!(vround, round);
-impl_vops_unary!(vsignum, signum);
+makefn_vops_unary!(vln, ln);
+makefn_vops_unary!(vln1p, ln_1p);
+makefn_vops_unary!(vlog10, log10);
+makefn_vops_unary!(vlog2, log2);
+makefn_vops_unary!(vexp, exp);
+makefn_vops_unary!(vexp2, exp2);
+makefn_vops_unary!(vexpm1, exp_m1);
+makefn_vops_unary!(vsin, sin);
+makefn_vops_unary!(vcos, cos);
+makefn_vops_unary!(vtan, tan);
+makefn_vops_unary!(vsinh, sinh);
+makefn_vops_unary!(vcosh, cosh);
+makefn_vops_unary!(vtanh, tanh);
+makefn_vops_unary!(vasin, asin);
+makefn_vops_unary!(vacos, acos);
+makefn_vops_unary!(vatan, atan);
+makefn_vops_unary!(vasinh, asinh);
+makefn_vops_unary!(vacosh, acosh);
+makefn_vops_unary!(vatanh, atanh);
+makefn_vops_unary!(vsqrt, sqrt);
+makefn_vops_unary!(vcbrt, cbrt);
+makefn_vops_unary!(vabs, abs);
+makefn_vops_unary!(vfloor, floor);
+makefn_vops_unary!(vceil, ceil);
+makefn_vops_unary!(vtoradians, to_radians);
+makefn_vops_unary!(vtodegrees, to_degrees);
+makefn_vops_unary!(vrecip, recip);
+makefn_vops_unary!(vround, round);
+makefn_vops_unary!(vsignum, signum);
 
 /// Single vector operations with a single argument.
-macro_rules! impl_vops_unary_with_arg {
+macro_rules! makefn_vops_unary_with_arg {
     ($opname: ident, $op:ident, $argtype: ident) => {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
@@ -144,11 +144,11 @@ macro_rules! impl_vops_unary_with_arg {
     };
 }
 
-impl_vops_unary_with_arg!(vpowi, powi, i32);
-impl_vops_unary_with_arg!(vpowf, powf, f64);
+makefn_vops_unary_with_arg!(vpowi, powi, i32);
+makefn_vops_unary_with_arg!(vpowf, powf, f64);
 
 /// Vector-scalar operations.
-macro_rules! impl_vsops {
+macro_rules! makefn_vsops {
     ($opname: ident, $op:tt) => {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
@@ -184,13 +184,13 @@ macro_rules! impl_vsops {
     }
 }
 
-impl_vsops!(vsadd, +);
-impl_vsops!(vssub, -);
-impl_vsops!(vsmul, *);
-impl_vsops!(vsdiv, /);
+makefn_vsops!(vsadd, +);
+makefn_vsops!(vssub, -);
+makefn_vsops!(vsmul, *);
+makefn_vsops!(vsdiv, /);
 
 /// Scalar-vector operations.
-macro_rules! impl_svops {
+macro_rules! makefn_svops {
     ($opname: ident, $op:tt) => {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
@@ -226,7 +226,7 @@ macro_rules! impl_svops {
     }
 }
 
-impl_svops!(svadd, +);
-impl_svops!(svsub, -);
-impl_svops!(svmul, *);
-impl_svops!(svdiv, /);
+makefn_svops!(svadd, +);
+makefn_svops!(svsub, -);
+makefn_svops!(svmul, *);
+makefn_svops!(svdiv, /);

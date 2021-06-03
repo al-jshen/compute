@@ -1,4 +1,4 @@
-use std::ops::Index;
+use std::{array::IntoIter, ops::Index, ops::Range};
 
 use crate::prelude::{is_square, is_symmetric};
 
@@ -11,6 +11,7 @@ pub struct Matrix {
     ncols: usize,
     is_square: bool,
     is_symmetric: bool,
+    iter_counter: usize,
 }
 
 impl Matrix {
@@ -21,33 +22,54 @@ impl Matrix {
             nrows: 0,
             is_square: false,
             is_symmetric: false,
+            iter_counter: 0,
         }
     }
 
     pub fn new<T>(data: T, [nrows, ncols]: [usize; 2]) -> Self
     where
-        T: Into<Vector> + AsRef<[f64]>,
+        T: AsRef<[f64]>,
     {
-        let is_square = match is_square(&data.as_ref()) {
+        let v = data.as_ref();
+        let is_square = match is_square(&v) {
             Ok(val) => {
                 assert!(nrows == ncols && nrows == val, "matrix not square");
                 true
             }
             Err(_) => false,
         };
-        let is_symmetric = if is_square {
-            is_symmetric(&data.as_ref())
-        } else {
-            false
-        };
+        let is_symmetric = if is_square { is_symmetric(&v) } else { false };
 
         Self {
-            data: data.into(),
+            data: Vector::from(v),
             ncols,
             nrows,
             is_square,
             is_symmetric,
+            iter_counter: 0,
         }
+    }
+
+    pub fn row(&self, row: usize) -> Vector {
+        Vector::from(&self[row])
+    }
+}
+
+impl<'a> IntoIterator for &'a Matrix {
+    type Item = &'a [f64];
+    type IntoIter = std::slice::Chunks<'a, f64>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.chunks(self.ncols)
+    }
+}
+
+impl<'a> IntoIterator for &'a mut Matrix {
+    type Item = &'a mut [f64];
+    type IntoIter = std::slice::ChunksMut<'a, f64>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.chunks_mut(self.ncols)
     }
 }
 

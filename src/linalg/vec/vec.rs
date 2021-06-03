@@ -40,14 +40,11 @@ where
     }
 }
 
-// impl<T> From<T> for Vector
-// where
-//     T: ToOwned<Owned = Vec<f64>>,
-// {
-//     fn from(v: T) -> Self {
-//         Self { v: v.to_owned() }
-//     }
-// }
+impl AsRef<[f64]> for Vector {
+    fn as_ref(&self) -> &[f64] {
+        &self.v
+    }
+}
 
 impl IntoIterator for Vector {
     type Item = f64;

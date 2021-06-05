@@ -93,7 +93,10 @@ impl Matrix {
     pub fn sum_cols(&self) -> Vector {
         let mut sums = Vector::zeros(self.ncols);
         for row in 0..self.nrows {
-            sums = sums + Vector::from(&self[row]);
+            // sums = sums + Vector::from(&self[row]);
+            for col in 0..self.ncols {
+                sums[col] = sums[col] + self[row][col];
+            }
         }
         sums
     }
@@ -112,25 +115,6 @@ impl Display for Matrix {
         })
     }
 }
-
-// impl Iterator for Matrix {
-//     type Item = Vector;
-
-//     fn next(&mut self) -> Option<Self::Item> {
-//         if self.iter_counter < self.nrows {
-//             self.iter_counter += 1;
-//             Some(Vector::from(&self[self.iter_counter - 1]))
-//         } else {
-//             None
-//         }
-//         // let iter: Vec<Vector> = self
-//         //     .data
-//         //     .chunks(self.ncols)
-//         //     .map(|x| Vector::from(x))
-//         //     .collect();
-//         // iter.into_iter().next()
-//     }
-// }
 
 impl<'a> IntoIterator for &'a Matrix {
     type Item = &'a [f64];

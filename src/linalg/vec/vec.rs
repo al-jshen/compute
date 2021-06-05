@@ -1,7 +1,6 @@
 use super::vops::*;
 use crate::linalg::{dot, norm, sum};
 use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, var};
-use impl_ops::*;
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
 use std::iter::{FromIterator, IntoIterator};
@@ -114,19 +113,144 @@ impl DerefMut for Vector {
     }
 }
 
-// vector-vector ops
-impl_op_ex!(+ |u: &Vector, v: &Vector| -> Vector {Vector::from( vadd(&u.v, &v.v) )});
-impl_op_ex!(-|u: &Vector, v: &Vector| -> Vector { Vector::from(vsub(&u.v, &v.v)) });
-impl_op_ex!(*|u: &Vector, v: &Vector| -> Vector { Vector::from(vmul(&u.v, &v.v)) });
-impl_op_ex!(/ |u: &Vector, v: &Vector| -> Vector {Vector::from( vdiv(&u.v, &v.v) )});
+macro_rules! vec_vec_op {
+    ($($path:ident)::+, $fn:ident, $innerfn:ident) => {
+        impl $($path)::+<Vector> for Vector {
+            type Output = Vector;
 
-// vector-float and float-vector ops
-impl_op_ex_commutative!(+ |f: f64, v: &Vector| -> Vector { Vector::from(vsadd(&v.v, f)) });
-impl_op_ex_commutative!(*|f: f64, v: &Vector| -> Vector { Vector::from(vsmul(&v.v, f)) });
-impl_op_ex!(-|f: f64, v: &Vector| -> Vector { Vector::from(svsub(f, &v.v)) });
-impl_op_ex!(-|v: &Vector, f: f64| -> Vector { Vector::from(vssub(&v.v, f)) });
-impl_op_ex!(/ |f: f64, v: &Vector| -> Vector { Vector::from(svdiv(f, &v.v)) });
-impl_op_ex!(/ |v: &Vector, f: f64| -> Vector { Vector::from(vsdiv(&v.v, f)) });
+            fn $fn(self, other: Vector) -> Self::Output {
+                Vector {
+                    v: $innerfn(&self, &other)
+                }
+            }
+        }
+
+        impl $($path)::+<&Vector> for &Vector {
+            type Output = Vector;
+
+            fn $fn(self, other: &Vector) -> Self::Output {
+                Vector {
+                    v: $innerfn(&self, &other)
+                }
+            }
+        }
+
+        impl $($path)::+<&Vector> for Vector {
+            type Output = Vector;
+
+            fn $fn(self, other: &Vector) -> Self::Output {
+                Vector {
+                    v: $innerfn(&self, &other)
+                }
+            }
+        }
+
+        impl $($path)::+<Vector> for &Vector {
+            type Output = Vector;
+
+            fn $fn(self, other: Vector) -> Self::Output {
+                Vector {
+                    v: $innerfn(&self, &other)
+                }
+            }
+        }
+    };
+}
+
+macro_rules! vec_vec_opassign {
+    ($($path:ident)::+, $fn:ident, $innerfn:ident) => {
+        impl $($path)::+<Vector> for Vector {
+            fn $fn(&mut self, other: Vector) {
+                $innerfn(self, &other);
+            }
+        }
+
+        impl $($path)::+<&Vector> for Vector {
+            fn $fn(&mut self, other: &Vector) {
+                $innerfn(self, &other);
+            }
+        }
+    };
+}
+
+macro_rules! vec_opassign {
+    ($($path:ident)::+, $fn:ident, $innerfn:ident, $ty:ty) => {
+        impl $($path)::+<$ty> for Vector {
+            fn $fn(&mut self, other: $ty) {
+                $innerfn(self, other);
+            }
+        }
+    }
+}
+
+macro_rules! vec_op {
+    ($($path:ident)::+, $fn:ident, $fn_vs:ident, $fn_sv:ident, $ty:ty) => {
+        // impl ops::Add::add for Vector
+        impl $($path)::+<$ty> for Vector {
+            type Output = Vector;
+
+            // fn add(self, other: f32) -> Self::Output
+            fn $fn(self, other: $ty) -> Self::Output {
+                Vector {
+                    v: $fn_vs(&self, other)
+                }
+            }
+        }
+
+        impl $($path)::+<$ty> for &Vector {
+            type Output = Vector;
+
+            fn $fn(self, other: $ty) -> Self::Output {
+                Vector {
+                    v: $fn_vs(&self, other)
+                }
+            }
+        }
+
+        impl $($path)::+<Vector> for $ty {
+            type Output = Vector;
+
+            fn $fn(self, other: Vector) -> Self::Output {
+                Vector {
+                    v: $fn_sv(self, &other)
+                }
+            }
+        }
+
+        impl $($path)::+<&Vector> for $ty {
+            type Output = Vector;
+
+            fn $fn(self, other: &Vector) -> Self::Output {
+                Vector {
+                    v: $fn_sv(self, &other)
+                }
+            }
+        }
+    }
+}
+
+macro_rules! vec_op_for {
+    ($ty: ty) => {
+        vec_op!(ops::Add, add, vsadd, svadd, $ty);
+        vec_op!(ops::Sub, sub, vssub, svsub, $ty);
+        vec_op!(ops::Mul, mul, vsmul, svmul, $ty);
+        vec_op!(ops::Div, div, vsdiv, svdiv, $ty);
+        vec_opassign!(ops::AddAssign, add_assign, vsadd_mut, $ty);
+        vec_opassign!(ops::SubAssign, sub_assign, vssub_mut, $ty);
+        vec_opassign!(ops::MulAssign, mul_assign, vsmul_mut, $ty);
+        vec_opassign!(ops::DivAssign, div_assign, vsdiv_mut, $ty);
+    };
+}
+
+vec_vec_op!(ops::Add, add, vadd);
+vec_vec_op!(ops::Sub, sub, vsub);
+vec_vec_op!(ops::Mul, mul, vmul);
+vec_vec_op!(ops::Div, div, vdiv);
+vec_vec_opassign!(ops::AddAssign, add_assign, vadd_mut);
+vec_vec_opassign!(ops::SubAssign, sub_assign, vsub_mut);
+vec_vec_opassign!(ops::MulAssign, mul_assign, vmul_mut);
+vec_vec_opassign!(ops::DivAssign, div_assign, vdiv_mut);
+vec_op_for!(f64);
 
 macro_rules! impl_unaryops_vector {
     ($fn: ident, $op: ident) => {

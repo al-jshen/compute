@@ -71,6 +71,12 @@ pub fn criterion_vops(c: &mut Criterion) {
     });
 }
 
+pub fn criterion_matrix_sum(c: &mut Criterion) {
+    let v = Normal::default().sample_matrix([100, 100]);
+    c.bench_function("sum rows 100x100", |b| b.iter(|| v.sum_rows()));
+    c.bench_function("sum cols 100x100", |b| b.iter(|| v.sum_cols()));
+}
+
 pub fn criterion_ludecomp(c: &mut Criterion) {
     let v5 = Uniform::new(2., 50.).sample_vec(5 * 5);
     c.bench_function("5x5 lu factorization", |b| b.iter(|| lu(&v5)));
@@ -139,5 +145,5 @@ pub fn criterion_xtx(c: &mut Criterion) {
     c.bench_function("20x6 xtx", |b| b.iter(|| xtx(&a_20_6, 20)));
 }
 
-criterion_group!(benches, criterion_vops);
+criterion_group!(benches, criterion_matrix_sum);
 criterion_main!(benches);

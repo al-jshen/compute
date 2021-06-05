@@ -42,6 +42,45 @@ makefn_vops_binary!(vsub, -);
 makefn_vops_binary!(vmul, *);
 makefn_vops_binary!(vdiv, /);
 
+/// Vector-vector operations.
+macro_rules! makefn_vops_binary_mut {
+    ($opname: ident, $op:tt) => {
+        #[doc = "Implements a loop-unrolled version of the `"]
+        #[doc = stringify!($op)]
+        #[doc = "` function to be applied element-wise to two vectors."]
+        pub fn $opname(v1: &mut [f64], v2: &[f64]) {
+            assert_eq!(v1.len(), v2.len());
+            let n = v1.len();
+
+            let chunks = (n - (n % 8)) / 8;
+
+            // unroll
+            for i in 0..chunks {
+                let idx = i * 8;
+                assert!(n > idx + 7);
+               v1[idx] $op v2[idx];
+               v1[idx + 1] $op v2[idx + 1];
+               v1[idx + 2] $op v2[idx + 2];
+               v1[idx + 3] $op v2[idx + 3];
+               v1[idx + 4] $op v2[idx + 4];
+               v1[idx + 5] $op v2[idx + 5];
+               v1[idx + 6] $op v2[idx + 6];
+               v1[idx + 7] $op v2[idx + 7];
+            }
+
+            // do the rest
+            for j in (chunks * 8)..n {
+                v1[j] $op v2[j];
+            }
+        }
+    }
+}
+
+makefn_vops_binary_mut!(vadd_mut, +=);
+makefn_vops_binary_mut!(vsub_mut, -=);
+makefn_vops_binary_mut!(vmul_mut, *=);
+makefn_vops_binary_mut!(vdiv_mut, /=);
+
 /// Single vector operations.
 macro_rules! makefn_vops_unary {
     ($opname: ident, $op:ident) => {
@@ -188,6 +227,45 @@ makefn_vsops!(vsadd, +);
 makefn_vsops!(vssub, -);
 makefn_vsops!(vsmul, *);
 makefn_vsops!(vsdiv, /);
+
+/// Vector-scalar mutating operations.
+macro_rules! makefn_vsops_mut {
+    ($opname: ident, $op:tt) => {
+        #[doc = "Implements a loop-unrolled version of the `"]
+        #[doc = stringify!($op)]
+        #[doc = "` function to be applied element-wise between"]
+        #[doc = "a vector and a scalar (in that order)."]
+        pub fn $opname(v1: &mut [f64], scalar: f64) {
+            let n = v1.len();
+
+            let chunks = (n - (n % 8)) / 8;
+
+            // unroll
+            for i in 0..chunks {
+                let idx = i * 8;
+                assert!(n > idx + 7);
+                v1[idx] $op scalar;
+                v1[idx + 1] $op scalar;
+                v1[idx + 2] $op scalar;
+                v1[idx + 3] $op scalar;
+                v1[idx + 4] $op scalar;
+                v1[idx + 5] $op scalar;
+                v1[idx + 6] $op scalar;
+                v1[idx + 7] $op scalar;
+            }
+
+            // do the rest
+            for j in (chunks * 8)..n {
+                v1[j] $op scalar;
+            }
+        }
+    }
+}
+
+makefn_vsops_mut!(vsadd_mut, +=);
+makefn_vsops_mut!(vssub_mut, -=);
+makefn_vsops_mut!(vsmul_mut, *=);
+makefn_vsops_mut!(vsdiv_mut, /=);
 
 /// Scalar-vector operations.
 macro_rules! makefn_svops {

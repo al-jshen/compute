@@ -14,7 +14,7 @@ mod poisson;
 mod t;
 mod uniform;
 
-use crate::linalg::Vector;
+use crate::linalg::{Matrix, Vector};
 
 /// The primary trait defining a probability distribution.
 pub trait Distribution: Send + Sync {
@@ -24,7 +24,12 @@ pub trait Distribution: Send + Sync {
     fn sample_vec(&self, n: usize) -> Vector {
         (0..n).map(|_| self.sample()).collect()
     }
-
+    /// Generates a matrix of size `n x m` with values randomly sampled from the given
+    /// distribution.
+    fn sample_matrix(&self, [n, m]: [usize; 2]) -> Matrix {
+        Matrix::new(self.sample_vec(n * m), [n, m])
+    }
+    /// Update the parameters of the distribution.
     fn update(&mut self, params: &[f64]);
 }
 

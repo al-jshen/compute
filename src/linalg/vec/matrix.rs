@@ -73,13 +73,29 @@ impl Matrix {
     pub fn get_col(&self, col: usize) -> Vector {
         assert!(col < self.ncols);
 
-        let mut v = vec![0.; self.nrows];
+        let mut v = Vector::zeros(self.nrows);
 
         for i in 0..self.nrows {
             v[i] = self[i][col];
         }
 
         Vector::from(v)
+    }
+
+    pub fn sum_rows(&self) -> Vector {
+        let mut sums = Vector::zeros(self.nrows);
+        for row in 0..self.nrows {
+            sums[row] = Vector::from(&self[row]).sum();
+        }
+        sums
+    }
+
+    pub fn sum_cols(&self) -> Vector {
+        let mut sums = Vector::zeros(self.ncols);
+        for row in 0..self.nrows {
+            sums = sums + Vector::from(&self[row]);
+        }
+        sums
     }
 }
 
@@ -144,7 +160,6 @@ impl Index<usize> for Matrix {
     type Output = [f64];
     fn index(&self, i: usize) -> &Self::Output {
         assert!(i < self.nrows);
-        assert!((i + 1) * self.ncols < self.data.len());
         &self.data[i * self.ncols..(i + 1) * self.ncols]
     }
 }

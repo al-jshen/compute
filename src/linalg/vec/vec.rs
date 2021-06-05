@@ -3,6 +3,7 @@ use crate::linalg::{dot, norm, sum};
 use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, var};
 use impl_ops::*;
 use std::convert::From;
+use std::fmt::{Display, Formatter, Result};
 use std::iter::{FromIterator, IntoIterator};
 use std::ops::{self, Deref, DerefMut};
 
@@ -16,8 +17,17 @@ impl Vector {
     pub fn empty() -> Self {
         Self { v: Vec::new() }
     }
+
     pub fn new(v: Vec<f64>) -> Self {
         Self { v }
+    }
+
+    pub fn zeros(n: usize) -> Self {
+        Self { v: vec![0.; n] }
+    }
+
+    pub fn ones(n: usize) -> Self {
+        Self { v: vec![1.; n] }
     }
 
     pub fn dot(&self, other: Self) -> f64 {
@@ -43,6 +53,12 @@ where
 impl AsRef<[f64]> for Vector {
     fn as_ref(&self) -> &[f64] {
         &self.v
+    }
+}
+
+impl Display for Vector {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        writeln!(f, "{:?}", self.v)
     }
 }
 

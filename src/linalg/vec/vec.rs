@@ -1,6 +1,6 @@
 use super::vops::*;
-use crate::linalg::{dot, norm};
-use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, sum, var};
+use crate::linalg::{dot, norm, sum};
+use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, var};
 use impl_ops::*;
 use std::convert::From;
 use std::iter::{FromIterator, IntoIterator};
@@ -172,7 +172,7 @@ impl_unaryops_with_arg_vector!(vpowi, powi, i32);
 impl_unaryops_with_arg_vector!(vpowf, powf, f64);
 
 macro_rules! impl_inner_fn {
-    ($output_type: ident | $($fn: ident),+) => {
+    ($output_type: ident for $($fn: ident),+) => {
         impl Vector {
             $(
                 pub fn $fn(&self) -> $output_type {
@@ -183,16 +183,6 @@ macro_rules! impl_inner_fn {
     };
 }
 
-impl_inner_fn!(
-    f64 | norm,
-    max,
-    mean,
-    min,
-    std,
-    sum,
-    var,
-    sample_std,
-    sample_var
-);
+impl_inner_fn!(f64 for norm, max, mean, min, std, sum, var, sample_std, sample_var);
 
-impl_inner_fn!(usize | argmin, argmax);
+impl_inner_fn!(usize for argmin, argmax);

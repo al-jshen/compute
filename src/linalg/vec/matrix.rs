@@ -1,6 +1,6 @@
 use std::{
     array::IntoIter,
-    fmt::{write, Display, Formatter, Result},
+    fmt::{Display, Formatter, Result},
     iter::Map,
     ops::Index,
     ops::Range,
@@ -11,6 +11,7 @@ use crate::prelude::{is_square, is_symmetric};
 
 use super::Vector;
 
+/// Matrix struct.
 #[derive(Debug, Clone)]
 pub struct Matrix {
     data: Vector,
@@ -18,7 +19,7 @@ pub struct Matrix {
     ncols: usize,
     is_square: bool,
     is_symmetric: bool,
-    iter_counter: usize,
+    // iter_counter: usize,
 }
 
 impl Matrix {
@@ -29,7 +30,7 @@ impl Matrix {
             nrows: 0,
             is_square: false,
             is_symmetric: false,
-            iter_counter: 0,
+            // iter_counter: 0,
         }
     }
 
@@ -53,7 +54,7 @@ impl Matrix {
             nrows,
             is_square,
             is_symmetric,
-            iter_counter: 0,
+            // iter_counter: 0,
         }
     }
 
@@ -66,11 +67,11 @@ impl Display for Matrix {
     fn fmt(&self, f: &mut Formatter) -> Result {
         Ok(for (rownum, row) in self.into_iter().enumerate() {
             if rownum == 0 {
-                writeln!(f, "[{:?} ", row);
+                writeln!(f, "[{:?} ", row)?;
             } else if rownum == self.nrows - 1 {
-                writeln!(f, " {:?}]", row);
+                writeln!(f, " {:?}]", row)?;
             } else {
-                writeln!(f, " {:?} ", row);
+                writeln!(f, " {:?} ", row)?;
             }
         })
     }

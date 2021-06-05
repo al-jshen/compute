@@ -471,6 +471,44 @@ pub fn toeplitz(x: &[f64]) -> Vec<f64> {
     v
 }
 
+/// Calculates the sum of a vector.
+pub fn sum(x: &[f64]) -> f64 {
+    let n = x.len();
+
+    #[cfg(feature = "blas")]
+    {
+        let y = [1.];
+        unsafe { ddot(n as i32, x, 1, &y, 0) }
+    }
+
+    #[cfg(not(feature = "blas"))]
+    {
+        let chunks = (n - (n % 8)) / 8;
+        let mut s = 0.;
+
+        // unroll
+        for i in 0..chunks {
+            let idx = i * 8;
+            assert!(n > idx + 7);
+            s += x[idx]
+                + x[idx + 1]
+                + x[idx + 2]
+                + x[idx + 3]
+                + x[idx + 4]
+                + x[idx + 5]
+                + x[idx + 6]
+                + x[idx + 7];
+        }
+
+        // do the rest
+        for j in (chunks * 8)..n {
+            s += x[j];
+        }
+
+        s
+    }
+}
+
 /// Calculates the dot product of two equal-length vectors. When the feature "blas" is enabled,
 /// uses `ddot` from BLAS. Otherwise, uses a length-8 unrolled loop.
 pub fn dot(x: &[f64], y: &[f64]) -> f64 {

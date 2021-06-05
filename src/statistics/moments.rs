@@ -1,6 +1,8 @@
 //! A module for computing statistical moments and related values. In particular, this includes
 //! means and variances.
 
+use crate::linalg::sum;
+
 /// An implementation of Welford's online algorithm, which is used for calculating statistics in a
 /// recurrent and stable manner.
 /// See https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance for the reference
@@ -26,10 +28,10 @@ fn welford_statistics(data: &[f64]) -> (usize, f64, f64) {
     aggregate
 }
 
-/// Calulates the sum of an array of data points.
-pub fn sum(data: &[f64]) -> f64 {
-    data.iter().sum::<f64>()
-}
+// /// Calulates the sum of an array of data points.
+// pub fn sum(data: &[f64]) -> f64 {
+//     data.iter().sum::<f64>()
+// }
 
 /// Calculates the mean of an array of data points.
 pub fn mean(data: &[f64]) -> f64 {

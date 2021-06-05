@@ -3,11 +3,11 @@ use std::{
     ops::Index,
 };
 
-use impl_ops::*;
 use std::ops;
 
 use crate::prelude::{is_square, is_symmetric};
 
+use super::vops::*;
 use super::Vector;
 
 /// Matrix struct.
@@ -31,6 +31,18 @@ impl Matrix {
             is_symmetric: false,
             // iter_counter: 0,
         }
+    }
+
+    pub fn zeros([nrows, ncols]: [usize; 2]) -> Self {
+        Self::new(Vector::zeros(nrows * ncols), [nrows, ncols])
+    }
+
+    pub fn eye(dims: usize) -> Self {
+        let mut m = Self::zeros([dims, dims]);
+        for i in 0..dims {
+            m.data[i * dims + i] = 1.;
+        }
+        m
     }
 
     pub fn new<T>(data: T, [nrows, ncols]: [usize; 2]) -> Self
@@ -100,6 +112,16 @@ impl Matrix {
         }
         sums
     }
+
+    pub fn flat_idx(&self, idx: usize) -> f64 {
+        assert!(idx < self.size());
+        (&self.data)[idx]
+    }
+
+    pub fn flat_idx_mut(&mut self, idx: usize) -> &mut f64 {
+        assert!(idx < self.size());
+        &mut self.data[idx]
+    }
 }
 
 impl Display for Matrix {
@@ -157,28 +179,181 @@ impl Index<[usize; 2]> for Matrix {
     }
 }
 
-// vector-vector ops
-macro_rules! impl_vv_ops_helper {
-    ($op: tt) => {
-        impl_op_ex!($op |u: &Matrix, v: &Matrix| -> Matrix {
-            assert_eq!(u.shape(), v.shape());
-            Matrix::new( &u.data $op &v.data, u.shape())
-        });
+macro_rules! vec_vec_op {
+    ($($path:ident)::+, $fn:ident, $innerfn:ident) => {
+        impl $($path)::+<Matrix> for Matrix {
+            type Output = Matrix;
+
+            fn $fn(self, other: Matrix) -> Self::Output {
+                assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
+                Matrix::new(
+                    $innerfn(&self.data, &other.data),
+                    self.shape()
+                )
+            }
+        }
+
+        impl $($path)::+<&Matrix> for &Matrix {
+            type Output = Matrix;
+
+            fn $fn(self, other: &Matrix) -> Self::Output {
+                assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
+                Matrix::new(
+                    $innerfn(&self.data, &other.data),
+                    self.shape()
+                )
+            }
+        }
+
+        impl $($path)::+<&Matrix> for Matrix {
+            type Output = Matrix;
+
+            fn $fn(self, other: &Matrix) -> Self::Output {
+                assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
+                Matrix::new(
+                    $innerfn(&self.data, &other.data),
+                    self.shape()
+                )
+            }
+        }
+
+        impl $($path)::+<Matrix> for &Matrix {
+            type Output = Matrix;
+
+            fn $fn(self, other: Matrix) -> Self::Output {
+                assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
+                Matrix::new(
+                    $innerfn(&self.data, &other.data),
+                    self.shape()
+                )
+            }
+        }
     };
 }
 
-impl_vv_ops_helper!(+);
-impl_vv_ops_helper!(-);
-impl_vv_ops_helper!(*);
-impl_vv_ops_helper!(/);
+macro_rules! vec_vec_opassign {
+    ($($path:ident)::+, $fn:ident, $innerfn:ident) => {
+        impl $($path)::+<Matrix> for Matrix {
+            fn $fn(&mut self, other: Matrix) {
+                assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
+                $innerfn(&mut self.data, &other.data);
+            }
+        }
 
-// vector-float and float-vector ops
-impl_op_ex_commutative!(+ |f: f64, v: &Matrix| -> Matrix { Matrix::new(&v.data + f, v.shape()) });
-impl_op_ex_commutative!(*|f: f64, v: &Matrix| -> Matrix { Matrix::new(&v.data * f, v.shape()) });
-impl_op_ex!(-|f: f64, v: &Matrix| -> Matrix { Matrix::new(f - &v.data, v.shape()) });
-impl_op_ex!(-|v: &Matrix, f: f64| -> Matrix { Matrix::new(&v.data - f, v.shape()) });
-impl_op_ex!(/|f: f64, v: &Matrix| -> Matrix { Matrix::new(f / &v.data, v.shape()) });
-impl_op_ex!(/|v: &Matrix, f: f64| -> Matrix { Matrix::new(&v.data / f, v.shape()) });
+        impl $($path)::+<&Matrix> for Matrix {
+            fn $fn(&mut self, other: &Matrix) {
+                assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
+                $innerfn(&mut self.data, &other.data);
+            }
+        }
+    };
+}
+
+macro_rules! vec_opassign {
+    ($($path:ident)::+, $fn:ident, $innerfn:ident, $ty:ty) => {
+        impl $($path)::+<$ty> for Matrix {
+            fn $fn(&mut self, other: $ty) {
+                $innerfn(&mut self.data, other);
+            }
+        }
+    }
+}
+
+macro_rules! vec_op {
+    ($($path:ident)::+, $fn:ident, $fn_vs:ident, $fn_sv:ident, $ty:ty) => {
+        // impl ops::Add::add for Matrix
+        impl $($path)::+<$ty> for Matrix {
+            type Output = Matrix;
+
+            // fn add(self, other: f32) -> Self::Output
+            fn $fn(self, other: $ty) -> Self::Output {
+                Matrix::new(
+                    $fn_vs(&self.data, other),
+                    self.shape()
+                )
+            }
+        }
+
+        impl $($path)::+<$ty> for &Matrix {
+            type Output = Matrix;
+
+            fn $fn(self, other: $ty) -> Self::Output {
+                Matrix::new(
+                    $fn_vs(&self.data, other),
+                    self.shape()
+                )
+            }
+        }
+
+        impl $($path)::+<Matrix> for $ty {
+            type Output = Matrix;
+
+            fn $fn(self, other: Matrix) -> Self::Output {
+                Matrix::new(
+                    $fn_sv(self, &other.data),
+                    other.shape()
+                )
+            }
+        }
+
+        impl $($path)::+<&Matrix> for $ty {
+            type Output = Matrix;
+
+            fn $fn(self, other: &Matrix) -> Self::Output {
+                Matrix::new(
+                    $fn_sv(self, &other.data),
+                    other.shape()
+                )
+            }
+        }
+    }
+}
+
+macro_rules! vec_op_for {
+    ($ty: ty) => {
+        vec_op!(ops::Add, add, vsadd, svadd, $ty);
+        vec_op!(ops::Sub, sub, vssub, svsub, $ty);
+        vec_op!(ops::Mul, mul, vsmul, svmul, $ty);
+        vec_op!(ops::Div, div, vsdiv, svdiv, $ty);
+        vec_opassign!(ops::AddAssign, add_assign, vsadd_mut, $ty);
+        vec_opassign!(ops::SubAssign, sub_assign, vssub_mut, $ty);
+        vec_opassign!(ops::MulAssign, mul_assign, vsmul_mut, $ty);
+        vec_opassign!(ops::DivAssign, div_assign, vsdiv_mut, $ty);
+    };
+}
+
+vec_vec_op!(ops::Add, add, vadd);
+vec_vec_op!(ops::Sub, sub, vsub);
+vec_vec_op!(ops::Mul, mul, vmul);
+vec_vec_op!(ops::Div, div, vdiv);
+vec_vec_opassign!(ops::AddAssign, add_assign, vadd_mut);
+vec_vec_opassign!(ops::SubAssign, sub_assign, vsub_mut);
+vec_vec_opassign!(ops::MulAssign, mul_assign, vmul_mut);
+vec_vec_opassign!(ops::DivAssign, div_assign, vdiv_mut);
+vec_op_for!(f64);
+
+// // vector-vector ops
+// macro_rules! impl_vv_ops_helper {
+//     ($op: tt) => {
+//         impl_op_ex!($op |u: &Matrix, v: &Matrix| -> Matrix {
+//             assert_eq!(u.shape(), v.shape());
+//             Matrix::new( &u.data $op &v.data, u.shape())
+//         });
+//     };
+// }
+
+// impl_vv_ops_helper!(+);
+// impl_vv_ops_helper!(-);
+// impl_vv_ops_helper!(*);
+// impl_vv_ops_helper!(/);
+
+// // vector-float and float-vector ops
+// impl_op_ex_commutative!(+ |f: f64, v: &Matrix| -> Matrix { Matrix::new(&v.data + f, v.shape()) });
+// impl_op_ex_commutative!(*|f: f64, v: &Matrix| -> Matrix { Matrix::new(&v.data * f, v.shape()) });
+// impl_op_ex!(-|f: f64, v: &Matrix| -> Matrix { Matrix::new(f - &v.data, v.shape()) });
+// impl_op_ex!(-|v: &Matrix, f: f64| -> Matrix { Matrix::new(&v.data - f, v.shape()) });
+// impl_op_ex!(/|f: f64, v: &Matrix| -> Matrix { Matrix::new(f / &v.data, v.shape()) });
+// impl_op_ex!(/|v: &Matrix, f: f64| -> Matrix { Matrix::new(&v.data / f, v.shape()) });
 
 macro_rules! impl_unaryops_matrix {
     ($op: ident) => {

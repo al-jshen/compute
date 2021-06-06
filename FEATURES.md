@@ -30,6 +30,7 @@
   - resampling
     - bootstrap, jackknife
 - linear algebra: both BLAS/LAPACK and Rust implementations
+  - vector and matrix structs  
   - general utilities
     - dot product, (blocked) matrix multiplication, matrix inversion, Toeplitz matrix, Vandermonde matrix, (infinity) norm, linear solve, transpose, design matrix
     - vector-vector, scalar-vector, vector-scalar operations with loop unrolling

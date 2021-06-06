@@ -27,7 +27,7 @@ use crate::prelude::max;
 /// Generates evenly spaced values within a given interval. Values generated in the half-open
 /// interval [start, stop). That is, the stop point is not included.
 pub fn arange(start: f64, stop: f64, step: f64) -> Vector {
-    let n = (stop - start) / step + 1.;
+    let n = (stop - start) / step;
     (0..n as usize)
         .map(|i| start as f64 + i as f64 * step)
         .collect::<Vector>()

@@ -176,6 +176,7 @@ broadcast_op!(/, broadcast_div);
 
 #[cfg(test)]
 mod tests {
+    use super::super::super::arange;
     use super::super::Vector;
     use super::*;
 
@@ -335,5 +336,24 @@ mod tests {
         assert_eq!(d, Matrix::new([-2., 1., -1., 3.], 2, 2));
         let e = broadcast_div(&a.t(), &b);
         assert_eq!(e, Matrix::new([1. / 3., 0.75, 2., 4.], 2, 2));
+    }
+
+    #[test]
+    fn test_broadcast_4() {
+        let a = arange(0., 4., 1.).to_matrix().reshape(1, 4);
+        let b = arange(0., 4., 1.).to_matrix().reshape(4, 1);
+        let c = broadcast_sub(&a, &b);
+        assert_eq!(
+            c,
+            Matrix::new(
+                [0., 1., 2., 3., -1., 0., 1., 2., -2., -1., 0., 1., -3., -2., -1., 0.],
+                4,
+                4
+            )
+        );
+        let d = broadcast_mul(&a, &b.t());
+        assert_eq!(d, Matrix::new([0., 1., 4., 9.], 1, 4));
+        let e = broadcast_add(&b, &a.t());
+        assert_eq!(e, Matrix::new([0., 2., 4., 6.], 4, 1));
     }
 }

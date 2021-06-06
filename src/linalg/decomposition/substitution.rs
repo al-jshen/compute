@@ -1,3 +1,5 @@
+//! Forward and backward substitution.
+
 use crate::linalg::{dot, is_square};
 
 /// Solve a matrix equation of the form Lx=b, where L is a lower triangular matrix.

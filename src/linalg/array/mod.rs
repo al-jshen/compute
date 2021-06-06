@@ -1,4 +1,4 @@
-//! Vector and matrix structs.
+//! Vector and matrix structs and supporting functionality.
 
 mod dot;
 mod matrix;

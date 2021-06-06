@@ -44,30 +44,30 @@ where
     r[nmax - 1][nmax - 1]
 }
 
-/// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
-/// `w` for the n-point Gauss-Legendre quadrature.
-fn gau_leg_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
-    unimplemented!();
-}
+///// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
+///// `w` for the n-point Gauss-Legendre quadrature.
+//fn gau_leg_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+//    unimplemented!();
+//}
 
-///
-/// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
-/// `w` for the n-point Gauss-Laguerre quadrature.
-fn gau_lag_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
-    unimplemented!();
-}
+/////
+///// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
+///// `w` for the n-point Gauss-Laguerre quadrature.
+//fn gau_lag_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+//    unimplemented!();
+//}
 
-/// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
-/// `w` for the n-point Gauss-Jacobi quadrature.
-fn gau_jac_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
-    unimplemented!();
-}
+///// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
+///// `w` for the n-point Gauss-Jacobi quadrature.
+//fn gau_jac_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+//    unimplemented!();
+//}
 
-/// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
-/// `w` for the n-point Gauss-Hermite quadrature.
-fn gau_her_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
-    unimplemented!();
-}
+///// Given upper and lower limits of integration, this function calculates the nodes `x` and weights
+///// `w` for the n-point Gauss-Hermite quadrature.
+//fn gau_her_weights(a: f64, b: f64, n: u32) -> (Vec<f64>, Vec<f64>) {
+//    unimplemented!();
+//}
 
 /// Integrate a function `f` from `a` to `b` using the [Gauss-Legendre quadrature
 /// method](https://en.wikipedia.org/wiki/Gaussian_quadrature) with 5 points (allows for

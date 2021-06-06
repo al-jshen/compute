@@ -1,11 +1,11 @@
 //! Provides general linear algebra methods and matrix decompositions with a focus on low-dimensional data.
 
+mod array;
 mod decomposition;
 mod rotations;
 mod utils;
-mod vec;
 
+pub use array::*;
 pub use decomposition::*;
 pub use rotations::*;
 pub use utils::*;
-pub use vec::*;

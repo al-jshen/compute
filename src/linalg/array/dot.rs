@@ -1,8 +1,12 @@
-//! Implementing dot products for vectors and matrices.
+//! Implementation of matrix products for vectors and matrices.
 
 use super::{super::matmul, Matrix, Vector};
 
-/// A trait for performing matrix products.
+/// A trait for performing matrix products. Follows the behaviour of numpy's `matmul`.
+///
+/// If multiplying two matrices, performs conventional matrix multiplication.
+/// If multiplying a vector with a matrix, promotes the vector to a matrix by prepending a 1 to its dimensions, then performing conventional matrix multiplication, and then flattening the result back down into a vector.
+/// If multiplying a matrix with a vector, promotes the vector to a matrix by appending a 1 to its dimensions, then performing conventional matrix multiplication, and then flattening the result back down into a vector.
 pub trait Dot<T, S> {
     /// Performs dot product of self and other.
     fn dot(&self, other: T) -> S;

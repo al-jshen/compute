@@ -1,4 +1,4 @@
-use crate::linalg::{norm, svsub, vexp, vmul, vrecip, vsdiv, vsmul, vssub, vsub};
+use crate::linalg::{norm, svsub, vexp, vmul, vrecip, vsmul, vssub, vsub};
 
 /// An enum to represent the [exponential
 /// family](https://en.wikipedia.org/wiki/Exponential_family) set of distributions. These are

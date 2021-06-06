@@ -67,7 +67,7 @@ pub fn is_design(m: &[f64], nrows: usize) -> bool {
     let mut is_design = true;
     let ncols = is_matrix(m, nrows).unwrap();
     for i in 0..nrows {
-        if m[i * ncols] != 1. {
+        if (m[i * ncols] - 1.).abs() > f64::EPSILON {
             is_design = false;
         }
     }
@@ -79,7 +79,7 @@ pub fn is_symmetric(m: &[f64]) -> bool {
     let n = is_square(m).unwrap();
     for i in 0..n {
         for j in i..n {
-            if m[i * n + j] != m[j * n + i] {
+            if (m[i * n + j] - m[j * n + i]).abs() > f64::EPSILON {
                 return false;
             }
         }
@@ -205,42 +205,42 @@ pub fn solve_sys(a: &[f64], b: &[f64]) -> Vec<f64> {
 
     #[cfg(feature = "lapack")]
     {
-        let mut A = row_to_col_major(&a, n);
-        let mut B = row_to_col_major(&b, n);
+        let mut a = row_to_col_major(&a, n);
+        let mut b = row_to_col_major(&b, n);
         let mut ipiv = vec![0; n as usize];
         let mut info = 0;
         unsafe {
             dgesv(
                 n as i32,
                 nsys as i32,
-                &mut A,
+                &mut a,
                 n as i32,
                 &mut ipiv,
-                &mut B,
+                &mut b,
                 n as i32,
                 &mut info,
             );
             assert_eq!(info, 0, "dgesv failed");
         }
-        col_to_row_major(&B, n)
+        col_to_row_major(&b, n)
     }
 
     #[cfg(not(feature = "lapack"))]
     {
         let mut solutions = Vec::with_capacity(b.len());
-        let B = row_to_col_major(&b, n);
+        let b = row_to_col_major(&b, n);
 
         if is_positive_definite(a) {
             let l = cholesky(a);
             for i in 0..nsys {
-                let sol = cholesky_solve(&l, &B[(i * n)..((i + 1) * n)]);
+                let sol = cholesky_solve(&l, &b[(i * n)..((i + 1) * n)]);
                 assert_eq!(sol.len(), n);
                 solutions.extend_from_slice(&sol);
             }
         } else {
             let (lu, piv) = lu(a);
             for i in 0..nsys {
-                let sol = lu_solve(&lu, &piv, &B[(i * n)..((i + 1) * n)]);
+                let sol = lu_solve(&lu, &piv, &b[(i * n)..((i + 1) * n)]);
                 assert_eq!(sol.len(), n);
                 solutions.extend_from_slice(&sol);
             }
@@ -500,8 +500,14 @@ pub fn sum(x: &[f64]) -> f64 {
         }
 
         // do the rest
-        for j in (chunks * 8)..n {
-            s += x[j];
+
+        // for j in (chunks * 8)..n {
+        //     s += x[j]
+        // }
+
+        // clippy says to do this instead...
+        for j in x.iter().take(n).skip(chunks * 8) {
+            s += j;
         }
 
         s

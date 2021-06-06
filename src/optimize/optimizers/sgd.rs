@@ -1,7 +1,6 @@
 use super::GradFn;
 use super::Optimizer;
-use crate::linalg::norm;
-use crate::optimize::gradient::{eval, gradient};
+use crate::optimize::gradient::gradient;
 use crate::validation::shuffle_two;
 use approx_eq::rel_diff;
 use autodiff::F1;

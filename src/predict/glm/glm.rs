@@ -5,7 +5,6 @@ use crate::prelude::{
 
 use super::ExponentialFamily;
 // use super::Formula;
-use std::collections::HashMap;
 
 /// Implements a [generalized linear model](https://en.wikipedia.org/wiki/Generalized_linear_model).
 #[derive(Debug, Clone)]

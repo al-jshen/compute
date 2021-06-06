@@ -1,13 +1,13 @@
 use std::{
     fmt::{Display, Formatter, Result},
-    mem::{replace, swap},
+    mem::swap,
     ops::Index,
     panic,
 };
 
 use std::ops;
 
-use crate::prelude::{matmul, transpose};
+use crate::prelude::transpose;
 
 use super::vops::*;
 use super::Vector;
@@ -48,16 +48,19 @@ impl Matrix {
         m
     }
 
+    /// Check whether the matrix is square.
     pub fn is_square(&self) -> bool {
         self.nrows == self.ncols
     }
 
-    /// Determines whether a matrix is symmetric.
-    fn is_symmetric(&self) -> bool {
+    /// Check whether the matrix is symmetric.
+    pub fn is_symmetric(&self) -> bool {
         if self.is_square() {
             for i in 0..self.nrows {
                 for j in i..self.ncols {
-                    if self.data[i * self.ncols + j] != self.data[j * self.nrows + i] {
+                    if (self.data[i * self.ncols + j] - self.data[j * self.nrows + i]).abs()
+                        > f64::EPSILON
+                    {
                         return false;
                     }
                 }
@@ -68,7 +71,8 @@ impl Matrix {
         }
     }
 
-    fn is_positive_definite(&self) -> bool {
+    /// Check whether the matrix is positive definite.
+    pub fn is_positive_definite(&self) -> bool {
         if self.is_symmetric() {
             for i in 0..self.ncols {
                 if self.data[i * self.ncols + i] <= 0. {
@@ -97,10 +101,9 @@ impl Matrix {
         T: Into<Vector>,
     {
         let v = data.into();
-        let is_square = nrows == ncols;
 
         Self {
-            data: Vector::from(v),
+            data: v,
             ncols,
             nrows,
         }
@@ -176,7 +179,7 @@ impl Matrix {
             v[i] = self[i][col];
         }
 
-        Vector::from(v)
+        v
     }
 
     /// Sum the matrix across the rows.
@@ -194,7 +197,7 @@ impl Matrix {
         for row in 0..self.nrows {
             // sums = sums + Vector::from(&self[row]);
             for col in 0..self.ncols {
-                sums[col] = sums[col] + self[row][col];
+                sums[col] += self[row][col];
             }
         }
         sums

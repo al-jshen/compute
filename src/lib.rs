@@ -1,3 +1,4 @@
+#![allow(clippy::many_single_char_names)]
 pub mod distributions;
 pub mod functions;
 pub mod integrate;

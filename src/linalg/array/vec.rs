@@ -1,5 +1,5 @@
 use super::{vops::*, Matrix};
-use crate::linalg::{dot, norm, sum};
+use crate::linalg::{norm, sum};
 use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, var};
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};

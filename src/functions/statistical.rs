@@ -7,7 +7,7 @@ pub fn logistic(x: f64) -> f64 {
 
 /// Calculates the [logit function](https://en.wikipedia.org/wiki/Logit)
 pub fn logit(p: f64) -> f64 {
-    if p < 0. || p > 1. {
+    if !(0. ..=1.).contains(&p) {
         panic!("p must be in [0, 1]");
     }
     (p / (1. - p)).ln()

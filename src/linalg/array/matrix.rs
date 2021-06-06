@@ -1,7 +1,7 @@
 use std::{
     fmt::{Display, Formatter, Result},
     mem::swap,
-    ops::{Index, Neg},
+    ops::{Index, IndexMut, Neg},
     panic,
 };
 
@@ -163,14 +163,33 @@ impl Matrix {
         }
     }
 
-    /// Get the row of the matrix.
-    pub fn get_row(&self, row: usize) -> Vector {
+    /// Apply a closure to every element in a row. The closure should take a value and return the
+    /// value to replace it with.
+    pub fn apply_along_row<F>(&mut self, row: usize, f: F)
+    where
+        F: Fn(f64) -> f64,
+    {
+        &mut self[row].iter_mut().for_each(|x| *x = f(*x));
+    }
+
+    /// Apply a closure to every element in a row.
+    pub fn apply_along_col<F>(&mut self, col: usize, f: F)
+    where
+        F: Fn(f64) -> f64,
+    {
+        for row in self {
+            row[col] = f(row[col]);
+        }
+    }
+
+    /// Return a copy of the row of the matrix as a Vector.
+    pub fn get_row_as_vector(&self, row: usize) -> Vector {
         assert!(row < self.nrows);
         Vector::from(&self[row])
     }
 
-    /// Get the column of the matrix.
-    pub fn get_col(&self, col: usize) -> Vector {
+    /// Return a copy of the column of the matrix as a Vector.
+    pub fn get_col_as_vector(&self, col: usize) -> Vector {
         assert!(col < self.ncols);
 
         let mut v = Vector::zeros(self.nrows);
@@ -300,6 +319,15 @@ impl Neg for Matrix {
     }
 }
 
+impl PartialEq<Matrix> for Matrix {
+    fn eq(&self, other: &Matrix) -> bool {
+        if self.shape() != other.shape() {
+            return false;
+        }
+        return self.data.eq(&other.data);
+    }
+}
+
 impl Display for Matrix {
     fn fmt(&self, f: &mut Formatter) -> Result {
         for (rownum, row) in self.into_iter().enumerate() {
@@ -354,6 +382,20 @@ impl Index<[usize; 2]> for Matrix {
     fn index(&self, [i, j]: [usize; 2]) -> &Self::Output {
         assert!(i < self.nrows && j < self.ncols);
         &self.data[i * self.ncols + j]
+    }
+}
+
+impl IndexMut<usize> for Matrix {
+    fn index_mut(&mut self, i: usize) -> &mut Self::Output {
+        assert!(i < self.nrows);
+        &mut self.data[i * self.ncols..(i + 1) * self.ncols]
+    }
+}
+
+impl IndexMut<[usize; 2]> for Matrix {
+    fn index_mut(&mut self, [i, j]: [usize; 2]) -> &mut Self::Output {
+        assert!(i < self.nrows && j < self.ncols);
+        &mut self.data[i * self.ncols + j]
     }
 }
 

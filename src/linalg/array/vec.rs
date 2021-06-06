@@ -49,6 +49,20 @@ impl Default for Vector {
     }
 }
 
+impl PartialEq<Vector> for Vector {
+    fn eq(&self, other: &Vector) -> bool {
+        if self.len() != other.len() {
+            return false;
+        }
+        for i in 0..self.len() {
+            if (self[i] - other[i]).abs() > f64::EPSILON {
+                return false;
+            }
+        }
+        true
+    }
+}
+
 impl<T> From<T> for Vector
 where
     T: Into<Vec<f64>>,

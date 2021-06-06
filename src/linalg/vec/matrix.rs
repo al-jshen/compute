@@ -34,18 +34,18 @@ impl Matrix {
     }
 
     /// Make a matrix filled with zeros.
-    pub fn zeros([nrows, ncols]: [usize; 2]) -> Self {
-        Self::new(Vector::zeros(nrows * ncols), [nrows, ncols])
+    pub fn zeros(nrows: usize, ncols: usize) -> Self {
+        Self::new(Vector::zeros(nrows * ncols), nrows, ncols)
     }
 
     /// Make a matrix filled with ones.
-    pub fn ones([nrows, ncols]: [usize; 2]) -> Self {
-        Self::new(Vector::ones(nrows * ncols), [nrows, ncols])
+    pub fn ones(nrows: usize, ncols: usize) -> Self {
+        Self::new(Vector::ones(nrows * ncols), nrows, ncols)
     }
 
     /// Make an identity matrix with size `dims`.
     pub fn eye(dims: usize) -> Self {
-        let mut m = Self::zeros([dims, dims]);
+        let mut m = Self::zeros(dims, dims);
         for i in 0..dims {
             m.data[i * dims + i] = 1.;
         }
@@ -71,14 +71,14 @@ impl Matrix {
     }
 
     /// Make a new matrix with the given number of rows and columns.
-    pub fn new<T>(data: T, [nrows, ncols]: [usize; 2]) -> Self
+    pub fn new<T>(data: T, nrows: usize, ncols: usize) -> Self
     where
         T: Into<Vector>,
     {
         let v = data.into();
         let is_square = match is_square(&v) {
             Ok(val) => {
-                assert!(nrows == ncols && nrows == val, "matrix not square");
+                assert!(nrows == ncols && nrows == val, "matrix not square",);
                 true
             }
             Err(_) => false,
@@ -95,8 +95,8 @@ impl Matrix {
     }
 
     /// Get the number of rows and columns in the matrix.
-    pub fn shape(&self) -> [usize; 2] {
-        [self.nrows, self.ncols]
+    pub fn shape(&self) -> (usize, usize) {
+        (self.nrows, self.ncols)
     }
 
     /// Get the total number of elements in the matrix.
@@ -106,7 +106,7 @@ impl Matrix {
 
     /// Reshape the matrix in-place. A size of `-1` in either the rows or the columns means that the size
     /// for that dimension will be automatically determined if possible.
-    pub fn reshape_mut(&mut self, [nrows, ncols]: [i32; 2]) -> &mut Self {
+    pub fn reshape_mut(&mut self, nrows: i32, ncols: i32) -> &mut Self {
         let size = self.size();
         if nrows > 0 && ncols > 0 {
             assert_eq!(nrows * ncols, size as i32, "invalid shape");
@@ -130,19 +130,19 @@ impl Matrix {
 
     /// Reshape the matrix in-place. A size of `-1` in either the rows or the columns means that the size
     /// for that dimension will be automatically determined if possible.
-    pub fn reshape(&self, [nrows, ncols]: [i32; 2]) -> Self {
+    pub fn reshape(&self, nrows: i32, ncols: i32) -> Self {
         let size = self.size();
         if nrows > 0 && ncols > 0 {
             assert_eq!(nrows * ncols, size as i32, "invalid shape");
-            Matrix::new(self.data.clone(), [nrows as usize, ncols as usize])
+            Matrix::new(self.data.clone(), nrows as usize, ncols as usize)
         } else if nrows < 0 {
-            assert!(nrows == -1 && ncols > 0, "invalid number of rows");
+            assert!(nrows == -1 && ncols > 0, "invalid shape");
             // automatically determine number of rows
-            Matrix::new(self.data.clone(), [size / ncols as usize, ncols as usize])
+            Matrix::new(self.data.clone(), size / ncols as usize, ncols as usize)
         } else if ncols < 0 {
-            assert!(ncols == -1 && nrows > 0, "invalid number of columns");
+            assert!(ncols == -1 && nrows > 0, "invalid shape");
             // automatically determine number of columns
-            Matrix::new(self.data.clone(), [nrows as usize, size / nrows as usize])
+            Matrix::new(self.data.clone(), nrows as usize, size / nrows as usize)
         } else {
             panic!("invalid shape");
         }
@@ -203,7 +203,7 @@ impl Matrix {
     /// Transpose the matrix.
     pub fn t(&self) -> Self {
         let t = transpose(&self.data, self.nrows);
-        Matrix::new(t, [self.ncols, self.nrows])
+        Matrix::new(t, self.ncols, self.nrows)
     }
 
     /// Transpose the matrix in-place.
@@ -231,7 +231,7 @@ impl Matrix {
                 new_vec.push(other.data[i * other.ncols + j]);
             }
         }
-        Matrix::new(new_vec, [self.nrows, self.ncols + other.ncols])
+        Matrix::new(new_vec, self.nrows, self.ncols + other.ncols)
     }
 
     /// Vertical concatenation of matrices. Adds `other` below the calling matrix.
@@ -239,7 +239,27 @@ impl Matrix {
         assert_eq!(self.ncols, other.ncols);
         let mut new_vec = self.data.clone();
         new_vec.extend(other.data);
-        Matrix::new(new_vec, [self.nrows + other.nrows, self.ncols])
+        Matrix::new(new_vec, self.nrows + other.nrows, self.ncols)
+    }
+
+    /// Repeat self horizontally. That is, make `n` total copies of self and horizontally
+    /// concatenate them all together.
+    pub fn hrepeat(&self, n: usize) -> Self {
+        let total_cols = self.ncols * n;
+        let mut new_vec = Vec::with_capacity(self.nrows * total_cols);
+        for i in 0..self.nrows {
+            for _ in 0..n {
+                new_vec.extend(&self[i]);
+            }
+        }
+        Matrix::new(new_vec, self.nrows, total_cols)
+    }
+
+    /// Repeat self vertically. That is, make `n` total copies of self and vertically
+    /// concatenate them all together.
+    pub fn vrepeat(&self, n: usize) -> Self {
+        let total_rows = self.nrows * n;
+        Matrix::new(self.data.repeat(n), total_rows, self.ncols)
     }
 }
 
@@ -260,7 +280,7 @@ macro_rules! impl_mat_mat_dot {
                     false,
                     false,
                 );
-                Matrix::new(output, [self.nrows, other.ncols])
+                Matrix::new(output, self.nrows, other.ncols)
             }
         }
     };
@@ -353,7 +373,8 @@ macro_rules! mat_mat_op {
                 assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
                 Matrix::new(
                     $innerfn(&self.data, &other.data),
-                    self.shape()
+                    self.nrows,
+                    self.ncols
                 )
             }
         }
@@ -365,7 +386,8 @@ macro_rules! mat_mat_op {
                 assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
                 Matrix::new(
                     $innerfn(&self.data, &other.data),
-                    self.shape()
+                    self.nrows,
+                    self.ncols
                 )
             }
         }
@@ -377,7 +399,8 @@ macro_rules! mat_mat_op {
                 assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
                 Matrix::new(
                     $innerfn(&self.data, &other.data),
-                    self.shape()
+                    self.nrows,
+                    self.ncols
                 )
             }
         }
@@ -389,7 +412,8 @@ macro_rules! mat_mat_op {
                 assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
                 Matrix::new(
                     $innerfn(&self.data, &other.data),
-                    self.shape()
+                    self.nrows,
+                    self.ncols
                 )
             }
         }
@@ -437,7 +461,8 @@ macro_rules! mat_op {
             fn $fn(self, other: $ty) -> Self::Output {
                 Matrix::new(
                     $fn_vs(&self.data, other),
-                    self.shape()
+                    self.nrows,
+                    self.ncols
                 )
             }
         }
@@ -448,7 +473,8 @@ macro_rules! mat_op {
             fn $fn(self, other: $ty) -> Self::Output {
                 Matrix::new(
                     $fn_vs(&self.data, other),
-                    self.shape()
+                    self.nrows,
+                    self.ncols
                 )
             }
         }
@@ -459,7 +485,8 @@ macro_rules! mat_op {
             fn $fn(self, other: Matrix) -> Self::Output {
                 Matrix::new(
                     $fn_sv(self, &other.data),
-                    other.shape()
+                    other.nrows,
+                    other.ncols
                 )
             }
         }
@@ -470,7 +497,8 @@ macro_rules! mat_op {
             fn $fn(self, other: &Matrix) -> Self::Output {
                 Matrix::new(
                     $fn_sv(self, &other.data),
-                    other.shape()
+                    other.nrows,
+                    other.ncols
                 )
             }
         }
@@ -530,7 +558,7 @@ macro_rules! impl_unaryops_matrix {
             #[doc = stringify!($op)]
             #[doc = "` element-wise to the matrix."]
             pub fn $op(&self) -> Self {
-                Self::new(self.data.$op(), self.shape())
+                Self::new(self.data.$op(), self.nrows, self.ncols)
             }
         }
     };
@@ -573,7 +601,7 @@ macro_rules! impl_unaryops_with_arg_matrix {
             #[doc = stringify!($op)]
             #[doc = "` element-wise to the matrix."]
             pub fn $op(&self, arg: $argtype) -> Self {
-                Self::new(self.data.$op(arg), self.shape())
+                Self::new(self.data.$op(arg), self.nrows, self.ncols)
             }
         }
     };

@@ -34,7 +34,7 @@ impl Vector {
     }
 
     pub fn to_matrix(&self) -> Matrix {
-        Matrix::new(self.clone(), [1, self.len()])
+        Matrix::new(self.clone(), 1, self.len())
     }
 }
 

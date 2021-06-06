@@ -17,8 +17,11 @@ impl Vector {
         Self { v: Vec::new() }
     }
 
-    pub fn new(v: Vec<f64>) -> Self {
-        Self { v }
+    pub fn new<T>(v: T) -> Self
+    where
+        T: Into<Vec<f64>>,
+    {
+        Self { v: v.into() }
     }
 
     pub fn with_capacity(n: usize) -> Self {
@@ -33,10 +36,6 @@ impl Vector {
 
     pub fn ones(n: usize) -> Self {
         Self { v: vec![1.; n] }
-    }
-
-    pub fn dot(&self, other: Self) -> f64 {
-        dot(&self.v, &other)
     }
 
     pub fn to_matrix(&self) -> Matrix {

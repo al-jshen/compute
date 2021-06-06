@@ -230,6 +230,16 @@ impl Matrix {
         self
     }
 
+    /// Return a reference to the underlying Vector holding the data.
+    pub fn data(&self) -> &Vector {
+        &self.data
+    }
+
+    /// Return a mutable reference to the underlying Vector holding the data.
+    pub fn data_mut(&mut self) -> &mut Vector {
+        &mut self.data
+    }
+
     /// Converts the matrix to a Vector.
     pub fn to_vec(&self) -> Vector {
         self.data.clone()
@@ -278,118 +288,6 @@ impl Matrix {
         Matrix::new(self.data.repeat(n), total_rows, self.ncols)
     }
 }
-
-/// A trait for performing matrix products.
-pub trait Dot<T, S> {
-    /// Performs dot product of self and other.
-    fn dot(&self, other: T) -> S;
-    /// Performs dot product of self and other, transposing other.
-    fn dot_t(&self, other: T) -> S;
-    /// Performs dot product of self and other, transposing self.
-    fn t_dot(&self, other: T) -> S;
-    /// Performs dot product of self and other, transposing both self and other.
-    fn t_dot_t(&self, other: T) -> S;
-}
-
-macro_rules! impl_mat_mat_dot {
-    ($selftype: ty, $othertype: ty) => {
-        impl Dot<$othertype, Matrix> for $selftype {
-            fn dot(&self, other: $othertype) -> Matrix {
-                assert_eq!(self.ncols, other.nrows, "matrix shapes not compatible");
-                let output = matmul(
-                    &self.data,
-                    &other.data,
-                    self.nrows,
-                    other.nrows,
-                    false,
-                    false,
-                );
-                Matrix::new(output, self.nrows, other.ncols)
-            }
-
-            fn t_dot(&self, other: $othertype) -> Matrix {
-                assert_eq!(self.nrows, other.nrows, "matrix shapes not compatible");
-                let output = matmul(
-                    &self.data,
-                    &other.data,
-                    self.nrows,
-                    other.nrows,
-                    true,
-                    false,
-                );
-                Matrix::new(output, self.ncols, other.ncols)
-            }
-            fn dot_t(&self, other: $othertype) -> Matrix {
-                assert_eq!(self.ncols, other.ncols, "matrix shapes not compatible");
-                let output = matmul(
-                    &self.data,
-                    &other.data,
-                    self.nrows,
-                    other.nrows,
-                    false,
-                    true,
-                );
-                Matrix::new(output, self.nrows, other.nrows)
-            }
-            fn t_dot_t(&self, other: $othertype) -> Matrix {
-                assert_eq!(self.nrows, other.ncols, "matrix shapes not compatible");
-                let output = matmul(&self.data, &other.data, self.nrows, other.nrows, true, true);
-                Matrix::new(output, self.ncols, other.nrows)
-            }
-        }
-    };
-}
-
-impl_mat_mat_dot!(Matrix, Matrix);
-impl_mat_mat_dot!(Matrix, &Matrix);
-impl_mat_mat_dot!(&Matrix, Matrix);
-impl_mat_mat_dot!(&Matrix, &Matrix);
-
-macro_rules! impl_dot_append_one {
-    ($othertype: ty, $($op: ident),+) => {
-        $(
-            fn $op(&self, other: $othertype) -> Vector {
-                self.$op(&Matrix::new(other.clone(), other.len(), 1)).data
-            }
-        )+
-    }
-}
-
-macro_rules! impl_mat_vec_dot {
-    ($selftype: ty, $othertype: ty) => {
-        impl Dot<$othertype, Vector> for $selftype {
-            impl_dot_append_one!($othertype, dot, t_dot, dot_t, t_dot_t);
-        }
-    };
-}
-
-impl_mat_vec_dot!(Matrix, Vector);
-impl_mat_vec_dot!(Matrix, &Vector);
-impl_mat_vec_dot!(&Matrix, Vector);
-impl_mat_vec_dot!(&Matrix, &Vector);
-
-macro_rules! impl_dot_prepend_one {
-    ($othertype: ty, $($op: ident),+) => {
-        $(
-            fn $op(&self, other: $othertype) -> Vector {
-                self.to_matrix().$op(other).data
-            }
-        )+
-    }
-}
-
-macro_rules! impl_vec_mat_dot {
-    ($selftype: ty, $othertype: ty) => {
-        impl Dot<$othertype, Vector> for $selftype {
-            impl_dot_prepend_one!($othertype, dot, t_dot, dot_t, t_dot_t);
-        }
-    };
-}
-
-impl_vec_mat_dot!(Vector, Matrix);
-impl_vec_mat_dot!(Vector, &Matrix);
-impl_vec_mat_dot!(&Vector, Matrix);
-impl_vec_mat_dot!(&Vector, &Matrix);
 
 impl Display for Matrix {
     fn fmt(&self, f: &mut Formatter) -> Result {

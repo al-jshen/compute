@@ -7,7 +7,7 @@ use std::{
 
 use std::ops;
 
-use crate::prelude::{is_square, is_symmetric, matmul, transpose};
+use crate::prelude::{matmul, transpose};
 
 use super::vops::*;
 use super::Vector;
@@ -18,8 +18,6 @@ pub struct Matrix {
     data: Vector,
     pub nrows: usize,
     pub ncols: usize,
-    is_square: bool,
-    is_symmetric: bool,
 }
 
 impl Matrix {
@@ -28,8 +26,6 @@ impl Matrix {
             data: Vector::empty(),
             ncols: 0,
             nrows: 0,
-            is_square: false,
-            is_symmetric: false,
         }
     }
 
@@ -52,22 +48,47 @@ impl Matrix {
         m
     }
 
-    fn update_props(&mut self) {
-        self.is_square = match is_square(&self.data) {
-            Ok(val) => {
-                assert!(
-                    self.nrows == self.ncols && self.nrows == val,
-                    "matrix not square"
-                );
-                true
+    pub fn is_square(&self) -> bool {
+        self.nrows == self.ncols
+    }
+
+    /// Determines whether a matrix is symmetric.
+    fn is_symmetric(&self) -> bool {
+        if self.is_square() {
+            for i in 0..self.nrows {
+                for j in i..self.ncols {
+                    if self.data[i * self.ncols + j] != self.data[j * self.nrows + i] {
+                        return false;
+                    }
+                }
             }
-            Err(_) => false,
-        };
-        self.is_symmetric = if self.is_square {
-            is_symmetric(&self.data)
+            true
         } else {
             false
-        };
+        }
+    }
+
+    fn is_positive_definite(&self) -> bool {
+        if self.is_symmetric() {
+            for i in 0..self.ncols {
+                if self.data[i * self.ncols + i] <= 0. {
+                    return false;
+                }
+            }
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Get the diagonal elements of the matrix.
+    pub fn diag(&self) -> Vector {
+        let n = self.nrows.min(self.ncols);
+        let mut diag = Vector::with_capacity(n);
+        for i in 0..n {
+            diag.push(self.data[i * n + i]);
+        }
+        diag
     }
 
     /// Make a new matrix with the given number of rows and columns.
@@ -76,21 +97,12 @@ impl Matrix {
         T: Into<Vector>,
     {
         let v = data.into();
-        let is_square = match is_square(&v) {
-            Ok(val) => {
-                assert!(nrows == ncols && nrows == val, "matrix not square",);
-                true
-            }
-            Err(_) => false,
-        };
-        let is_symmetric = if is_square { is_symmetric(&v) } else { false };
+        let is_square = nrows == ncols;
 
         Self {
             data: Vector::from(v),
             ncols,
             nrows,
-            is_square,
-            is_symmetric,
         }
     }
 
@@ -188,6 +200,11 @@ impl Matrix {
         sums
     }
 
+    /// Calculates the infinity norm of the matrix.
+    pub fn inf_norm(&self) -> f64 {
+        self.abs().sum_rows().max()
+    }
+
     pub fn flat_idx(&self, idx: usize) -> f64 {
         assert!(idx < self.size());
         (&self.data)[idx]
@@ -196,7 +213,6 @@ impl Matrix {
     pub fn flat_idx_replace(&mut self, idx: usize, val: f64) -> &mut Self {
         assert!(idx < self.size());
         self.data[idx] = val;
-        self.update_props();
         self
     }
 
@@ -263,8 +279,16 @@ impl Matrix {
     }
 }
 
+/// A trait for performing matrix products.
 pub trait Dot<T, S> {
+    /// Performs dot product of self and other.
     fn dot(&self, other: T) -> S;
+    /// Performs dot product of self and other, transposing other.
+    fn dot_t(&self, other: T) -> S;
+    /// Performs dot product of self and other, transposing self.
+    fn t_dot(&self, other: T) -> S;
+    /// Performs dot product of self and other, transposing both self and other.
+    fn t_dot_t(&self, other: T) -> S;
 }
 
 macro_rules! impl_mat_mat_dot {
@@ -282,6 +306,36 @@ macro_rules! impl_mat_mat_dot {
                 );
                 Matrix::new(output, self.nrows, other.ncols)
             }
+
+            fn t_dot(&self, other: $othertype) -> Matrix {
+                assert_eq!(self.nrows, other.nrows, "matrix shapes not compatible");
+                let output = matmul(
+                    &self.data,
+                    &other.data,
+                    self.nrows,
+                    other.nrows,
+                    true,
+                    false,
+                );
+                Matrix::new(output, self.ncols, other.ncols)
+            }
+            fn dot_t(&self, other: $othertype) -> Matrix {
+                assert_eq!(self.ncols, other.ncols, "matrix shapes not compatible");
+                let output = matmul(
+                    &self.data,
+                    &other.data,
+                    self.nrows,
+                    other.nrows,
+                    false,
+                    true,
+                );
+                Matrix::new(output, self.nrows, other.nrows)
+            }
+            fn t_dot_t(&self, other: $othertype) -> Matrix {
+                assert_eq!(self.nrows, other.ncols, "matrix shapes not compatible");
+                let output = matmul(&self.data, &other.data, self.nrows, other.nrows, true, true);
+                Matrix::new(output, self.ncols, other.nrows)
+            }
         }
     };
 }
@@ -291,14 +345,20 @@ impl_mat_mat_dot!(Matrix, &Matrix);
 impl_mat_mat_dot!(&Matrix, Matrix);
 impl_mat_mat_dot!(&Matrix, &Matrix);
 
+macro_rules! impl_dot_append_one {
+    ($othertype: ty, $($op: ident),+) => {
+        $(
+            fn $op(&self, other: $othertype) -> Vector {
+                self.$op(&Matrix::new(other.clone(), other.len(), 1)).data
+            }
+        )+
+    }
+}
+
 macro_rules! impl_mat_vec_dot {
     ($selftype: ty, $othertype: ty) => {
         impl Dot<$othertype, Vector> for $selftype {
-            fn dot(&self, other: $othertype) -> Vector {
-                assert_eq!(self.ncols, other.len(), "shapes not compatible");
-                let output = matmul(&self.data, &other, self.nrows, other.len(), false, false);
-                Vector::from(output)
-            }
+            impl_dot_append_one!($othertype, dot, t_dot, dot_t, t_dot_t);
         }
     };
 }
@@ -307,6 +367,29 @@ impl_mat_vec_dot!(Matrix, Vector);
 impl_mat_vec_dot!(Matrix, &Vector);
 impl_mat_vec_dot!(&Matrix, Vector);
 impl_mat_vec_dot!(&Matrix, &Vector);
+
+macro_rules! impl_dot_prepend_one {
+    ($othertype: ty, $($op: ident),+) => {
+        $(
+            fn $op(&self, other: $othertype) -> Vector {
+                self.to_matrix().$op(other).data
+            }
+        )+
+    }
+}
+
+macro_rules! impl_vec_mat_dot {
+    ($selftype: ty, $othertype: ty) => {
+        impl Dot<$othertype, Vector> for $selftype {
+            impl_dot_prepend_one!($othertype, dot, t_dot, dot_t, t_dot_t);
+        }
+    };
+}
+
+impl_vec_mat_dot!(Vector, Matrix);
+impl_vec_mat_dot!(Vector, &Matrix);
+impl_vec_mat_dot!(&Vector, Matrix);
+impl_vec_mat_dot!(&Vector, &Matrix);
 
 impl Display for Matrix {
     fn fmt(&self, f: &mut Formatter) -> Result {
@@ -426,7 +509,6 @@ macro_rules! mat_mat_opassign {
             fn $fn(&mut self, other: Matrix) {
                 assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
                 $innerfn(&mut self.data, &other.data);
-                self.update_props();
             }
         }
 
@@ -434,7 +516,6 @@ macro_rules! mat_mat_opassign {
             fn $fn(&mut self, other: &Matrix) {
                 assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
                 $innerfn(&mut self.data, &other.data);
-                self.update_props();
             }
         }
     };
@@ -445,7 +526,6 @@ macro_rules! mat_opassign {
         impl $($path)::+<$ty> for Matrix {
             fn $fn(&mut self, other: $ty) {
                 $innerfn(&mut self.data, other);
-                self.update_props();
             }
         }
     }
@@ -527,29 +607,6 @@ mat_mat_opassign!(ops::SubAssign, sub_assign, vsub_mut);
 mat_mat_opassign!(ops::MulAssign, mul_assign, vmul_mut);
 mat_mat_opassign!(ops::DivAssign, div_assign, vdiv_mut);
 mat_op_for!(f64);
-
-// // vector-vector ops
-// macro_rules! impl_vv_ops_helper {
-//     ($op: tt) => {
-//         impl_op_ex!($op |u: &Matrix, v: &Matrix| -> Matrix {
-//             assert_eq!(u.shape(), v.shape());
-//             Matrix::new( &u.data $op &v.data, u.shape())
-//         });
-//     };
-// }
-
-// impl_vv_ops_helper!(+);
-// impl_vv_ops_helper!(-);
-// impl_vv_ops_helper!(*);
-// impl_vv_ops_helper!(/);
-
-// // vector-float and float-vector ops
-// impl_op_ex_commutative!(+ |f: f64, v: &Matrix| -> Matrix { Matrix::new(&v.data + f, v.shape()) });
-// impl_op_ex_commutative!(*|f: f64, v: &Matrix| -> Matrix { Matrix::new(&v.data * f, v.shape()) });
-// impl_op_ex!(-|f: f64, v: &Matrix| -> Matrix { Matrix::new(f - &v.data, v.shape()) });
-// impl_op_ex!(-|v: &Matrix, f: f64| -> Matrix { Matrix::new(&v.data - f, v.shape()) });
-// impl_op_ex!(/|f: f64, v: &Matrix| -> Matrix { Matrix::new(f / &v.data, v.shape()) });
-// impl_op_ex!(/|v: &Matrix, f: f64| -> Matrix { Matrix::new(&v.data / f, v.shape()) });
 
 macro_rules! impl_unaryops_matrix {
     ($op: ident) => {

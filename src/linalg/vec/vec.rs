@@ -21,6 +21,12 @@ impl Vector {
         Self { v }
     }
 
+    pub fn with_capacity(n: usize) -> Self {
+        Self {
+            v: Vec::with_capacity(n),
+        }
+    }
+
     pub fn zeros(n: usize) -> Self {
         Self { v: vec![0.; n] }
     }

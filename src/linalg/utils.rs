@@ -42,16 +42,6 @@ pub fn linspace(start: f64, stop: f64, num: usize) -> Vector {
         .collect::<Vector>()
 }
 
-/// Checks whether a 1D array is a valid square matrix.
-pub fn is_square(m: &[f64]) -> Result<usize, String> {
-    let n = (m.len() as f32).sqrt();
-    if n % 1. == 0. {
-        Ok(n as usize)
-    } else {
-        Err("Matrix not square".to_string())
-    }
-}
-
 /// Checks whether a 1D array is a valid matrix representation given the number of rows.
 pub fn is_matrix(m: &[f64], nrows: usize) -> Result<usize, String> {
     let ncols = m.len() / nrows;
@@ -59,6 +49,16 @@ pub fn is_matrix(m: &[f64], nrows: usize) -> Result<usize, String> {
         Ok(ncols)
     } else {
         Err("Not a matrix".to_string())
+    }
+}
+
+/// Checks whether a 1D array is a valid square matrix.
+pub fn is_square(m: &[f64]) -> Result<usize, String> {
+    let n = (m.len() as f32).sqrt();
+    if n % 1. == 0. {
+        Ok(n as usize)
+    } else {
+        Err("Matrix not square".to_string())
     }
 }
 
@@ -101,6 +101,15 @@ pub fn is_positive_definite(m: &[f64]) -> bool {
     true
 }
 
+pub fn diag(a: &[f64]) -> Vector {
+    let n = is_square(a).unwrap();
+    let mut results = Vector::new(Vec::with_capacity(n));
+    for i in 0..n {
+        results.push(a[i * n + i]);
+    }
+    results
+}
+
 /// Convert a 1D matrix from row-major ordering into column-major ordering.
 pub fn row_to_col_major(a: &[f64], nrows: usize) -> Vector {
     let ncols = is_matrix(a, nrows).unwrap();
@@ -138,16 +147,6 @@ pub fn transpose(a: &[f64], nrows: usize) -> Vec<f64> {
     }
 
     at
-}
-
-/// Extract the diagonal elements of a matrix.
-pub fn diag(a: &[f64]) -> Vector {
-    let n = is_square(a).unwrap();
-    let mut results = Vector::new(Vec::with_capacity(n));
-    for i in 0..n {
-        results.push(a[i * n + i]);
-    }
-    results
 }
 
 /// Create a diagonal matrix with the given elements along the elements.

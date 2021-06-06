@@ -1,7 +1,7 @@
 use std::{
     fmt::{Display, Formatter, Result},
     mem::swap,
-    ops::Index,
+    ops::{Index, Neg},
     panic,
 };
 
@@ -24,8 +24,8 @@ impl Matrix {
     pub fn empty() -> Self {
         Self {
             data: Vector::empty(),
-            ncols: 0,
             nrows: 0,
+            ncols: 0,
         }
     }
 
@@ -104,14 +104,14 @@ impl Matrix {
 
         Self {
             data: v,
-            ncols,
             nrows,
+            ncols,
         }
     }
 
     /// Get the number of rows and columns in the matrix.
-    pub fn shape(&self) -> (usize, usize) {
-        (self.nrows, self.ncols)
+    pub fn shape(&self) -> [usize; 2] {
+        [self.nrows, self.ncols]
     }
 
     /// Get the total number of elements in the matrix.
@@ -289,6 +289,14 @@ impl Matrix {
     pub fn vrepeat(&self, n: usize) -> Self {
         let total_rows = self.nrows * n;
         Matrix::new(self.data.repeat(n), total_rows, self.ncols)
+    }
+}
+
+impl Neg for Matrix {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Matrix::new(-self.data, self.nrows, self.ncols)
     }
 }
 

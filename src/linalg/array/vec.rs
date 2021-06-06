@@ -4,7 +4,7 @@ use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, 
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
 use std::iter::{FromIterator, IntoIterator};
-use std::ops::{self, Deref, DerefMut};
+use std::ops::{self, Deref, DerefMut, Neg};
 
 /// A row-major ordering vector struct with various useful methods.
 #[derive(Debug, Clone)]
@@ -39,7 +39,7 @@ impl Vector {
     }
 
     pub fn to_matrix(&self) -> Matrix {
-        Matrix::new(self.clone(), 1, self.len())
+        Matrix::new(self.to_owned(), 1, self.len())
     }
 }
 
@@ -119,6 +119,14 @@ impl Deref for Vector {
 impl DerefMut for Vector {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.v
+    }
+}
+
+impl Neg for Vector {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        self.v.into_iter().map(|x| -x).collect()
     }
 }
 

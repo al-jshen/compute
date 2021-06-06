@@ -10,7 +10,9 @@ pub enum Broadcast {
 }
 
 fn calc_broadcast_shape(m1: &Matrix, m2: &Matrix) -> [Broadcast; 2] {
-    if m1.shape().contains(&1) {
+    if m1.shape() == m2.shape() {
+        [Broadcast::None, Broadcast::None]
+    } else if m1.shape().contains(&1) {
         if m1.nrows == 1 {
             assert!(
                 m1.ncols == m2.ncols // single vstack broadcast for m1
@@ -321,5 +323,17 @@ mod tests {
                 4
             )
         );
+    }
+
+    #[test]
+    fn test_broadcast_3() {
+        let a = Matrix::new([1., 2., 3., 4.], 2, 2);
+        let b = Matrix::new([3., 4., 1., 1.], 2, 2);
+        let c = broadcast_add(&a, &b);
+        assert_eq!(c, Matrix::new([4., 6., 4., 5.], 2, 2));
+        let d = broadcast_sub(&a, &b.t());
+        assert_eq!(d, Matrix::new([-2., 1., -1., 3.], 2, 2));
+        let e = broadcast_div(&a.t(), &b);
+        assert_eq!(e, Matrix::new([1. / 3., 0.75, 2., 4.], 2, 2));
     }
 }

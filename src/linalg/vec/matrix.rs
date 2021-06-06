@@ -1,11 +1,13 @@
 use std::{
     fmt::{Display, Formatter, Result},
+    mem::{replace, swap},
     ops::Index,
+    panic,
 };
 
 use std::ops;
 
-use crate::prelude::{is_square, is_symmetric};
+use crate::prelude::{is_square, is_symmetric, matmul, transpose};
 
 use super::vops::*;
 use super::Vector;
@@ -14,11 +16,10 @@ use super::Vector;
 #[derive(Debug, Clone)]
 pub struct Matrix {
     data: Vector,
-    nrows: usize,
-    ncols: usize,
+    pub nrows: usize,
+    pub ncols: usize,
     is_square: bool,
     is_symmetric: bool,
-    // iter_counter: usize,
 }
 
 impl Matrix {
@@ -29,14 +30,20 @@ impl Matrix {
             nrows: 0,
             is_square: false,
             is_symmetric: false,
-            // iter_counter: 0,
         }
     }
 
+    /// Make a matrix filled with zeros.
     pub fn zeros([nrows, ncols]: [usize; 2]) -> Self {
         Self::new(Vector::zeros(nrows * ncols), [nrows, ncols])
     }
 
+    /// Make a matrix filled with ones.
+    pub fn ones([nrows, ncols]: [usize; 2]) -> Self {
+        Self::new(Vector::ones(nrows * ncols), [nrows, ncols])
+    }
+
+    /// Make an identity matrix with size `dims`.
     pub fn eye(dims: usize) -> Self {
         let mut m = Self::zeros([dims, dims]);
         for i in 0..dims {
@@ -45,11 +52,30 @@ impl Matrix {
         m
     }
 
+    fn update_props(&mut self) {
+        self.is_square = match is_square(&self.data) {
+            Ok(val) => {
+                assert!(
+                    self.nrows == self.ncols && self.nrows == val,
+                    "matrix not square"
+                );
+                true
+            }
+            Err(_) => false,
+        };
+        self.is_symmetric = if self.is_square {
+            is_symmetric(&self.data)
+        } else {
+            false
+        };
+    }
+
+    /// Make a new matrix with the given number of rows and columns.
     pub fn new<T>(data: T, [nrows, ncols]: [usize; 2]) -> Self
     where
-        T: AsRef<[f64]>,
+        T: Into<Vector>,
     {
-        let v = data.as_ref();
+        let v = data.into();
         let is_square = match is_square(&v) {
             Ok(val) => {
                 assert!(nrows == ncols && nrows == val, "matrix not square");
@@ -65,23 +91,70 @@ impl Matrix {
             nrows,
             is_square,
             is_symmetric,
-            // iter_counter: 0,
         }
     }
 
+    /// Get the number of rows and columns in the matrix.
     pub fn shape(&self) -> [usize; 2] {
         [self.nrows, self.ncols]
     }
 
+    /// Get the total number of elements in the matrix.
     pub fn size(&self) -> usize {
         self.nrows * self.ncols
     }
 
+    /// Reshape the matrix in-place. A size of `-1` in either the rows or the columns means that the size
+    /// for that dimension will be automatically determined if possible.
+    pub fn reshape_mut(&mut self, [nrows, ncols]: [i32; 2]) -> &mut Self {
+        let size = self.size();
+        if nrows > 0 && ncols > 0 {
+            assert_eq!(nrows * ncols, size as i32, "invalid shape");
+            self.nrows = nrows as usize;
+            self.ncols = ncols as usize;
+        } else if nrows < 0 {
+            assert!(nrows == -1 && ncols > 0, "invalid number of rows");
+            // automatically determine number of rows
+            self.ncols = ncols as usize;
+            self.nrows = size / ncols as usize;
+        } else if ncols < 0 {
+            assert!(ncols == -1 && nrows > 0, "invalid number of columns");
+            // automatically determine number of columns
+            self.nrows = nrows as usize;
+            self.ncols = size / nrows as usize;
+        } else {
+            panic!("invalid shape");
+        }
+        self
+    }
+
+    /// Reshape the matrix in-place. A size of `-1` in either the rows or the columns means that the size
+    /// for that dimension will be automatically determined if possible.
+    pub fn reshape(&self, [nrows, ncols]: [i32; 2]) -> Self {
+        let size = self.size();
+        if nrows > 0 && ncols > 0 {
+            assert_eq!(nrows * ncols, size as i32, "invalid shape");
+            Matrix::new(self.data.clone(), [nrows as usize, ncols as usize])
+        } else if nrows < 0 {
+            assert!(nrows == -1 && ncols > 0, "invalid number of rows");
+            // automatically determine number of rows
+            Matrix::new(self.data.clone(), [size / ncols as usize, ncols as usize])
+        } else if ncols < 0 {
+            assert!(ncols == -1 && nrows > 0, "invalid number of columns");
+            // automatically determine number of columns
+            Matrix::new(self.data.clone(), [nrows as usize, size / nrows as usize])
+        } else {
+            panic!("invalid shape");
+        }
+    }
+
+    /// Get the row of the matrix.
     pub fn get_row(&self, row: usize) -> Vector {
         assert!(row < self.nrows);
         Vector::from(&self[row])
     }
 
+    /// Get the column of the matrix.
     pub fn get_col(&self, col: usize) -> Vector {
         assert!(col < self.ncols);
 
@@ -94,6 +167,7 @@ impl Matrix {
         Vector::from(v)
     }
 
+    /// Sum the matrix across the rows.
     pub fn sum_rows(&self) -> Vector {
         let mut sums = Vector::zeros(self.nrows);
         for row in 0..self.nrows {
@@ -102,6 +176,7 @@ impl Matrix {
         sums
     }
 
+    /// Sum the matrix down the columns.
     pub fn sum_cols(&self) -> Vector {
         let mut sums = Vector::zeros(self.ncols);
         for row in 0..self.nrows {
@@ -118,21 +193,111 @@ impl Matrix {
         (&self.data)[idx]
     }
 
-    pub fn flat_idx_mut(&mut self, idx: usize) -> &mut f64 {
+    pub fn flat_idx_replace(&mut self, idx: usize, val: f64) -> &mut Self {
         assert!(idx < self.size());
-        &mut self.data[idx]
+        self.data[idx] = val;
+        self.update_props();
+        self
+    }
+
+    /// Transpose the matrix.
+    pub fn t(&self) -> Self {
+        let t = transpose(&self.data, self.nrows);
+        Matrix::new(t, [self.ncols, self.nrows])
+    }
+
+    /// Transpose the matrix in-place.
+    pub fn t_mut(&mut self) -> &mut Self {
+        let t = transpose(&self.data, self.nrows);
+        self.data = Vector::new(t);
+        swap(&mut self.ncols, &mut self.nrows);
+        self
+    }
+
+    /// Converts the matrix to a Vector.
+    pub fn to_vec(&self) -> Vector {
+        self.data.clone()
+    }
+
+    /// Horizontal concatenation of matrices. Adds `other` to the right of the calling matrix.
+    pub fn hcat(&self, other: Self) -> Self {
+        assert_eq!(self.nrows, other.nrows);
+        let mut new_vec = Vector::empty();
+        for i in 0..self.nrows {
+            for j in 0..self.ncols {
+                new_vec.push(self.data[i * self.ncols + j]);
+            }
+            for j in 0..other.ncols {
+                new_vec.push(other.data[i * other.ncols + j]);
+            }
+        }
+        Matrix::new(new_vec, [self.nrows, self.ncols + other.ncols])
+    }
+
+    /// Vertical concatenation of matrices. Adds `other` below the calling matrix.
+    pub fn vcat(&self, other: Self) -> Self {
+        assert_eq!(self.ncols, other.ncols);
+        let mut new_vec = self.data.clone();
+        new_vec.extend(other.data);
+        Matrix::new(new_vec, [self.nrows + other.nrows, self.ncols])
     }
 }
+
+pub trait Dot<T, S> {
+    fn dot(&self, other: T) -> S;
+}
+
+macro_rules! impl_mat_mat_dot {
+    ($selftype: ty, $othertype: ty) => {
+        impl Dot<$othertype, Matrix> for $selftype {
+            fn dot(&self, other: $othertype) -> Matrix {
+                assert_eq!(self.ncols, other.nrows, "matrix shapes not compatible");
+                let output = matmul(
+                    &self.data,
+                    &other.data,
+                    self.nrows,
+                    other.nrows,
+                    false,
+                    false,
+                );
+                Matrix::new(output, [self.nrows, other.ncols])
+            }
+        }
+    };
+}
+
+impl_mat_mat_dot!(Matrix, Matrix);
+impl_mat_mat_dot!(Matrix, &Matrix);
+impl_mat_mat_dot!(&Matrix, Matrix);
+impl_mat_mat_dot!(&Matrix, &Matrix);
+
+macro_rules! impl_mat_vec_dot {
+    ($selftype: ty, $othertype: ty) => {
+        impl Dot<$othertype, Vector> for $selftype {
+            fn dot(&self, other: $othertype) -> Vector {
+                assert_eq!(self.ncols, other.len(), "shapes not compatible");
+                let output = matmul(&self.data, &other, self.nrows, other.len(), false, false);
+                Vector::from(output)
+            }
+        }
+    };
+}
+
+impl_mat_vec_dot!(Matrix, Vector);
+impl_mat_vec_dot!(Matrix, &Vector);
+impl_mat_vec_dot!(&Matrix, Vector);
+impl_mat_vec_dot!(&Matrix, &Vector);
 
 impl Display for Matrix {
     fn fmt(&self, f: &mut Formatter) -> Result {
         Ok(for (rownum, row) in self.into_iter().enumerate() {
+            let row_str = format!("{:?}", row);
             if rownum == 0 {
-                writeln!(f, "[{:?} ", row)?;
+                writeln!(f, "[{} ", row_str)?;
             } else if rownum == self.nrows - 1 {
-                writeln!(f, " {:?}]", row)?;
+                writeln!(f, " {}]", row_str)?;
             } else {
-                writeln!(f, " {:?} ", row)?;
+                writeln!(f, " {} ", row_str)?;
             }
         })
     }
@@ -179,7 +344,7 @@ impl Index<[usize; 2]> for Matrix {
     }
 }
 
-macro_rules! vec_vec_op {
+macro_rules! mat_mat_op {
     ($($path:ident)::+, $fn:ident, $innerfn:ident) => {
         impl $($path)::+<Matrix> for Matrix {
             type Output = Matrix;
@@ -231,12 +396,13 @@ macro_rules! vec_vec_op {
     };
 }
 
-macro_rules! vec_vec_opassign {
+macro_rules! mat_mat_opassign {
     ($($path:ident)::+, $fn:ident, $innerfn:ident) => {
         impl $($path)::+<Matrix> for Matrix {
             fn $fn(&mut self, other: Matrix) {
                 assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
                 $innerfn(&mut self.data, &other.data);
+                self.update_props();
             }
         }
 
@@ -244,22 +410,24 @@ macro_rules! vec_vec_opassign {
             fn $fn(&mut self, other: &Matrix) {
                 assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
                 $innerfn(&mut self.data, &other.data);
+                self.update_props();
             }
         }
     };
 }
 
-macro_rules! vec_opassign {
+macro_rules! mat_opassign {
     ($($path:ident)::+, $fn:ident, $innerfn:ident, $ty:ty) => {
         impl $($path)::+<$ty> for Matrix {
             fn $fn(&mut self, other: $ty) {
                 $innerfn(&mut self.data, other);
+                self.update_props();
             }
         }
     }
 }
 
-macro_rules! vec_op {
+macro_rules! mat_op {
     ($($path:ident)::+, $fn:ident, $fn_vs:ident, $fn_sv:ident, $ty:ty) => {
         // impl ops::Add::add for Matrix
         impl $($path)::+<$ty> for Matrix {
@@ -309,28 +477,28 @@ macro_rules! vec_op {
     }
 }
 
-macro_rules! vec_op_for {
+macro_rules! mat_op_for {
     ($ty: ty) => {
-        vec_op!(ops::Add, add, vsadd, svadd, $ty);
-        vec_op!(ops::Sub, sub, vssub, svsub, $ty);
-        vec_op!(ops::Mul, mul, vsmul, svmul, $ty);
-        vec_op!(ops::Div, div, vsdiv, svdiv, $ty);
-        vec_opassign!(ops::AddAssign, add_assign, vsadd_mut, $ty);
-        vec_opassign!(ops::SubAssign, sub_assign, vssub_mut, $ty);
-        vec_opassign!(ops::MulAssign, mul_assign, vsmul_mut, $ty);
-        vec_opassign!(ops::DivAssign, div_assign, vsdiv_mut, $ty);
+        mat_op!(ops::Add, add, vsadd, svadd, $ty);
+        mat_op!(ops::Sub, sub, vssub, svsub, $ty);
+        mat_op!(ops::Mul, mul, vsmul, svmul, $ty);
+        mat_op!(ops::Div, div, vsdiv, svdiv, $ty);
+        mat_opassign!(ops::AddAssign, add_assign, vsadd_mut, $ty);
+        mat_opassign!(ops::SubAssign, sub_assign, vssub_mut, $ty);
+        mat_opassign!(ops::MulAssign, mul_assign, vsmul_mut, $ty);
+        mat_opassign!(ops::DivAssign, div_assign, vsdiv_mut, $ty);
     };
 }
 
-vec_vec_op!(ops::Add, add, vadd);
-vec_vec_op!(ops::Sub, sub, vsub);
-vec_vec_op!(ops::Mul, mul, vmul);
-vec_vec_op!(ops::Div, div, vdiv);
-vec_vec_opassign!(ops::AddAssign, add_assign, vadd_mut);
-vec_vec_opassign!(ops::SubAssign, sub_assign, vsub_mut);
-vec_vec_opassign!(ops::MulAssign, mul_assign, vmul_mut);
-vec_vec_opassign!(ops::DivAssign, div_assign, vdiv_mut);
-vec_op_for!(f64);
+mat_mat_op!(ops::Add, add, vadd);
+mat_mat_op!(ops::Sub, sub, vsub);
+mat_mat_op!(ops::Mul, mul, vmul);
+mat_mat_op!(ops::Div, div, vdiv);
+mat_mat_opassign!(ops::AddAssign, add_assign, vadd_mut);
+mat_mat_opassign!(ops::SubAssign, sub_assign, vsub_mut);
+mat_mat_opassign!(ops::MulAssign, mul_assign, vmul_mut);
+mat_mat_opassign!(ops::DivAssign, div_assign, vdiv_mut);
+mat_op_for!(f64);
 
 // // vector-vector ops
 // macro_rules! impl_vv_ops_helper {

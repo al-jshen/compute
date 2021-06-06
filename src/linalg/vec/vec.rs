@@ -1,4 +1,4 @@
-use super::vops::*;
+use super::{vops::*, Matrix};
 use crate::linalg::{dot, norm, sum};
 use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, var};
 use std::convert::From;
@@ -31,6 +31,10 @@ impl Vector {
 
     pub fn dot(&self, other: Self) -> f64 {
         dot(&self.v, &other)
+    }
+
+    pub fn to_matrix(&self) -> Matrix {
+        Matrix::new(self.clone(), [1, self.len()])
     }
 }
 

@@ -1,5 +1,3 @@
-use crate::linalg::Vector;
-
 /// Vector-vector operations.
 macro_rules! makefn_vops_binary {
     ($opname: ident, $op:tt) => {

@@ -14,13 +14,13 @@ impl Bernoulli {
     /// # Errors
     /// Panics if p is not in [0, 1].
     pub fn new(p: f64) -> Self {
-        if p < 0. || p > 1. {
+        if !(0. ..=1.).contains(&p) {
             panic!("`p` must be in [0, 1].");
         }
         Bernoulli { p }
     }
     pub fn set_p(&mut self, p: f64) -> &mut Self {
-        if p < 0. || p > 1. {
+        if !(0. ..=1.).contains(&p) {
             panic!("`p` must be in [0, 1].");
         }
         self.p = p;

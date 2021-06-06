@@ -152,7 +152,7 @@ impl GLM {
         coef[0] = initial_intercept;
 
         let mut penalized_deviance = f64::INFINITY;
-        let mut is_converged = false;
+        let mut is_converged;
         let mut n_iter = 0;
 
         let mut eta;

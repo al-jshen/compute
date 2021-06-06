@@ -294,16 +294,17 @@ impl Matrix {
 
 impl Display for Matrix {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        Ok(for (rownum, row) in self.into_iter().enumerate() {
+        for (rownum, row) in self.into_iter().enumerate() {
             let row_str = format!("{:?}", row);
             if rownum == 0 {
-                writeln!(f, "[{} ", row_str)?;
+                writeln!(f, "[{} ", row_str)?
             } else if rownum == self.nrows - 1 {
-                writeln!(f, " {}]", row_str)?;
+                writeln!(f, " {}]", row_str)?
             } else {
-                writeln!(f, " {} ", row_str)?;
+                writeln!(f, " {} ", row_str)?
             }
-        })
+        }
+        Ok(())
     }
 }
 

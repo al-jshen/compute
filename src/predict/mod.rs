@@ -1,6 +1,6 @@
 //! Various statistical models for data fitting and prediction.
 
-mod glm;
+mod glms;
 mod polynomial;
 // use crate::optimize::optimizers::Optimizer;
 
@@ -19,5 +19,5 @@ mod polynomial;
 //     fn predict(&self, x: &[f64]) -> Vec<f64>;
 // }
 
-pub use self::glm::*;
+pub use self::glms::*;
 pub use self::polynomial::*;

@@ -84,7 +84,7 @@ impl<'a> IntoIterator for &'a Vector {
     type IntoIter = std::slice::Iter<'a, f64>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.v.as_slice().into_iter()
+        self.v.as_slice().iter()
     }
 }
 

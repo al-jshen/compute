@@ -21,7 +21,7 @@ impl PolynomialRegressor {
 
     /// Fit the polynomial regressor to some observed data `y` given some explanatory variables `x`
     /// using the given optimizer. See [Optimizer](/compute/optimize/trait.Optimizer.html).
-    fn fit_with_optimizer<O>(
+    pub fn fit_with_optimizer<O>(
         &mut self,
         x: &[f64],
         y: &[f64],
@@ -47,8 +47,7 @@ impl PolynomialRegressor {
     /// Returns `c0 + c[1] * x + c[2] * x^2 ... + cn + x^n`, where `c[i]` are the coefficients of the
     /// polynomial regressor, and `x` is some vector of explanatory variables. Evaluation is done
     /// using [Horner's method](https://en.wikipedia.org/wiki/Horner%27s_method).
-    fn predict(&self, x: &[f64]) -> Vec<f64> {
-        let n = self.coef.len();
+    pub fn predict(&self, x: &[f64]) -> Vec<f64> {
         x.iter()
             .map(|val| {
                 self.coef

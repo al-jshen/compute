@@ -15,7 +15,7 @@ impl Binomial {
     /// # Remarks
     /// `n` must be a non-negative integer, and `p` must be in [0, 1].
     pub fn new(n: u64, p: f64) -> Self {
-        if p < 0. || p > 1. {
+        if !(0. ..=1.).contains(&p) {
             panic!("`p` must be in [0, 1]");
         }
         Binomial { n, p }
@@ -25,7 +25,7 @@ impl Binomial {
         self
     }
     pub fn set_p(&mut self, p: f64) -> &mut Self {
-        if p < 0. || p > 1. {
+        if !(0. ..=1.).contains(&p) {
             panic!("`p` must be in [0, 1]");
         }
         self.p = p;
@@ -109,13 +109,30 @@ pub fn binomial_btpe(n: u64, p: f64) -> u64 {
         let u = ugen.sample();
         let mut v = vgen.sample();
 
-        if !(u > p1) {
+        // clippy says dont do this
+        // if !(u > p1) {
+
+        // clippy suggests this, then says dont do this...
+        // let u_p1_cmp = match u.partial_cmp(&p1) {
+        //     None | Some(std::cmp::Ordering::Equal) | Some(std::cmp::Ordering::Less) => true,
+        //     _ => false,
+        // };
+        //
+        // if u_p1_cmp {
+
+        if matches!(
+            u.partial_cmp(&p1),
+            None | Some(std::cmp::Ordering::Equal) | Some(std::cmp::Ordering::Less)
+        ) {
             y = (xm - p1 * v + u).floor();
             // go to step 6
             break;
         }
 
-        if !(u > p2) {
+        if matches!(
+            u.partial_cmp(&p2),
+            None | Some(std::cmp::Ordering::Equal) | Some(std::cmp::Ordering::Less)
+        ) {
             // step 2
             let x = xl + (u - p1) / c;
             v = v * c + 1. - (m - x + 0.5).abs() / p1;
@@ -126,7 +143,10 @@ pub fn binomial_btpe(n: u64, p: f64) -> u64 {
                 y = x.floor();
                 // go to step 5
             }
-        } else if !(u > p3) {
+        } else if matches!(
+            u.partial_cmp(&p3),
+            None | Some(std::cmp::Ordering::Equal) | Some(std::cmp::Ordering::Less)
+        ) {
             // step 3
             y = (xl + v.ln() / ll).floor();
             if y < 0. {

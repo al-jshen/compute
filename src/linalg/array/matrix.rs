@@ -77,7 +77,7 @@ impl Matrix {
         if self.shape() != other.shape() {
             return false;
         }
-        return self.data.close_to(&other.data, tol);
+        self.data.close_to(&other.data, tol)
     }
 
     /// Check whether the matrix is positive definite.
@@ -290,7 +290,7 @@ impl Matrix {
     where
         F: Fn(f64) -> f64,
     {
-        &mut self[row].iter_mut().for_each(|x| *x = f(*x));
+        self[row].iter_mut().for_each(|x| *x = f(*x));
     }
 
     /// Apply a closure to every element in a row.
@@ -527,7 +527,7 @@ impl PartialEq<Matrix> for Matrix {
         if self.shape() != other.shape() {
             return false;
         }
-        return self.data.eq(&other.data);
+        self.data.eq(&other.data)
     }
 }
 

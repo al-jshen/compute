@@ -5,7 +5,7 @@ use std::{
     panic,
 };
 
-use std::ops;
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use crate::prelude::transpose;
 
@@ -399,6 +399,7 @@ impl IndexMut<[usize; 2]> for Matrix {
     }
 }
 
+// Functions to do Matrix + Matrix, Matrix - Matrix, etc.
 macro_rules! makefn_matops {
     ($fn: ident, $innerfn: ident) => {
         pub fn $fn(m1: &Matrix, m2: &Matrix) -> Matrix {
@@ -408,57 +409,88 @@ macro_rules! makefn_matops {
     };
 }
 
+// Make the Matrix-Matrix functions.
 makefn_matops!(matmatadd, vadd);
 makefn_matops!(matmatsub, vsub);
 makefn_matops!(matmatmul, vmul);
 makefn_matops!(matmatdiv, vdiv);
 
-macro_rules! mat_mat_op {
-    ($($path:ident)::+, $fn:ident, $innerfn:ident) => {
-        impl $($path)::+<Matrix> for Matrix {
+// Helper macro to implement Matrix + Matrix, Matrix + &Matrix, etc...
+macro_rules! impl_mat_mat_op_helper {
+    ($op: ident, $fn: ident, $innerfn: ident, $selftype: ty, $othertype: ty) => {
+        impl $op<$othertype> for $selftype {
             type Output = Matrix;
 
-            fn $fn(self, other: Matrix) -> Self::Output {
-                $innerfn(&self, &other)
-            }
-        }
-
-        impl $($path)::+<&Matrix> for &Matrix {
-            type Output = Matrix;
-
-            fn $fn(self, other: &Matrix) -> Self::Output {
-                $innerfn(&self, &other)
-            }
-        }
-
-        impl $($path)::+<&Matrix> for Matrix {
-            type Output = Matrix;
-
-            fn $fn(self, other: &Matrix) -> Self::Output {
-                $innerfn(&self, &other)
-            }
-        }
-
-        impl $($path)::+<Matrix> for &Matrix {
-            type Output = Matrix;
-
-            fn $fn(self, other: Matrix) -> Self::Output {
+            fn $fn(self, other: $othertype) -> Self::Output {
                 $innerfn(&self, &other)
             }
         }
     };
 }
 
+macro_rules! impl_mat_vec_op_helper {
+    ($op: ident, $fn: ident, $innerfn: ident, $selftype: ty, $othertype: ty) => {
+        impl $op<$othertype> for $selftype {
+            type Output = Matrix;
+
+            fn $fn(self, other: $othertype) -> Self::Output {
+                $innerfn(&self, &other.to_matrix())
+            }
+        }
+    };
+}
+
+macro_rules! impl_vec_mat_op_helper {
+    ($op: ident, $fn: ident, $innerfn: ident, $selftype: ty, $othertype: ty) => {
+        impl $op<$othertype> for $selftype {
+            type Output = Matrix;
+
+            fn $fn(self, other: $othertype) -> Self::Output {
+                $innerfn(&self.to_matrix(), &other)
+            }
+        }
+    };
+}
+
+// Implement Matrix + Matrix, Matrix + &Matrix, etc...
+macro_rules! mat_mat_op {
+    ($op:ident, $fn:ident, $innerfn:ident) => {
+        impl_mat_mat_op_helper!($op, $fn, $innerfn, Matrix, Matrix);
+        impl_mat_mat_op_helper!($op, $fn, $innerfn, Matrix, &Matrix);
+        impl_mat_mat_op_helper!($op, $fn, $innerfn, &Matrix, Matrix);
+        impl_mat_mat_op_helper!($op, $fn, $innerfn, &Matrix, &Matrix);
+    };
+}
+
+macro_rules! mat_vec_op {
+    ($op:ident, $fn:ident, $innerfn:ident) => {
+        impl_mat_vec_op_helper!($op, $fn, $innerfn, Matrix, Vector);
+        impl_mat_vec_op_helper!($op, $fn, $innerfn, Matrix, &Vector);
+        impl_mat_vec_op_helper!($op, $fn, $innerfn, &Matrix, Vector);
+        impl_mat_vec_op_helper!($op, $fn, $innerfn, &Matrix, &Vector);
+    };
+}
+
+macro_rules! vec_mat_op {
+    ($op:ident, $fn:ident, $innerfn:ident) => {
+        impl_vec_mat_op_helper!($op, $fn, $innerfn, Vector, Matrix);
+        impl_vec_mat_op_helper!($op, $fn, $innerfn, Vector, &Matrix);
+        impl_vec_mat_op_helper!($op, $fn, $innerfn, &Vector, Matrix);
+        impl_vec_mat_op_helper!($op, $fn, $innerfn, &Vector, &Matrix);
+    };
+}
+
+// Macro to implement Matrix += Matrix, Matrix += &Matrix, etc...
 macro_rules! mat_mat_opassign {
-    ($($path:ident)::+, $fn:ident, $innerfn:ident) => {
-        impl $($path)::+<Matrix> for Matrix {
+    ($op: ident, $fn:ident, $innerfn:ident) => {
+        impl $op<Matrix> for Matrix {
             fn $fn(&mut self, other: Matrix) {
                 assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
                 $innerfn(&mut self.data, &other.data);
             }
         }
 
-        impl $($path)::+<&Matrix> for Matrix {
+        impl $op<&Matrix> for Matrix {
             fn $fn(&mut self, other: &Matrix) {
                 assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
                 $innerfn(&mut self.data, &other.data);
@@ -467,91 +499,78 @@ macro_rules! mat_mat_opassign {
     };
 }
 
+// Macro to implement Matrix += Scalar
 macro_rules! mat_scalar_opassign {
-    ($($path:ident)::+, $fn:ident, $innerfn:ident, $ty:ty) => {
-        impl $($path)::+<$ty> for Matrix {
+    ($op: ident, $fn:ident, $innerfn:ident, $ty:ty) => {
+        impl $op<$ty> for Matrix {
             fn $fn(&mut self, other: $ty) {
                 $innerfn(&mut self.data, other);
             }
         }
-    }
-}
-
-macro_rules! mat_scalar_op {
-    ($($path:ident)::+, $fn:ident, $fn_vs:ident, $fn_sv:ident, $ty:ty) => {
-        // impl ops::Add::add for Matrix
-        impl $($path)::+<$ty> for Matrix {
-            type Output = Matrix;
-
-            // fn add(self, other: f32) -> Self::Output
-            fn $fn(self, other: $ty) -> Self::Output {
-                Matrix::new(
-                    $fn_vs(&self.data, other),
-                    self.nrows,
-                    self.ncols
-                )
-            }
-        }
-
-        impl $($path)::+<$ty> for &Matrix {
-            type Output = Matrix;
-
-            fn $fn(self, other: $ty) -> Self::Output {
-                Matrix::new(
-                    $fn_vs(&self.data, other),
-                    self.nrows,
-                    self.ncols
-                )
-            }
-        }
-
-        impl $($path)::+<Matrix> for $ty {
-            type Output = Matrix;
-
-            fn $fn(self, other: Matrix) -> Self::Output {
-                Matrix::new(
-                    $fn_sv(self, &other.data),
-                    other.nrows,
-                    other.ncols
-                )
-            }
-        }
-
-        impl $($path)::+<&Matrix> for $ty {
-            type Output = Matrix;
-
-            fn $fn(self, other: &Matrix) -> Self::Output {
-                Matrix::new(
-                    $fn_sv(self, &other.data),
-                    other.nrows,
-                    other.ncols
-                )
-            }
-        }
-    }
-}
-
-macro_rules! mat_scalar_op_for {
-    ($ty: ty) => {
-        mat_scalar_op!(ops::Add, add, vsadd, svadd, $ty);
-        mat_scalar_op!(ops::Sub, sub, vssub, svsub, $ty);
-        mat_scalar_op!(ops::Mul, mul, vsmul, svmul, $ty);
-        mat_scalar_op!(ops::Div, div, vsdiv, svdiv, $ty);
-        mat_scalar_opassign!(ops::AddAssign, add_assign, vsadd_mut, $ty);
-        mat_scalar_opassign!(ops::SubAssign, sub_assign, vssub_mut, $ty);
-        mat_scalar_opassign!(ops::MulAssign, mul_assign, vsmul_mut, $ty);
-        mat_scalar_opassign!(ops::DivAssign, div_assign, vsdiv_mut, $ty);
     };
 }
 
-mat_mat_op!(ops::Add, add, broadcast_add);
-mat_mat_op!(ops::Sub, sub, broadcast_sub);
-mat_mat_op!(ops::Mul, mul, broadcast_mul);
-mat_mat_op!(ops::Div, div, broadcast_div);
-mat_mat_opassign!(ops::AddAssign, add_assign, vadd_mut);
-mat_mat_opassign!(ops::SubAssign, sub_assign, vsub_mut);
-mat_mat_opassign!(ops::MulAssign, mul_assign, vmul_mut);
-mat_mat_opassign!(ops::DivAssign, div_assign, vdiv_mut);
+// Helper macro to implement Matrix + Scalar, &Matrix + Scalar, Scalar + Matrix, Scalar + &Matrix
+macro_rules! impl_mat_scalar_op_for_type {
+    ($op:ident, $fn:ident, $fn_vs:ident, $fn_sv:ident, $selftype:ty, $othertype: ty) => {
+        impl $op<$othertype> for $selftype {
+            type Output = Matrix;
+
+            fn $fn(self, other: $othertype) -> Self::Output {
+                Matrix::new($fn_vs(&self.data, other), self.nrows, self.ncols)
+            }
+        }
+
+        impl $op<$selftype> for $othertype {
+            type Output = Matrix;
+            fn $fn(self, other: $selftype) -> Self::Output {
+                Matrix::new($fn_sv(self, &other.data), other.nrows, other.ncols)
+            }
+        }
+    };
+}
+
+// Implement Matrix + Scalar, &Matrix + Scalar, Scalar + Matrix, Scalar + &Matrix
+macro_rules! mat_scalar_op {
+    ($op:ident, $fn:ident, $fn_vs:ident, $fn_sv:ident, $ty:ty) => {
+        impl_mat_scalar_op_for_type!($op, $fn, $fn_vs, $fn_sv, Matrix, $ty);
+        impl_mat_scalar_op_for_type!($op, $fn, $fn_vs, $fn_sv, &Matrix, $ty);
+    };
+}
+
+// Implement Matrix-Scalar and Scalar-Matrix Op and OpAssign methods.
+macro_rules! mat_scalar_op_for {
+    ($ty: ty) => {
+        mat_scalar_op!(Add, add, vsadd, svadd, $ty);
+        mat_scalar_op!(Sub, sub, vssub, svsub, $ty);
+        mat_scalar_op!(Mul, mul, vsmul, svmul, $ty);
+        mat_scalar_op!(Div, div, vsdiv, svdiv, $ty);
+        mat_scalar_opassign!(AddAssign, add_assign, vsadd_mut, $ty);
+        mat_scalar_opassign!(SubAssign, sub_assign, vssub_mut, $ty);
+        mat_scalar_opassign!(MulAssign, mul_assign, vsmul_mut, $ty);
+        mat_scalar_opassign!(DivAssign, div_assign, vsdiv_mut, $ty);
+    };
+}
+
+macro_rules! impl_mat_ops {
+    ($($macro_name:ident),+) => {
+        $(
+            $macro_name!(Add, add, broadcast_add);
+            $macro_name!(Sub, sub, broadcast_sub);
+            $macro_name!(Mul, mul, broadcast_mul);
+            $macro_name!(Div, div, broadcast_div);
+        )+
+    };
+}
+
+impl_mat_ops!(mat_mat_op, mat_vec_op, vec_mat_op);
+
+// Implement Matrix-Matrix assignment operations.
+mat_mat_opassign!(AddAssign, add_assign, vadd_mut);
+mat_mat_opassign!(SubAssign, sub_assign, vsub_mut);
+mat_mat_opassign!(MulAssign, mul_assign, vmul_mut);
+mat_mat_opassign!(DivAssign, div_assign, vdiv_mut);
+// Implement Matrix-Scalar (assignment) operations.
 mat_scalar_op_for!(f64);
 
 macro_rules! impl_unaryops_matrix {

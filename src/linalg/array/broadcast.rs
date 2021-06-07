@@ -1,4 +1,4 @@
-use super::Matrix;
+use super::{matmatadd, matmatdiv, matmatmul, matmatsub, Matrix};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Broadcast {
@@ -54,14 +54,14 @@ fn calc_broadcast_shape(m1: &Matrix, m2: &Matrix) -> [Broadcast; 2] {
 }
 
 macro_rules! broadcast_op {
-    ($op: tt, $fnname: ident) => {
+    ($op: tt, $fnname: ident, $matmatfn: ident) => {
         pub fn $fnname(m1: &Matrix, m2: &Matrix) -> Matrix {
             let b = calc_broadcast_shape(m1, m2);
             match b {
                 [Broadcast::None, Broadcast::None] => {
                     assert_eq!(m1.shape(), m2.shape());
                     // easy, do nothing special
-                    m1 $op m2
+                    $matmatfn(m1, m2)
                 }
                 [Broadcast::Hstack(hstack), Broadcast::None] => {
                     assert_eq!(hstack, m2.ncols);
@@ -169,10 +169,10 @@ macro_rules! broadcast_op {
     };
 }
 
-broadcast_op!(+, broadcast_add);
-broadcast_op!(-, broadcast_sub);
-broadcast_op!(*, broadcast_mul);
-broadcast_op!(/, broadcast_div);
+broadcast_op!(+, broadcast_add, matmatadd);
+broadcast_op!(-, broadcast_sub, matmatsub);
+broadcast_op!(*, broadcast_mul, matmatmul);
+broadcast_op!(/, broadcast_div, matmatdiv);
 
 #[cfg(test)]
 mod tests {

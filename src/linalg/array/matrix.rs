@@ -10,7 +10,7 @@ use std::ops;
 use crate::prelude::transpose;
 
 use super::vops::*;
-use super::Vector;
+use super::{broadcast_add, broadcast_div, broadcast_mul, broadcast_sub, Vector};
 
 /// Matrix struct.
 #[derive(Debug, Clone)]
@@ -143,7 +143,7 @@ impl Matrix {
         self
     }
 
-    /// Reshape the matrix in-place. A size of `-1` in either the rows or the columns means that the size
+    /// Reshape the matrix. A size of `-1` in either the rows or the columns means that the size
     /// for that dimension will be automatically determined if possible.
     pub fn reshape(&self, nrows: i32, ncols: i32) -> Self {
         let size = self.size();
@@ -399,18 +399,27 @@ impl IndexMut<[usize; 2]> for Matrix {
     }
 }
 
+macro_rules! makefn_matops {
+    ($fn: ident, $innerfn: ident) => {
+        pub fn $fn(m1: &Matrix, m2: &Matrix) -> Matrix {
+            assert_eq!(m1.shape(), m2.shape(), "matrix shapes not equal");
+            Matrix::new($innerfn(&m1.data, &m2.data), m1.nrows, m1.ncols)
+        }
+    };
+}
+
+makefn_matops!(matmatadd, vadd);
+makefn_matops!(matmatsub, vsub);
+makefn_matops!(matmatmul, vmul);
+makefn_matops!(matmatdiv, vdiv);
+
 macro_rules! mat_mat_op {
     ($($path:ident)::+, $fn:ident, $innerfn:ident) => {
         impl $($path)::+<Matrix> for Matrix {
             type Output = Matrix;
 
             fn $fn(self, other: Matrix) -> Self::Output {
-                assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
-                Matrix::new(
-                    $innerfn(&self.data, &other.data),
-                    self.nrows,
-                    self.ncols
-                )
+                $innerfn(&self, &other)
             }
         }
 
@@ -418,12 +427,7 @@ macro_rules! mat_mat_op {
             type Output = Matrix;
 
             fn $fn(self, other: &Matrix) -> Self::Output {
-                assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
-                Matrix::new(
-                    $innerfn(&self.data, &other.data),
-                    self.nrows,
-                    self.ncols
-                )
+                $innerfn(&self, &other)
             }
         }
 
@@ -431,12 +435,7 @@ macro_rules! mat_mat_op {
             type Output = Matrix;
 
             fn $fn(self, other: &Matrix) -> Self::Output {
-                assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
-                Matrix::new(
-                    $innerfn(&self.data, &other.data),
-                    self.nrows,
-                    self.ncols
-                )
+                $innerfn(&self, &other)
             }
         }
 
@@ -444,12 +443,7 @@ macro_rules! mat_mat_op {
             type Output = Matrix;
 
             fn $fn(self, other: Matrix) -> Self::Output {
-                assert_eq!(self.shape(), other.shape(), "matrix shapes not equal");
-                Matrix::new(
-                    $innerfn(&self.data, &other.data),
-                    self.nrows,
-                    self.ncols
-                )
+                $innerfn(&self, &other)
             }
         }
     };
@@ -473,7 +467,7 @@ macro_rules! mat_mat_opassign {
     };
 }
 
-macro_rules! mat_opassign {
+macro_rules! mat_scalar_opassign {
     ($($path:ident)::+, $fn:ident, $innerfn:ident, $ty:ty) => {
         impl $($path)::+<$ty> for Matrix {
             fn $fn(&mut self, other: $ty) {
@@ -483,7 +477,7 @@ macro_rules! mat_opassign {
     }
 }
 
-macro_rules! mat_op {
+macro_rules! mat_scalar_op {
     ($($path:ident)::+, $fn:ident, $fn_vs:ident, $fn_sv:ident, $ty:ty) => {
         // impl ops::Add::add for Matrix
         impl $($path)::+<$ty> for Matrix {
@@ -537,28 +531,28 @@ macro_rules! mat_op {
     }
 }
 
-macro_rules! mat_op_for {
+macro_rules! mat_scalar_op_for {
     ($ty: ty) => {
-        mat_op!(ops::Add, add, vsadd, svadd, $ty);
-        mat_op!(ops::Sub, sub, vssub, svsub, $ty);
-        mat_op!(ops::Mul, mul, vsmul, svmul, $ty);
-        mat_op!(ops::Div, div, vsdiv, svdiv, $ty);
-        mat_opassign!(ops::AddAssign, add_assign, vsadd_mut, $ty);
-        mat_opassign!(ops::SubAssign, sub_assign, vssub_mut, $ty);
-        mat_opassign!(ops::MulAssign, mul_assign, vsmul_mut, $ty);
-        mat_opassign!(ops::DivAssign, div_assign, vsdiv_mut, $ty);
+        mat_scalar_op!(ops::Add, add, vsadd, svadd, $ty);
+        mat_scalar_op!(ops::Sub, sub, vssub, svsub, $ty);
+        mat_scalar_op!(ops::Mul, mul, vsmul, svmul, $ty);
+        mat_scalar_op!(ops::Div, div, vsdiv, svdiv, $ty);
+        mat_scalar_opassign!(ops::AddAssign, add_assign, vsadd_mut, $ty);
+        mat_scalar_opassign!(ops::SubAssign, sub_assign, vssub_mut, $ty);
+        mat_scalar_opassign!(ops::MulAssign, mul_assign, vsmul_mut, $ty);
+        mat_scalar_opassign!(ops::DivAssign, div_assign, vsdiv_mut, $ty);
     };
 }
 
-mat_mat_op!(ops::Add, add, vadd);
-mat_mat_op!(ops::Sub, sub, vsub);
-mat_mat_op!(ops::Mul, mul, vmul);
-mat_mat_op!(ops::Div, div, vdiv);
+mat_mat_op!(ops::Add, add, broadcast_add);
+mat_mat_op!(ops::Sub, sub, broadcast_sub);
+mat_mat_op!(ops::Mul, mul, broadcast_mul);
+mat_mat_op!(ops::Div, div, broadcast_div);
 mat_mat_opassign!(ops::AddAssign, add_assign, vadd_mut);
 mat_mat_opassign!(ops::SubAssign, sub_assign, vsub_mut);
 mat_mat_opassign!(ops::MulAssign, mul_assign, vmul_mut);
 mat_mat_opassign!(ops::DivAssign, div_assign, vdiv_mut);
-mat_op_for!(f64);
+mat_scalar_op_for!(f64);
 
 macro_rules! impl_unaryops_matrix {
     ($op: ident) => {

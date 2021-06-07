@@ -573,48 +573,26 @@ mat_mat_opassign!(DivAssign, div_assign, vdiv_mut);
 // Implement Matrix-Scalar (assignment) operations.
 mat_scalar_op_for!(f64);
 
-macro_rules! impl_unaryops_matrix {
-    ($op: ident) => {
-        impl Matrix {
-            #[doc = "Apply the `f64` operation `"]
-            #[doc = stringify!($op)]
-            #[doc = "` element-wise to the matrix."]
-            pub fn $op(&self) -> Self {
-                Self::new(self.data.$op(), self.nrows, self.ncols)
+macro_rules! impl_unary_ops_matrix {
+    ($($op: ident),+) => {
+        $(
+            impl Matrix {
+                #[doc = "Apply the `f64` operation `"]
+                #[doc = stringify!($op)]
+                #[doc = "` element-wise to the matrix."]
+                pub fn $op(&self) -> Self {
+                    Self::new(self.data.$op(), self.nrows, self.ncols)
+                }
             }
-        }
+        )+
     };
 }
 
-impl_unaryops_matrix!(ln);
-impl_unaryops_matrix!(ln_1p);
-impl_unaryops_matrix!(log10);
-impl_unaryops_matrix!(log2);
-impl_unaryops_matrix!(exp);
-impl_unaryops_matrix!(exp2);
-impl_unaryops_matrix!(exp_m1);
-impl_unaryops_matrix!(sin);
-impl_unaryops_matrix!(cos);
-impl_unaryops_matrix!(tan);
-impl_unaryops_matrix!(sinh);
-impl_unaryops_matrix!(cosh);
-impl_unaryops_matrix!(tanh);
-impl_unaryops_matrix!(asin);
-impl_unaryops_matrix!(acos);
-impl_unaryops_matrix!(atan);
-impl_unaryops_matrix!(asinh);
-impl_unaryops_matrix!(acosh);
-impl_unaryops_matrix!(atanh);
-impl_unaryops_matrix!(sqrt);
-impl_unaryops_matrix!(cbrt);
-impl_unaryops_matrix!(abs);
-impl_unaryops_matrix!(floor);
-impl_unaryops_matrix!(ceil);
-impl_unaryops_matrix!(to_radians);
-impl_unaryops_matrix!(to_degrees);
-impl_unaryops_matrix!(recip);
-impl_unaryops_matrix!(round);
-impl_unaryops_matrix!(signum);
+impl_unary_ops_matrix!(
+    ln, ln_1p, log10, log2, exp, exp2, exp_m1, sin, cos, tan, sinh, cosh, tanh, asin, acos, atan,
+    asinh, acosh, atanh, sqrt, cbrt, abs, floor, ceil, to_radians, to_degrees, recip, round,
+    signum
+);
 
 macro_rules! impl_unaryops_with_arg_matrix {
     ($op: ident, $argtype: ident) => {
@@ -645,3 +623,77 @@ macro_rules! impl_reduction_fns_matrix {
 }
 
 impl_reduction_fns_matrix!(norm, max, mean, min, std, sum, var, sample_std, sample_var);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mat_vec_ops() {
+        let a = Matrix::new(
+            [
+                1.69968, -1.48008, 0.66542, -0.60947, 1.6508, -0.15097, -0.11973, 0.21233, 0.80922,
+            ],
+            3,
+            3,
+        );
+        let b = Vector::new([1.93579, 0.43448, -0.73636]);
+        let c = &a + &b;
+        assert_eq!(
+            c,
+            Matrix::new(
+                [
+                    3.6354699999999998,
+                    -1.0456,
+                    -0.07094,
+                    1.32632,
+                    2.08528,
+                    -0.88733,
+                    1.8160599999999998,
+                    0.64681,
+                    0.07286000000000004
+                ],
+                3,
+                3
+            )
+        );
+        let d = &a / &b;
+        assert_eq!(
+            d,
+            Matrix::new(
+                [
+                    0.878029125060053,
+                    -3.406554962253729,
+                    -0.9036612526481612,
+                    -0.31484303565985977,
+                    3.7994844411710553,
+                    0.2050220001086425,
+                    -0.061850717278217164,
+                    0.48869913459768,
+                    -1.0989461676353958
+                ],
+                3,
+                3
+            )
+        );
+        let e = &a.t() * &b;
+        assert_eq!(
+            e,
+            Matrix::new(
+                [
+                    3.2902235472,
+                    -0.26480252559999995,
+                    0.08816438280000001,
+                    -2.8651240632,
+                    0.717239584,
+                    -0.1563513188,
+                    1.2881133818,
+                    -0.0655934456,
+                    -0.5958772392
+                ],
+                3,
+                3
+            )
+        );
+    }
+}

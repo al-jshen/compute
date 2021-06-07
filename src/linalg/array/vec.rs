@@ -1,6 +1,7 @@
 use super::{vops::*, Matrix};
 use crate::linalg::{norm, sum};
 use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, var};
+use approx_eq::rel_diff;
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
 use std::iter::{FromIterator, IntoIterator};
@@ -24,6 +25,10 @@ impl Vector {
         Self { v: v.into() }
     }
 
+    pub fn data(&self) -> &[f64] {
+        &self.v
+    }
+
     pub fn with_capacity(n: usize) -> Self {
         Self {
             v: Vec::with_capacity(n),
@@ -40,6 +45,18 @@ impl Vector {
 
     pub fn to_matrix(&self) -> Matrix {
         Matrix::new(self.to_owned(), 1, self.len())
+    }
+
+    pub fn close_to(&self, other: &Vector, tol: f64) -> bool {
+        if self.len() != other.len() {
+            return false;
+        }
+        for i in 0..self.len() {
+            if rel_diff(self[i], other[i]) > tol {
+                return false;
+            }
+        }
+        true
     }
 }
 

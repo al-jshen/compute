@@ -7,8 +7,9 @@ use std::{
 
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
-use crate::prelude::transpose;
+use crate::prelude::{transpose, Dot};
 
+use super::super::utils::dot;
 use super::vops::*;
 use super::{broadcast_add, broadcast_div, broadcast_mul, broadcast_sub, Vector};
 
@@ -71,6 +72,14 @@ impl Matrix {
         }
     }
 
+    /// Check whether a matrix is close to another matrix within some tolerance.
+    pub fn close_to(&self, other: &Matrix, tol: f64) -> bool {
+        if self.shape() != other.shape() {
+            return false;
+        }
+        return self.data.close_to(&other.data, tol);
+    }
+
     /// Check whether the matrix is positive definite.
     pub fn is_positive_definite(&self) -> bool {
         if self.is_symmetric() {
@@ -83,6 +92,88 @@ impl Matrix {
         } else {
             false
         }
+    }
+
+    /// Solve a matrix equation of the form Lx=b, where L is a lower triangular matrix.
+    /// See the [Wikipedia page](https://en.wikipedia.org/wiki/Triangular_matrix#Forward_and_back_substitution).
+    pub fn forward_substitution(&self, b: &[f64]) -> Vector {
+        assert!(self.is_lower_triangular(), "matrix not lower triangular");
+        assert_eq!(b.len(), self.nrows);
+        let mut x = Vector::zeros(self.nrows);
+        for i in 0..self.ncols {
+            x[i] = (b[i] - dot(&self[i][0..i], &x[..i])) / self[[i, i]];
+        }
+        x
+    }
+
+    /// Solve a matrix equation of the form Ux=b, where U is an upper triangular matrix.
+    /// See the [Wikipedia page](https://en.wikipedia.org/wiki/Triangular_matrix#Forward_and_back_substitution).
+    pub fn backward_substitution(&self, b: &[f64]) -> Vector {
+        assert!(self.is_upper_triangular(), "matrix not upper triangular");
+        assert_eq!(b.len(), self.nrows);
+        let mut x = Vector::zeros(self.nrows);
+        for i in (0..self.ncols).rev() {
+            x[i] = (b[i] - dot(&self[i][i + 1..self.ncols], &x[i + 1..])) / self[[i, i]];
+        }
+        x
+    }
+
+    /// Return the Cholesky decomposition of the matrix. Resulting matrix is lower triangular.  
+    pub fn cholesky(&self) -> Matrix {
+        assert!(self.is_positive_definite(), "matrix not positive definite");
+
+        let mut l = Matrix::zeros(self.nrows, self.ncols);
+
+        for i in 0..self.ncols {
+            for j in 0..(i + 1) {
+                let s = l.get_row_as_vector(j).dot(l.get_row_as_vector(i));
+
+                if i == j {
+                    l[[i, j]] = (self[[i, i]] - s).sqrt();
+                } else {
+                    l[[i, j]] = (self[[i, j]] - s) / l[[j, j]];
+                }
+            }
+        }
+
+        l
+    }
+
+    /// Check whether the matrix is upper triangular (i.e., all the entries below the diagonal are
+    /// 0).
+    pub fn is_upper_triangular(&self) -> bool {
+        for i in 0..self.nrows {
+            for j in 0..i {
+                if self[i][j] != 0. {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
+    /// Check whether the matrix is lower triangular (i.e., all the entries above the diagonal are
+    /// 0).
+    pub fn is_lower_triangular(&self) -> bool {
+        for i in 0..self.nrows {
+            for j in (i + 1)..self.ncols {
+                if self[i][j] != 0. {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
+    pub fn cholesky_solve(&self, b: &[f64]) -> Vector {
+        assert!(
+            self.is_lower_triangular(),
+            "matrix not a cholesky decomposed matrix"
+        );
+        let y = self.forward_substitution(b);
+
+        // back substitution
+        self.t().backward_substitution(&y)
     }
 
     /// Get the diagonal elements of the matrix.
@@ -695,5 +786,50 @@ mod tests {
                 3
             )
         );
+    }
+
+    #[test]
+    fn test_cholesky() {
+        let a = Matrix::new(
+            [
+                8.97062104740134,
+                0.26943982630456786,
+                -0.9534319972273332,
+                0.26943982630456786,
+                3.307274425269507,
+                -1.5063311267171873,
+                -0.9534319972273332,
+                -1.5063311267171873,
+                1.5071780730242237,
+            ],
+            3,
+            3,
+        );
+        let ac = a.cholesky();
+        assert!(ac.close_to(
+            &Matrix::new(
+                [
+                    2.9950995054257112,
+                    0.,
+                    0.,
+                    0.0899602253001844,
+                    1.8163649366615309,
+                    0.,
+                    -0.3183306582970492,
+                    -0.813544678798316,
+                    0.8625478077250766
+                ],
+                3,
+                3
+            ),
+            1e-10
+        ));
+
+        let b = Vector::new([0.7220683901726338, -0.06367193965727952, 1.0077206300677382]);
+        let x = ac.cholesky_solve(&b);
+        assert!(x.close_to(
+            &Vector::new([0.21181290359830895, 0.6039812818017399, 1.4062476574275615]),
+            1e-10
+        ));
     }
 }

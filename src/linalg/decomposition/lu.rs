@@ -15,19 +15,6 @@ pub fn lu(matrix: &[f64]) -> (Vec<f64>, Vec<i32>) {
     let n = is_square(matrix).unwrap();
     let mut lu = matrix.to_vec();
 
-    // currently disabled because the pivots are wrong (column-major)
-    // #[cfg(feature = "lapack")]
-    // {
-    //     let mut ipiv: Vec<i32> = vec![0; n];
-    //     let mut info = 0;
-    //     let mut lut = transpose(matrix, n);
-    //     unsafe {
-    //         dgetrf(n as i32, n as i32, &mut lut, n as i32, &mut ipiv, &mut info);
-    //         assert_eq!(info, 0, "dgetrf failed");
-    //     }
-    //     (transpose(&lut, n), ipiv)
-    // }
-
     let mut pivots: Vec<i32> = (0..n).map(|x| x as i32).collect();
 
     for j in 0..n {

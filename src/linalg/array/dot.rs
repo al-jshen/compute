@@ -1,6 +1,9 @@
 //! Implementation of matrix products for vectors and matrices.
 
-use super::{super::matmul, Matrix, Vector};
+use super::{
+    super::{dot, matmul},
+    Matrix, Vector,
+};
 
 /// A trait for performing matrix products. Follows the behaviour of numpy's `matmul`.
 ///
@@ -134,8 +137,8 @@ impl_vec_mat_dot!(&Vector, &Matrix);
 macro_rules! impl_dot_vec_vec {
     ($othertype: ty, $($op: ident),+) => {
         $(
-            fn $op(&self, other: $othertype) -> Vector {
-                self.to_matrix().$op(&other.to_matrix().t()).to_vec()
+            fn $op(&self, other: $othertype) -> f64 {
+                dot(&self.data(), &other.data())
             }
         )+
     }
@@ -143,7 +146,7 @@ macro_rules! impl_dot_vec_vec {
 
 macro_rules! impl_vec_vec_dot {
     ($selftype: ty, $othertype: ty) => {
-        impl Dot<$othertype, Vector> for $selftype {
+        impl Dot<$othertype, f64> for $selftype {
             impl_dot_vec_vec!($othertype, dot, t_dot, dot_t, t_dot_t);
         }
     };

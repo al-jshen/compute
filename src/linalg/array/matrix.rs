@@ -118,7 +118,7 @@ impl Matrix {
         x
     }
 
-    /// Return the Cholesky decomposition of the matrix. Resulting matrix is lower triangular.  
+    /// Return the Cholesky decomposition of the matrix. Resulting matrix is lower triangular.
     pub fn cholesky(&self) -> Matrix {
         assert!(self.is_positive_definite(), "matrix not positive definite");
 
@@ -137,6 +137,47 @@ impl Matrix {
         }
 
         l
+    }
+
+    pub fn lu(&self) -> (Matrix, Vec<i32>) {
+        assert!(self.is_square(), "matrix not square");
+
+        let mut lu = self.clone();
+
+        let n = self.nrows;
+        let mut pivots: Vec<i32> = (0..n).map(|x| x as i32).collect();
+
+        for j in 0..n {
+            for i in 0..n {
+                let mut s = 0.;
+                for k in 0..i.min(j) {
+                    s += lu[[i, k]] * lu[[k, j]];
+                }
+                lu[[i, j]] -= s;
+            }
+
+            let mut p = j;
+            for i in (j + 1)..n {
+                if lu[[i, j]].abs() > lu[[p, j]].abs() {
+                    p = i;
+                }
+            }
+
+            if p != j {
+                for k in 0..n {
+                    lu.data.swap(p * n + k, j * n + k)
+                }
+                pivots.swap(p, j);
+            }
+
+            if j < n && lu[[j, j]] != 0. {
+                for i in (j + 1)..n {
+                    lu[[i, j]] /= lu[[j, j]];
+                }
+            }
+        }
+
+        (lu, pivots)
     }
 
     /// Check whether the matrix is upper triangular (i.e., all the entries below the diagonal are
@@ -163,17 +204,6 @@ impl Matrix {
             }
         }
         true
-    }
-
-    pub fn cholesky_solve(&self, b: &[f64]) -> Vector {
-        assert!(
-            self.is_lower_triangular(),
-            "matrix not a cholesky decomposed matrix"
-        );
-        let y = self.forward_substitution(b);
-
-        // back substitution
-        self.t().backward_substitution(&y)
     }
 
     /// Get the diagonal elements of the matrix.
@@ -402,6 +432,88 @@ impl Matrix {
     }
 }
 
+pub trait Solve<T> {
+    fn cholesky_solve(&self, system: &T) -> T;
+    fn lu_solve(&self, pivots: &[i32], system: &T) -> T;
+    fn solve(&self, system: &T) -> T;
+}
+
+impl Solve<Vector> for Matrix {
+    fn cholesky_solve(&self, system: &Vector) -> Vector {
+        assert!(
+            self.is_lower_triangular(),
+            "matrix not a cholesky decomposed matrix"
+        );
+        assert_eq!(self.nrows, system.len());
+        let y = self.forward_substitution(system);
+
+        // back substitution
+        self.t().backward_substitution(&y)
+    }
+
+    /// Solve the linear system Ax = b given a LU decomposed matrix A. The first argument should be a
+    /// tuple, where the first element is the LU decomposed matrix and the second element is the pivots
+    /// P.
+    fn lu_solve(&self, pivots: &[i32], system: &Vector) -> Vector {
+        assert!(self.is_square(), "matrix not square");
+        assert_eq!(self.nrows, system.len());
+
+        let mut x = Vector::zeros(self.nrows);
+
+        for i in 0..pivots.len() {
+            x[i] = system[pivots[i] as usize];
+        }
+
+        for k in 0..self.ncols {
+            for i in (k + 1)..self.ncols {
+                x[i] -= x[k] * self[[i, k]];
+            }
+        }
+
+        for k in (0..self.ncols).rev() {
+            x[k] /= self[[k, k]];
+            for i in 0..k {
+                x[i] -= x[k] * self[[i, k]];
+            }
+        }
+
+        x
+    }
+
+    /// Solve the linear system Ax = b using LU decomposition.
+    fn solve(&self, system: &Vector) -> Vector {
+        let (lu, piv) = self.lu();
+        lu.lu_solve(&piv, system)
+    }
+}
+
+impl Solve<Matrix> for Matrix {
+    fn cholesky_solve(&self, system: &Matrix) -> Matrix {
+        let mut solutions = Vector::with_capacity(system.nrows * system.ncols);
+        for i in 0..system.ncols {
+            let x = system.get_col_as_vector(i);
+            solutions.extend(self.cholesky_solve(&x));
+        }
+
+        Matrix::new(solutions, system.ncols, system.nrows).t()
+    }
+
+    fn lu_solve(&self, pivots: &[i32], system: &Matrix) -> Matrix {
+        let mut solutions = Vector::with_capacity(system.nrows * system.ncols);
+        for i in 0..system.ncols {
+            let x = system.get_col_as_vector(i);
+            solutions.extend(self.lu_solve(&pivots, &x));
+        }
+
+        Matrix::new(solutions, system.ncols, system.nrows).t()
+    }
+
+    fn solve(&self, system: &Matrix) -> Matrix {
+        let (lu, piv) = self.lu();
+        lu.lu_solve(&piv, system)
+    }
+}
+
 impl Neg for Matrix {
     type Output = Self;
 
@@ -424,11 +536,11 @@ impl Display for Matrix {
         for (rownum, row) in self.into_iter().enumerate() {
             let row_str = format!("{:?}", row);
             if rownum == 0 {
-                writeln!(f, "[{} ", row_str)?
+                writeln!(f, "[{},", row_str)?
             } else if rownum == self.nrows - 1 {
                 writeln!(f, " {}]", row_str)?
             } else {
-                writeln!(f, " {} ", row_str)?
+                writeln!(f, " {},", row_str)?
             }
         }
         Ok(())

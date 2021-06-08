@@ -44,7 +44,8 @@ impl Vector {
     }
 
     pub fn to_matrix(self) -> Matrix {
-        Matrix::new(self, 1, self.len() as i32)
+        let n = self.len();
+        Matrix::new(self, 1, n as i32)
     }
 
     pub fn reshape(self, nrows: i32, ncols: i32) -> Matrix {

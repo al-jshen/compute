@@ -222,11 +222,12 @@ impl Matrix {
         T: Into<Vector>,
     {
         let v = data.into();
+        let len = v.len();
 
         let mut m = Self {
             data: v,
             nrows: 1,
-            ncols: v.len(),
+            ncols: len,
         };
 
         m.reshape_mut(nrows, ncols);

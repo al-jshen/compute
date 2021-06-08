@@ -86,7 +86,7 @@ macro_rules! impl_dot_append_one {
     ($othertype: ty, $innerop: ident, $($op: ident),+) => {
         $(
             fn $op(&self, other: $othertype) -> Vector {
-                let mut o = other.to_matrix();
+                let mut o = other.clone().to_owned().to_matrix();
                 o.t_mut();
                 self.$innerop(o).to_vec()
             }
@@ -113,7 +113,7 @@ macro_rules! impl_dot_prepend_one {
     ($othertype: ty, $innerop: ident, $($op: ident),+) => {
         $(
             fn $op(&self, other: $othertype) -> Vector {
-                self.to_matrix().$innerop(other).to_vec()
+                self.clone().to_owned().to_matrix().$innerop(other).to_vec()
             }
         )+
     }

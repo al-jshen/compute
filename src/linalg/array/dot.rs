@@ -34,7 +34,7 @@ macro_rules! impl_mat_mat_dot {
                     false,
                     false,
                 );
-                Matrix::new(output, self.nrows, other.ncols)
+                Matrix::new(output, self.nrows as i32, other.ncols as i32)
             }
 
             fn t_dot(&self, other: $othertype) -> Matrix {
@@ -47,7 +47,7 @@ macro_rules! impl_mat_mat_dot {
                     true,
                     false,
                 );
-                Matrix::new(output, self.ncols, other.ncols)
+                Matrix::new(output, self.ncols as i32, other.ncols as i32)
             }
             fn dot_t(&self, other: $othertype) -> Matrix {
                 assert_eq!(self.ncols, other.ncols, "matrix shapes not compatible");
@@ -59,7 +59,7 @@ macro_rules! impl_mat_mat_dot {
                     false,
                     true,
                 );
-                Matrix::new(output, self.nrows, other.nrows)
+                Matrix::new(output, self.nrows as i32, other.nrows as i32)
             }
             fn t_dot_t(&self, other: $othertype) -> Matrix {
                 assert_eq!(self.nrows, other.ncols, "matrix shapes not compatible");
@@ -71,7 +71,7 @@ macro_rules! impl_mat_mat_dot {
                     true,
                     true,
                 );
-                Matrix::new(output, self.ncols, other.nrows)
+                Matrix::new(output, self.ncols as i32, other.nrows as i32)
             }
         }
     };

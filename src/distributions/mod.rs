@@ -27,7 +27,7 @@ pub trait Distribution: Send + Sync {
     /// Generates a matrix of size `n x m` with values randomly sampled from the given
     /// distribution.
     fn sample_matrix(&self, nrows: usize, ncols: usize) -> Matrix {
-        Matrix::new(self.sample_vec(nrows * ncols), nrows, ncols)
+        Matrix::new(self.sample_vec(nrows * ncols), nrows as i32, ncols as i32)
     }
     /// Update the parameters of the distribution.
     fn update(&mut self, params: &[f64]);

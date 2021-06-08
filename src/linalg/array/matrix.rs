@@ -32,12 +32,12 @@ impl Matrix {
 
     /// Make a matrix filled with zeros.
     pub fn zeros(nrows: usize, ncols: usize) -> Self {
-        Self::new(Vector::zeros(nrows * ncols), nrows, ncols)
+        Self::new(Vector::zeros(nrows * ncols), nrows as i32, ncols as i32)
     }
 
     /// Make a matrix filled with ones.
     pub fn ones(nrows: usize, ncols: usize) -> Self {
-        Self::new(Vector::ones(nrows * ncols), nrows, ncols)
+        Self::new(Vector::ones(nrows * ncols), nrows as i32, ncols as i32)
     }
 
     /// Make an identity matrix with size `dims`.
@@ -217,17 +217,21 @@ impl Matrix {
     }
 
     /// Make a new matrix with the given number of rows and columns.
-    pub fn new<T>(data: T, nrows: usize, ncols: usize) -> Self
+    pub fn new<T>(data: T, nrows: i32, ncols: i32) -> Self
     where
         T: Into<Vector>,
     {
         let v = data.into();
 
-        Self {
+        let mut m = Self {
             data: v,
-            nrows,
-            ncols,
-        }
+            nrows: 1,
+            ncols: v.len(),
+        };
+
+        m.reshape_mut(nrows, ncols);
+
+        m
     }
 
     /// Get the number of rows and columns in the matrix.
@@ -266,19 +270,19 @@ impl Matrix {
 
     /// Reshape the matrix. A size of `-1` in either the rows or the columns means that the size
     /// for that dimension will be automatically determined if possible.
-    pub fn reshape(&self, nrows: i32, ncols: i32) -> Self {
-        let size = self.size();
+    pub fn reshape(self, nrows: i32, ncols: i32) -> Self {
+        let size = self.size() as i32;
         if nrows > 0 && ncols > 0 {
             assert_eq!(nrows * ncols, size as i32, "invalid shape");
-            Matrix::new(self.data.clone(), nrows as usize, ncols as usize)
+            Matrix::new(self.data, nrows, ncols)
         } else if nrows < 0 {
             assert!(nrows == -1 && ncols > 0, "invalid shape");
             // automatically determine number of rows
-            Matrix::new(self.data.clone(), size / ncols as usize, ncols as usize)
+            Matrix::new(self.data, size / ncols, ncols)
         } else if ncols < 0 {
             assert!(ncols == -1 && nrows > 0, "invalid shape");
             // automatically determine number of columns
-            Matrix::new(self.data.clone(), nrows as usize, size / nrows as usize)
+            Matrix::new(self.data, nrows, size / nrows)
         } else {
             panic!("invalid shape");
         }
@@ -362,7 +366,7 @@ impl Matrix {
     /// Transpose the matrix.
     pub fn t(&self) -> Self {
         let t = transpose(&self.data, self.nrows);
-        Matrix::new(t, self.ncols, self.nrows)
+        Matrix::new(t, self.ncols as i32, self.nrows as i32)
     }
 
     /// Transpose the matrix in-place.
@@ -384,8 +388,8 @@ impl Matrix {
     }
 
     /// Converts the matrix to a Vector.
-    pub fn to_vec(&self) -> Vector {
-        self.data.clone()
+    pub fn to_vec(self) -> Vector {
+        self.data
     }
 
     /// Horizontal concatenation of matrices. Adds `other` to the right of the calling matrix.
@@ -400,7 +404,11 @@ impl Matrix {
                 new_vec.push(other.data[i * other.ncols + j]);
             }
         }
-        Matrix::new(new_vec, self.nrows, self.ncols + other.ncols)
+        Matrix::new(
+            new_vec,
+            self.nrows as i32,
+            (self.ncols + other.ncols) as i32,
+        )
     }
 
     /// Vertical concatenation of matrices. Adds `other` below the calling matrix.
@@ -408,7 +416,11 @@ impl Matrix {
         assert_eq!(self.ncols, other.ncols);
         let mut new_vec = self.data.clone();
         new_vec.extend(other.data);
-        Matrix::new(new_vec, self.nrows + other.nrows, self.ncols)
+        Matrix::new(
+            new_vec,
+            (self.nrows + other.nrows) as i32,
+            self.ncols as i32,
+        )
     }
 
     /// Repeat self horizontally. That is, make `n` total copies of self and horizontally
@@ -421,14 +433,14 @@ impl Matrix {
                 new_vec.extend(&self[i]);
             }
         }
-        Matrix::new(new_vec, self.nrows, total_cols)
+        Matrix::new(new_vec, self.nrows as i32, total_cols as i32)
     }
 
     /// Repeat self vertically. That is, make `n` total copies of self and vertically
     /// concatenate them all together.
     pub fn vrepeat(&self, n: usize) -> Self {
         let total_rows = self.nrows * n;
-        Matrix::new(self.data.repeat(n), total_rows, self.ncols)
+        Matrix::new(self.data.repeat(n), total_rows as i32, self.ncols as i32)
     }
 }
 
@@ -495,7 +507,7 @@ impl Solve<Matrix> for Matrix {
             solutions.extend(self.cholesky_solve(&x));
         }
 
-        Matrix::new(solutions, system.ncols, system.nrows).t()
+        Matrix::new(solutions, system.ncols as i32, system.nrows as i32).t()
     }
 
     fn lu_solve(&self, pivots: &[i32], system: &Matrix) -> Matrix {
@@ -505,7 +517,7 @@ impl Solve<Matrix> for Matrix {
             solutions.extend(self.lu_solve(&pivots, &x));
         }
 
-        Matrix::new(solutions, system.ncols, system.nrows).t()
+        Matrix::new(solutions, system.ncols as i32, system.nrows as i32).t()
     }
 
     fn solve(&self, system: &Matrix) -> Matrix {
@@ -518,7 +530,7 @@ impl Neg for Matrix {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        Matrix::new(-self.data, self.nrows, self.ncols)
+        Matrix::new(-self.data, self.nrows as i32, self.ncols as i32)
     }
 }
 
@@ -607,7 +619,11 @@ macro_rules! makefn_matops {
     ($fn: ident, $innerfn: ident) => {
         pub fn $fn(m1: &Matrix, m2: &Matrix) -> Matrix {
             assert_eq!(m1.shape(), m2.shape(), "matrix shapes not equal");
-            Matrix::new($innerfn(&m1.data, &m2.data), m1.nrows, m1.ncols)
+            Matrix::new(
+                $innerfn(&m1.data, &m2.data),
+                m1.nrows as i32,
+                m1.ncols as i32,
+            )
         }
     };
 }
@@ -632,24 +648,24 @@ macro_rules! impl_mat_mat_op_helper {
 }
 
 macro_rules! impl_mat_vec_op_helper {
-    ($op: ident, $fn: ident, $innerfn: ident, $selftype: ty, $othertype: ty) => {
+    ($op: ident, $fn: ident, $innerfn: ident, $selftype: ty, $othertype: ty$(, $to_owned: ident)?) => {
         impl $op<$othertype> for $selftype {
             type Output = Matrix;
 
             fn $fn(self, other: $othertype) -> Self::Output {
-                $innerfn(&self, &other.to_matrix())
+                $innerfn(&self, &other$(.$to_owned())?.to_matrix())
             }
         }
     };
 }
 
 macro_rules! impl_vec_mat_op_helper {
-    ($op: ident, $fn: ident, $innerfn: ident, $selftype: ty, $othertype: ty) => {
+    ($op: ident, $fn: ident, $innerfn: ident, $selftype: ty, $othertype: ty$(, $to_owned: ident)?) => {
         impl $op<$othertype> for $selftype {
             type Output = Matrix;
 
             fn $fn(self, other: $othertype) -> Self::Output {
-                $innerfn(&self.to_matrix(), &other)
+                $innerfn(&self$(.$to_owned())?.to_matrix(), &other)
             }
         }
     };
@@ -668,9 +684,9 @@ macro_rules! mat_mat_op {
 macro_rules! mat_vec_op {
     ($op:ident, $fn:ident, $innerfn:ident) => {
         impl_mat_vec_op_helper!($op, $fn, $innerfn, Matrix, Vector);
-        impl_mat_vec_op_helper!($op, $fn, $innerfn, Matrix, &Vector);
+        impl_mat_vec_op_helper!($op, $fn, $innerfn, Matrix, &Vector, to_owned);
         impl_mat_vec_op_helper!($op, $fn, $innerfn, &Matrix, Vector);
-        impl_mat_vec_op_helper!($op, $fn, $innerfn, &Matrix, &Vector);
+        impl_mat_vec_op_helper!($op, $fn, $innerfn, &Matrix, &Vector, to_owned);
     };
 }
 
@@ -678,8 +694,8 @@ macro_rules! vec_mat_op {
     ($op:ident, $fn:ident, $innerfn:ident) => {
         impl_vec_mat_op_helper!($op, $fn, $innerfn, Vector, Matrix);
         impl_vec_mat_op_helper!($op, $fn, $innerfn, Vector, &Matrix);
-        impl_vec_mat_op_helper!($op, $fn, $innerfn, &Vector, Matrix);
-        impl_vec_mat_op_helper!($op, $fn, $innerfn, &Vector, &Matrix);
+        impl_vec_mat_op_helper!($op, $fn, $innerfn, &Vector, Matrix, to_owned);
+        impl_vec_mat_op_helper!($op, $fn, $innerfn, &Vector, &Matrix, to_owned);
     };
 }
 
@@ -720,14 +736,22 @@ macro_rules! impl_mat_scalar_op_for_type {
             type Output = Matrix;
 
             fn $fn(self, other: $othertype) -> Self::Output {
-                Matrix::new($fn_vs(&self.data, other), self.nrows, self.ncols)
+                Matrix::new(
+                    $fn_vs(&self.data, other),
+                    self.nrows as i32,
+                    self.ncols as i32,
+                )
             }
         }
 
         impl $op<$selftype> for $othertype {
             type Output = Matrix;
             fn $fn(self, other: $selftype) -> Self::Output {
-                Matrix::new($fn_sv(self, &other.data), other.nrows, other.ncols)
+                Matrix::new(
+                    $fn_sv(self, &other.data),
+                    other.nrows as i32,
+                    other.ncols as i32,
+                )
             }
         }
     };
@@ -784,7 +808,7 @@ macro_rules! impl_unary_ops_matrix {
                 #[doc = stringify!($op)]
                 #[doc = "` element-wise to the matrix."]
                 pub fn $op(&self) -> Self {
-                    Self::new(self.data.$op(), self.nrows, self.ncols)
+                    Self::new(self.data.$op(), self.nrows as i32, self.ncols as i32)
                 }
             }
         )+
@@ -804,7 +828,7 @@ macro_rules! impl_unaryops_with_arg_matrix {
             #[doc = stringify!($op)]
             #[doc = "` element-wise to the matrix."]
             pub fn $op(&self, arg: $argtype) -> Self {
-                Self::new(self.data.$op(arg), self.nrows, self.ncols)
+                Self::new(self.data.$op(arg), self.nrows as i32, self.ncols as i32)
             }
         }
     };

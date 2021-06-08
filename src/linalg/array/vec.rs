@@ -43,8 +43,12 @@ impl Vector {
         Self { v: vec![1.; n] }
     }
 
-    pub fn to_matrix(&self) -> Matrix {
-        Matrix::new(self.to_owned(), 1, self.len())
+    pub fn to_matrix(self) -> Matrix {
+        Matrix::new(self, 1, self.len() as i32)
+    }
+
+    pub fn reshape(self, nrows: i32, ncols: i32) -> Matrix {
+        Matrix::new(self, nrows, ncols)
     }
 
     pub fn close_to(&self, other: &Vector, tol: f64) -> bool {

@@ -285,20 +285,21 @@ impl Matrix {
     /// for that dimension will be automatically determined if possible.
     pub fn reshape(&self, nrows: i32, ncols: i32) -> Self {
         let size = self.size() as i32;
-        if nrows > 0 && ncols > 0 {
+        let (newrows, newcols) = if nrows > 0 && ncols > 0 {
             assert_eq!(nrows * ncols, size as i32, "invalid shape");
-            Matrix::new(self.data.clone(), nrows, ncols)
+            (nrows, ncols)
         } else if nrows < 0 {
             assert!(nrows == -1 && ncols > 0, "invalid shape");
             // automatically determine number of rows
-            Matrix::new(self.data.clone(), size / ncols, ncols)
+            (size / ncols, ncols)
         } else if ncols < 0 {
             assert!(ncols == -1 && nrows > 0, "invalid shape");
             // automatically determine number of columns
-            Matrix::new(self.data.clone(), nrows, size / nrows)
+            (nrows, size / nrows)
         } else {
             panic!("invalid shape");
-        }
+        };
+        Matrix::new(self.data.clone(), newrows, newcols)
     }
 
     /// Apply a closure to every element in a row. The closure should take a value and return the

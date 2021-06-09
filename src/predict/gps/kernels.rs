@@ -21,6 +21,8 @@ pub type SquaredExponentialKernel = RBFKernel;
 
 impl RBFKernel {
     pub fn new(var: f64, length_scale: f64) -> Self {
+        assert!(var > 0., "output variance must be positive");
+        assert!(length_scale > 0., "length scale must be positive");
         Self { var, length_scale }
     }
 }
@@ -41,6 +43,9 @@ pub type RQKernel = RationalQuadraticKernel;
 
 impl RQKernel {
     pub fn new(var: f64, alpha: f64, length_scale: f64) -> Self {
+        assert!(var > 0., "output variance must be positive");
+        assert!(alpha > 0., "scale mixture parameter must be positive");
+        assert!(length_scale > 0., "length scale must be positive");
         Self {
             var,
             alpha,

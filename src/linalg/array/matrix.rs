@@ -9,7 +9,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use crate::prelude::{transpose, Dot};
 
-use super::super::utils::dot;
+use super::super::utils::{dot, ipiv_parity};
 use super::vops::*;
 use super::{broadcast_add, broadcast_div, broadcast_mul, broadcast_sub, Vector};
 
@@ -178,6 +178,18 @@ impl Matrix {
         }
 
         (lu, pivots)
+    }
+
+    /// Calculates the determinant of the matrix using the LU decomposition.
+    pub fn det(&self) -> f64 {
+        let (lu, p) = self.lu();
+        lu.diag().prod() * ipiv_parity(&p) as f64
+    }
+
+    /// Calculates the determinant of an LU decomposed matrix.
+    pub fn lu_det(&self, piv: &[i32]) -> f64 {
+        assert!(self.is_square(), "matrix not square");
+        self.diag().prod() * ipiv_parity(piv) as f64
     }
 
     /// Check whether the matrix is upper triangular (i.e., all the entries below the diagonal are
@@ -850,7 +862,7 @@ macro_rules! impl_reduction_fns_matrix {
     };
 }
 
-impl_reduction_fns_matrix!(norm, max, mean, min, std, sum, var, sample_std, sample_var);
+impl_reduction_fns_matrix!(norm, max, mean, min, std, sum, prod, var, sample_std, sample_var);
 
 #[cfg(test)]
 mod tests {

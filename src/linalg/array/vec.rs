@@ -1,5 +1,5 @@
 use super::{vops::*, Matrix};
-use crate::linalg::{norm, sum};
+use crate::linalg::{norm, prod, sum};
 use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, var};
 use approx_eq::rel_diff;
 use std::convert::From;
@@ -376,6 +376,6 @@ macro_rules! impl_inner_fn {
     };
 }
 
-impl_inner_fn!(f64 for norm, max, mean, min, std, sum, var, sample_std, sample_var);
+impl_inner_fn!(f64 for norm, max, mean, min, std, sum, prod, var, sample_std, sample_var);
 
 impl_inner_fn!(usize for argmin, argmax);

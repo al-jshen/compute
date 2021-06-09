@@ -101,6 +101,21 @@ pub fn is_positive_definite(m: &[f64]) -> bool {
     true
 }
 
+/// Calculates the parity of a swap permutation array ipiv (e.g. that you get as an output from
+/// Lapack).
+pub fn ipiv_parity(ipiv: &[i32]) -> i32 {
+    let mut perm = ipiv.to_owned();
+    let mut par = 0;
+    for i in 0..perm.len() {
+        if perm[i] != i as i32 {
+            let j = perm[i] as usize;
+            perm.swap(i, j);
+            par += 1;
+        }
+    }
+    (-1_i32).pow(par)
+}
+
 pub fn diag(a: &[f64]) -> Vector {
     let n = is_square(a).unwrap();
     let mut results = Vector::new(Vec::with_capacity(n));
@@ -512,6 +527,11 @@ pub fn sum(x: &[f64]) -> f64 {
 
         s
     }
+}
+
+/// Calculates the product of a vector.
+pub fn prod(x: &[f64]) -> f64 {
+    x.into_iter().product()
 }
 
 /// Calculates the dot product of two equal-length vectors. When the feature "blas" is enabled,

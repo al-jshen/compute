@@ -6,28 +6,27 @@ use plotly::{
 };
 
 fn main() {
-    // length-scale parameter
-    let param = 1.2;
+    // variance parameter
+    let var = 0.05;
+    // length-scale squared parameter
+    let lsq = 1.2;
     // generate test points
     let n = 250;
     let xtest = linspace(0., 10., n).to_matrix().reshape(-1, 1);
     // similarity of test values
-    let k_ss = rbfkernel(&xtest, &xtest, param);
+    let k_ss = rbfkernel(&xtest, &xtest, var, lsq);
 
     // 10 randomly sampled noiseless training points
-    let xtrain = Uniform::new(0., 10.)
-        .sample_vec(10)
-        .to_matrix()
-        .reshape(-1, 1);
+    let xtrain = Uniform::new(0., 10.).sample_matrix(10, 1);
     let ytrain = xtrain.sin();
 
     // apply kernel to training points
-    let kern = rbfkernel(&xtrain, &xtrain, param);
+    let kern = rbfkernel(&xtrain, &xtrain, var, lsq);
     let l = (&kern + Matrix::eye(xtrain.nrows) * 0.00005).cholesky();
     let (lu, piv) = l.lu();
 
     // get mean at test points
-    let k_s = rbfkernel(&xtrain, &xtest, param);
+    let k_s = rbfkernel(&xtrain, &xtest, var, lsq);
     let lk = lu.lu_solve(&piv, &k_s);
     let mu = lk.t().dot(lu.lu_solve(&piv, &ytrain)).to_vec();
 
@@ -79,7 +78,7 @@ fn main() {
     plot.show();
 }
 
-fn rbfkernel(a: &Matrix, b: &Matrix, param: f64) -> Matrix {
+fn rbfkernel(a: &Matrix, b: &Matrix, var: f64, lengthsq: f64) -> Matrix {
     let sq_dist = a.powi(2).reshape(-1, 1) + b.powi(2).reshape(1, -1) - 2. * a.dot_t(b);
-    (-0.5 * 1. / param * sq_dist).exp()
+    var * (-0.5 * sq_dist / lengthsq).exp()
 }

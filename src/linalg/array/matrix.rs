@@ -283,19 +283,19 @@ impl Matrix {
 
     /// Reshape the matrix. A size of `-1` in either the rows or the columns means that the size
     /// for that dimension will be automatically determined if possible.
-    pub fn reshape(self, nrows: i32, ncols: i32) -> Self {
+    pub fn reshape(&self, nrows: i32, ncols: i32) -> Self {
         let size = self.size() as i32;
         if nrows > 0 && ncols > 0 {
             assert_eq!(nrows * ncols, size as i32, "invalid shape");
-            Matrix::new(self.data, nrows, ncols)
+            Matrix::new(self.data.clone(), nrows, ncols)
         } else if nrows < 0 {
             assert!(nrows == -1 && ncols > 0, "invalid shape");
             // automatically determine number of rows
-            Matrix::new(self.data, size / ncols, ncols)
+            Matrix::new(self.data.clone(), size / ncols, ncols)
         } else if ncols < 0 {
             assert!(ncols == -1 && nrows > 0, "invalid shape");
             // automatically determine number of columns
-            Matrix::new(self.data, nrows, size / nrows)
+            Matrix::new(self.data.clone(), nrows, size / nrows)
         } else {
             panic!("invalid shape");
         }

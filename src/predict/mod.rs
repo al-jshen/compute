@@ -1,6 +1,7 @@
 //! Various statistical models for data fitting and prediction.
 
 mod glms;
+mod gps;
 mod polynomial;
 // use crate::optimize::optimizers::Optimizer;
 
@@ -20,4 +21,5 @@ mod polynomial;
 // }
 
 pub use self::glms::*;
+pub use self::gps::*;
 pub use self::polynomial::*;

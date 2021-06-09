@@ -48,8 +48,8 @@ impl Vector {
         Matrix::new(self, 1, n as i32)
     }
 
-    pub fn reshape(self, nrows: i32, ncols: i32) -> Matrix {
-        Matrix::new(self, nrows, ncols)
+    pub fn reshape(&self, nrows: i32, ncols: i32) -> Matrix {
+        Matrix::new(self.clone(), nrows, ncols)
     }
 
     pub fn close_to(&self, other: &Vector, tol: f64) -> bool {

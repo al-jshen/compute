@@ -21,6 +21,15 @@ pub trait Dot<T, S> {
     fn t_dot_t(&self, other: T) -> S;
 }
 
+macro_rules! impl_macro_for_types {
+    ($macro: ident, $t1: ty, $t2: ty) => {
+        $macro!($t1, $t2);
+        $macro!($t1, &$t2);
+        $macro!(&$t1, $t2);
+        $macro!(&$t1, &$t2);
+    };
+}
+
 macro_rules! impl_mat_mat_dot {
     ($selftype: ty, $othertype: ty) => {
         impl Dot<$othertype, Matrix> for $selftype {
@@ -77,10 +86,7 @@ macro_rules! impl_mat_mat_dot {
     };
 }
 
-impl_mat_mat_dot!(Matrix, Matrix);
-impl_mat_mat_dot!(Matrix, &Matrix);
-impl_mat_mat_dot!(&Matrix, Matrix);
-impl_mat_mat_dot!(&Matrix, &Matrix);
+impl_macro_for_types!(impl_mat_mat_dot, Matrix, Matrix);
 
 macro_rules! impl_dot_append_one {
     ($othertype: ty, $innerop: ident, $($op: ident),+) => {
@@ -104,10 +110,7 @@ macro_rules! impl_mat_vec_dot {
     };
 }
 
-impl_mat_vec_dot!(Matrix, Vector);
-impl_mat_vec_dot!(Matrix, &Vector);
-impl_mat_vec_dot!(&Matrix, Vector);
-impl_mat_vec_dot!(&Matrix, &Vector);
+impl_macro_for_types!(impl_mat_vec_dot, Matrix, Vector);
 
 macro_rules! impl_dot_prepend_one {
     ($othertype: ty, $innerop: ident, $($op: ident),+) => {
@@ -129,10 +132,7 @@ macro_rules! impl_vec_mat_dot {
     };
 }
 
-impl_vec_mat_dot!(Vector, Matrix);
-impl_vec_mat_dot!(Vector, &Matrix);
-impl_vec_mat_dot!(&Vector, Matrix);
-impl_vec_mat_dot!(&Vector, &Matrix);
+impl_macro_for_types!(impl_vec_mat_dot, Vector, Matrix);
 
 macro_rules! impl_dot_vec_vec {
     ($othertype: ty, $($op: ident),+) => {
@@ -152,7 +152,4 @@ macro_rules! impl_vec_vec_dot {
     };
 }
 
-impl_vec_vec_dot!(Vector, Vector);
-impl_vec_vec_dot!(Vector, &Vector);
-impl_vec_vec_dot!(&Vector, Vector);
-impl_vec_vec_dot!(&Vector, &Vector);
+impl_macro_for_types!(impl_vec_vec_dot, Vector, Vector);

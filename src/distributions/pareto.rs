@@ -104,7 +104,7 @@ mod tests {
     #[test]
     fn test_moments() {
         let dist = Pareto::new(4., 4.);
-        let data = dist.sample_vec(1e6 as usize);
+        let data = dist.sample_n(1e6 as usize);
         assert_approx_eq!(dist.mean(), mean(&data), 0.05);
         assert_approx_eq!(dist.var(), var(&data), 0.05);
     }

@@ -123,7 +123,7 @@ mod tests {
 
     #[test]
     fn test_moments() {
-        let data = Gamma::new(2., 4.).sample_vec(1e6 as usize);
+        let data = Gamma::new(2., 4.).sample_n(1e6 as usize);
         assert_approx_eq!(0.5, mean(&data), 1e-2);
         assert_approx_eq!(0.125, var(&data), 1e-2);
     }

@@ -37,7 +37,7 @@ mod tests {
     #[test]
     fn test_binom_methods() {
         let n: Vec<u64> = DiscreteUniform::new(5, 45)
-            .sample_vec(1000)
+            .sample_n(1000)
             .iter()
             .map(|x| *x as u64)
             .collect();
@@ -53,7 +53,7 @@ mod tests {
     #[test]
     fn test_binom_pascal() {
         let n: Vec<u64> = DiscreteUniform::new(5, 50)
-            .sample_vec(1000)
+            .sample_n(1000)
             .iter()
             .map(|x| *x as u64)
             .collect();

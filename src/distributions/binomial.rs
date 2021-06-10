@@ -293,14 +293,14 @@ mod tests {
     #[test]
     fn test_moments() {
         let distr1 = Binomial::new(15, 0.3);
-        let data1 = distr1.sample_vec(1e6 as usize);
+        let data1 = distr1.sample_n(1e6 as usize);
         let mean1 = mean(&data1);
         let var1 = var(&data1);
         assert_approx_eq!(mean1, 4.5, 1e-2);
         assert_approx_eq!(var1, 3.15, 1e-2);
 
         let distr2 = Binomial::new(70, 0.5);
-        let data2 = distr2.sample_vec(1e6 as usize);
+        let data2 = distr2.sample_n(1e6 as usize);
         let mean2 = mean(&data2);
         let var2 = var(&data2);
         assert_approx_eq!(mean2, 35., 1e-2);

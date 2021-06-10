@@ -111,7 +111,7 @@ mod tests {
     #[test]
     fn test_moments() {
         let dist = Beta::new(2., 4.);
-        let data = dist.sample_vec(1e6 as usize);
+        let data = dist.sample_n(1e6 as usize);
         assert_approx_eq!(dist.mean(), mean(&data), 1e-2);
         assert_approx_eq!(dist.var(), var(&data), 1e-2);
     }

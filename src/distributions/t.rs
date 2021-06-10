@@ -98,7 +98,7 @@ mod tests {
     #[test]
     fn test_moments() {
         let t = T::new(2.);
-        let data = t.sample_vec(1e6 as usize);
+        let data = t.sample_n(1e6 as usize);
         assert_approx_eq!(mean(&data), 0., 1e-2);
     }
 }

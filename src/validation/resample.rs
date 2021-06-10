@@ -77,7 +77,7 @@ mod tests {
 
     #[test]
     fn test_bootstrap_moments() {
-        let x = Normal::new(4., 2.).sample_vec(1e3 as usize);
+        let x = Normal::new(4., 2.).sample_n(1e3 as usize);
         let samps = bootstrap(&x, 50);
         let means: Vec<f64> = (&samps).into_iter().map(|samp| mean(samp)).collect();
         let stds: Vec<f64> = (&samps).into_iter().map(|samp| std(samp)).collect();
@@ -90,7 +90,7 @@ mod tests {
 
     #[test]
     fn test_jackknife_size() {
-        let x = Normal::default().sample_vec(50);
+        let x = Normal::default().sample_n(50);
         let jk_samples = jackknife(&x);
         for s in jk_samples {
             assert_eq!(s.len(), 49);
@@ -99,7 +99,7 @@ mod tests {
 
     #[test]
     fn test_jackknife_mean() {
-        let x = Normal::default().sample_vec(100);
+        let x = Normal::default().sample_n(100);
         let jk_samples = jackknife(&x);
         let jk_means = jk_samples.iter().map(|s| mean(s)).collect::<Vec<_>>();
         assert_approx_eq!(mean(&x), mean(&jk_means));

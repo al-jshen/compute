@@ -214,7 +214,7 @@ impl GLM {
         }
 
         self.coef = Some(coef);
-        self.deviance = Some(self.family.deviance(&y, &mu));
+        self.deviance = Some(self.family.deviance(y, &mu));
         self.information_matrix = Some(self.compute_ddbeta(x, &dmu, &var, &weights));
         self.n = Some(sum(&weights).round() as usize);
         self.p = Some(p);
@@ -292,7 +292,7 @@ impl GLM {
         let coef = self.coef()?;
         let n = is_matrix(x, self.p.unwrap()).unwrap();
         assert!(is_design(x, n), "x is not a valid design matrix");
-        let result = matmul(&x, coef, n, self.p.unwrap(), false, false);
+        let result = matmul(x, coef, n, self.p.unwrap(), false, false);
         if let Some(offset) = &self.offsets {
             Ok(self.family.inv_link(&vadd(&result, offset)))
         } else {

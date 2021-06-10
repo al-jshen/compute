@@ -35,7 +35,7 @@ fn welford_statistics(data: &[f64]) -> (usize, f64, f64) {
 
 /// Calculates the mean of an array of data points.
 pub fn mean(data: &[f64]) -> f64 {
-    sum(&data) / data.len() as f64
+    sum(data) / data.len() as f64
 }
 
 /// Calculates the mean of an array of data points using the Welford algorithm.

@@ -25,7 +25,7 @@ impl AR {
 
     /// Fit the AR(p) model to the data using the Yule-Walker equations.
     pub fn fit(&mut self, data: &[f64]) -> &mut Self {
-        self.intercept = mean(&data);
+        self.intercept = mean(data);
         let adjusted = data
             .iter()
             .map(|x| x - self.intercept)
@@ -34,7 +34,7 @@ impl AR {
         let r = &autocorrelations[1..];
         let n = r.len();
         let r_matrix = invert_matrix(&toeplitz(&autocorrelations[..n]));
-        let coeffs = matmul(&r_matrix, &r, n, n, false, false);
+        let coeffs = matmul(&r_matrix, r, n, n, false, false);
         self.coeffs = coeffs;
         self.coeffs.reverse();
         self
@@ -49,7 +49,7 @@ impl AR {
         } else {
             // maybe panic instead? or return NA
             // return std::f64::NAN;
-            dot(&data, &self.coeffs[..n])
+            dot(data, &self.coeffs[..n])
         }
     }
 

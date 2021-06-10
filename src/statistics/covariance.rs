@@ -5,8 +5,8 @@ use crate::statistics::mean;
 /// change the result as covariance is invariant with respect to shifts.
 pub fn covariance(x: &[f64], y: &[f64]) -> f64 {
     assert_eq!(x.len(), y.len());
-    let mean_x = mean(&x);
-    let mean_y = mean(&y);
+    let mean_x = mean(x);
+    let mean_y = mean(y);
     let n = x.len();
 
     (0..n)
@@ -21,8 +21,8 @@ pub fn covariance(x: &[f64], y: &[f64]) -> f64 {
 /// change the result as covariance is invariant with respect to shifts.
 pub fn sample_covariance(x: &[f64], y: &[f64]) -> f64 {
     assert_eq!(x.len(), y.len());
-    let mean_x = mean(&x);
-    let mean_y = mean(&y);
+    let mean_x = mean(x);
+    let mean_y = mean(y);
     let n = x.len();
 
     (0..n)

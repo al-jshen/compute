@@ -4,7 +4,7 @@ use crate::statistics::mean;
 /// assuming that the points are equally spaced in time.
 pub fn acovf(ts: &[f64], k: i32) -> f64 {
     let n = ts.len();
-    let ts_mean = mean(&ts);
+    let ts_mean = mean(ts);
     1. / n as f64
         * (k.abs() as usize..n)
             .into_iter()
@@ -16,7 +16,7 @@ pub fn acovf(ts: &[f64], k: i32) -> f64 {
 /// assuming that the points are equally spaced in time.
 pub fn acf(ts: &[f64], k: i32) -> f64 {
     let n = ts.len();
-    let ts_mean = mean(&ts);
+    let ts_mean = mean(ts);
     let numerator: f64 = 1. / n as f64
         * (k.abs() as usize..n)
             .into_iter()

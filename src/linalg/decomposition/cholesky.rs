@@ -36,7 +36,7 @@ pub fn cholesky_solve(l: &[f64], b: &[f64]) -> Vec<f64> {
     let y = forward_substitution(l, b);
 
     // back substitution
-    let lt = transpose(&l, n);
+    let lt = transpose(l, n);
     backward_substitution(&lt, &y)
 }
 

@@ -76,7 +76,7 @@ impl<'a> Continuous for &'a MVN {
             .collect();
 
         let numerator =
-            (-0.5 * &x_minus_mu.t_dot(&self.inverse_covariance_matrix.dot(&x_minus_mu))).exp();
+            (-0.5 * x_minus_mu.t_dot(&self.inverse_covariance_matrix.dot(&x_minus_mu))).exp();
         let denominator = ((2. * PI).powi(x.len() as i32) * self.covariance_determinant).sqrt();
 
         numerator / denominator
@@ -93,7 +93,7 @@ impl<'a> Continuous for &'a MVN {
             .collect();
 
         -0.5 * (self.covariance_determinant.ln()
-            + &x_minus_mu.t_dot(&self.inverse_covariance_matrix.dot(&x_minus_mu))
+            + x_minus_mu.t_dot(&self.inverse_covariance_matrix.dot(&x_minus_mu))
             + x.len() as f64 * (2. * PI).ln())
     }
 }

@@ -534,7 +534,7 @@ impl Solve<Matrix> for Matrix {
         let mut solutions = Vector::with_capacity(system.nrows * system.ncols);
         for i in 0..system.ncols {
             let x = system.get_col_as_vector(i);
-            solutions.extend(self.lu_solve(&pivots, &x));
+            solutions.extend(self.lu_solve(pivots, &x));
         }
 
         Matrix::new(solutions, system.ncols as i32, system.nrows as i32).t()

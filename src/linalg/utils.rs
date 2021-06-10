@@ -151,7 +151,7 @@ pub fn col_to_row_major(a: &[f64], nrows: usize) -> Vec<f64> {
 
 /// Transpose a matrix.
 pub fn transpose(a: &[f64], nrows: usize) -> Vec<f64> {
-    let ncols = is_matrix(&a, nrows).unwrap();
+    let ncols = is_matrix(a, nrows).unwrap();
 
     let mut at = Vec::with_capacity(a.len());
 
@@ -176,7 +176,7 @@ pub fn diag_matrix(a: &[f64]) -> Vector {
 
 /// Given an n by n matrix, invert it. The resulting matrix is returned as a flattened array.
 pub fn invert_matrix(matrix: &[f64]) -> Vec<f64> {
-    let n = is_square(&matrix).unwrap();
+    let n = is_square(matrix).unwrap();
     #[cfg(feature = "lapack")]
     {
         let n = n as i32;
@@ -243,7 +243,7 @@ pub fn solve_sys(a: &[f64], b: &[f64]) -> Vec<f64> {
     #[cfg(not(feature = "lapack"))]
     {
         let mut solutions = Vec::with_capacity(b.len());
-        let b = row_to_col_major(&b, n);
+        let b = row_to_col_major(b, n);
 
         if is_positive_definite(a) {
             let l = cholesky(a);
@@ -294,11 +294,11 @@ pub fn solve(a: &[f64], b: &[f64]) -> Vec<f64> {
 
     #[cfg(not(feature = "lapack"))]
     {
-        if is_positive_definite(&a) {
-            let l = cholesky(&a);
+        if is_positive_definite(a) {
+            let l = cholesky(a);
             cholesky_solve(&l, b)
         } else {
-            let (lu, piv) = lu(&a);
+            let (lu, piv) = lu(a);
             lu_solve(&lu, &piv, b)
         }
     }
@@ -325,12 +325,12 @@ pub fn matmul_blocked(
     let mut c = vec![0.; m * n];
 
     let a = if transpose_a {
-        transpose(&a, rows_a)
+        transpose(a, rows_a)
     } else {
         a.to_vec()
     };
     let b = if transpose_b {
-        transpose(&b, rows_b)
+        transpose(b, rows_b)
     } else {
         b.to_vec()
     };
@@ -427,12 +427,12 @@ pub fn matmul(
         let mut c = vec![0.; m * n];
 
         let a = if transpose_a {
-            transpose(&a, rows_a)
+            transpose(a, rows_a)
         } else {
             a.to_vec()
         };
         let b = if transpose_b {
-            transpose(&b, rows_b)
+            transpose(b, rows_b)
         } else {
             b.to_vec()
         };
@@ -531,7 +531,7 @@ pub fn sum(x: &[f64]) -> f64 {
 
 /// Calculates the product of a vector.
 pub fn prod(x: &[f64]) -> f64 {
-    x.into_iter().product()
+    x.iter().product()
 }
 
 /// Calculates the dot product of two equal-length vectors. When the feature "blas" is enabled,
@@ -575,7 +575,7 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
 
 /// Calculates the norm of a vector.
 pub fn norm(x: &[f64]) -> f64 {
-    dot(&x, &x).sqrt()
+    dot(x, x).sqrt()
 }
 
 /// Calculates the infinity norm of a matrix. That is, it sums the absolute values along each row,

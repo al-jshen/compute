@@ -57,6 +57,7 @@ impl Continuous for T {
 }
 
 impl Mean for T {
+    type MeanType = f64;
     /// Calculates the mean of the T distribution, which is 0 when the degrees of freedom is
     /// greater than 1, and undefined otherwise.
     ///
@@ -70,6 +71,7 @@ impl Mean for T {
 }
 
 impl Variance for T {
+    type VarianceType = f64;
     /// Calculates the variance of the T distribution.
     ///
     /// # Remarks

@@ -11,7 +11,7 @@ pub fn bootstrap(data: &[f64], n_bootstrap: usize) -> Vec<Vec<f64>> {
     let resamp_gen = DiscreteUniform::new(0, (data.len() - 1) as i64);
 
     for _ in 0..n_bootstrap {
-        let idxs = resamp_gen.sample_vec(data.len());
+        let idxs = resamp_gen.sample_n(data.len());
         resamples.push(idxs.into_iter().map(|i| data[i as usize]).collect());
     }
 

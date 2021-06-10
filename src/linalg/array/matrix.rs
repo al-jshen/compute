@@ -54,6 +54,12 @@ impl Matrix {
         self.nrows == self.ncols
     }
 
+    /// Invert the matrix.
+    pub fn inv(&self) -> Self {
+        assert!(self.is_square(), "matrix not square");
+        self.solve(&Matrix::eye(self.nrows))
+    }
+
     /// Check whether the matrix is symmetric.
     pub fn is_symmetric(&self) -> bool {
         if self.is_square() {

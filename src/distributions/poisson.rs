@@ -69,6 +69,7 @@ impl Discrete for Poisson {
 }
 
 impl Mean for Poisson {
+    type MeanType = f64;
     /// Calculates the mean, which is given by the rate parameter.
     fn mean(&self) -> f64 {
         self.lambda
@@ -76,6 +77,7 @@ impl Mean for Poisson {
 }
 
 impl Variance for Poisson {
+    type VarianceType = f64;
     /// Calculates the variance, which is given by the rate parameter.
     fn var(&self) -> f64 {
         self.lambda

@@ -269,6 +269,7 @@ impl Discrete for Binomial {
 }
 
 impl Mean for Binomial {
+    type MeanType = f64;
     /// Calculates the mean, which is given by `np`.
     fn mean(&self) -> f64 {
         self.n as f64 * self.p
@@ -276,6 +277,7 @@ impl Mean for Binomial {
 }
 
 impl Variance for Binomial {
+    type VarianceType = f64;
     /// Calculates the variance, which is given by `npq`, where `q = 1-p`
     fn var(&self) -> f64 {
         self.n as f64 * self.p * (1. - self.p)

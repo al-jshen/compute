@@ -75,6 +75,7 @@ impl Discrete for Bernoulli {
 }
 
 impl Mean for Bernoulli {
+    type MeanType = f64;
     /// Calculates the mean of the Bernoulli distribution, which is `p`.
     fn mean(&self) -> f64 {
         self.p
@@ -82,6 +83,7 @@ impl Mean for Bernoulli {
 }
 
 impl Variance for Bernoulli {
+    type VarianceType = f64;
     /// Calculates the variance, given by `p*q = p(1-p)`.
     fn var(&self) -> f64 {
         self.p * (1. - self.p)

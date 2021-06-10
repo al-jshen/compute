@@ -93,6 +93,7 @@ impl Continuous for Normal {
 }
 
 impl Mean for Normal {
+    type MeanType = f64;
     /// Returns the mean of the given Normal distribution.
     fn mean(&self) -> f64 {
         self.mu
@@ -100,6 +101,7 @@ impl Mean for Normal {
 }
 
 impl Variance for Normal {
+    type VarianceType = f64;
     /// Returns the variance of the given Normal distribution.
     fn var(&self) -> f64 {
         self.sigma

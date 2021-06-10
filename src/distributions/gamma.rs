@@ -100,6 +100,7 @@ impl Continuous for Gamma {
 }
 
 impl Mean for Gamma {
+    type MeanType = f64;
     /// Calculates the mean, which for a Gamma(a, b) distribution is given by `a / b`.
     fn mean(&self) -> f64 {
         self.alpha / self.beta
@@ -107,6 +108,7 @@ impl Mean for Gamma {
 }
 
 impl Variance for Gamma {
+    type VarianceType = f64;
     /// Calculates the variance of the given Gamma distribution.
     fn var(&self) -> f64 {
         self.alpha / self.beta.powi(2)

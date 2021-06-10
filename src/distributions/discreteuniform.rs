@@ -74,6 +74,7 @@ impl Discrete for DiscreteUniform {
 }
 
 impl Mean for DiscreteUniform {
+    type MeanType = f64;
     /// Calculates the mean, which for a Uniform(a, b) distribution is given by `(a + b) / 2`.
     fn mean(&self) -> f64 {
         ((self.lower + self.upper) / 2) as f64
@@ -81,6 +82,7 @@ impl Mean for DiscreteUniform {
 }
 
 impl Variance for DiscreteUniform {
+    type VarianceType = f64;
     /// Calculates the variance of the given Uniform distribution.
     fn var(&self) -> f64 {
         (((self.upper - self.lower + 1) as f64).powi(2) - 1.) / 12.

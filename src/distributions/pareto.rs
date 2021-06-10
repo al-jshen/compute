@@ -72,6 +72,7 @@ impl Continuous for Pareto {
 }
 
 impl Mean for Pareto {
+    type MeanType = f64;
     /// Calculates the mean of the Pareto distribution.
     fn mean(&self) -> f64 {
         if self.alpha <= 1. {
@@ -83,6 +84,7 @@ impl Mean for Pareto {
 }
 
 impl Variance for Pareto {
+    type VarianceType = f64;
     /// Calculates the variance of the Pareto distribution.
     fn var(&self) -> f64 {
         if self.alpha <= 2. {

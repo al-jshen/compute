@@ -75,6 +75,7 @@ impl Continuous for Exponential {
 }
 
 impl Mean for Exponential {
+    type MeanType = f64;
     /// Returns the mean of the given exponential distribution.
     fn mean(&self) -> f64 {
         1. / self.lambda
@@ -82,6 +83,7 @@ impl Mean for Exponential {
 }
 
 impl Variance for Exponential {
+    type VarianceType = f64;
     fn var(&self) -> f64 {
         1. / self.lambda.powi(2)
     }

@@ -64,6 +64,7 @@ impl Continuous for ChiSquared {
 }
 
 impl Mean for ChiSquared {
+    type MeanType = f64;
     /// Calculates the mean of the Chi square distribution, which is the same as its degrees of
     /// freedom.
     fn mean(&self) -> f64 {
@@ -72,6 +73,7 @@ impl Mean for ChiSquared {
 }
 
 impl Variance for ChiSquared {
+    type VarianceType = f64;
     /// Calculates the variance of the Chi square distribution.
     fn var(&self) -> f64 {
         self.mean() * 2.

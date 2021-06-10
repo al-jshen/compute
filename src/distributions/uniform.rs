@@ -75,6 +75,7 @@ impl Continuous for Uniform {
 }
 
 impl Mean for Uniform {
+    type MeanType = f64;
     /// Calculates the mean, which for a Uniform(a, b) distribution is given by `(a + b) / 2`.
     fn mean(&self) -> f64 {
         (self.lower + self.upper) / 2.
@@ -82,6 +83,7 @@ impl Mean for Uniform {
 }
 
 impl Variance for Uniform {
+    type VarianceType = f64;
     /// Calculates the variance of the given Uniform distribution.
     fn var(&self) -> f64 {
         (self.upper - self.lower).powi(2) / 12.

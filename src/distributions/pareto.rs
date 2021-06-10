@@ -59,6 +59,7 @@ impl Distribution1D for Pareto {
 }
 
 impl Continuous for Pareto {
+	type PDFType = f64;
     /// Calculates the probability density function for the given Pareto function at `x`.
     ///
     /// # Remarks

@@ -63,11 +63,17 @@ impl DistributionND for MVN {
     }
 }
 
-impl Continuous for MVN {
-    fn pdf(&self, x: Self::Output) -> f64 {
+impl<'a> Continuous for &'a MVN {
+    type PDFType = &'a [f64];
+    fn pdf(&self, x: Self::PDFType) -> f64 {
         assert!(self.covariance_matrix.is_positive_definite());
+        assert_eq!(x.len(), self.mean.len());
 
-        let x_minus_mu = &x - &self.mean;
+        let x_minus_mu: Vector = x
+            .iter()
+            .enumerate()
+            .map(|(i, v)| v - self.mean[i])
+            .collect();
         let numerator =
             (-0.5 * &x_minus_mu.t_dot(&self.inverse_covariance_matrix.dot(&x_minus_mu))).exp();
         let denominator = ((2. * PI).powi(x.len() as i32) * self.covariance_determinant).sqrt();
@@ -75,16 +81,64 @@ impl Continuous for MVN {
     }
 }
 
-impl Mean for MVN {
-    type MeanType = Vector;
+impl<'a> Mean for &'a MVN {
+    type MeanType = &'a [f64];
     fn mean(&self) -> Self::MeanType {
-        self.mean.clone()
+        &self.mean
     }
 }
 
-impl Variance for MVN {
-    type VarianceType = Matrix;
+impl<'a> Variance for &'a MVN {
+    type VarianceType = &'a Matrix;
     fn var(&self) -> Self::VarianceType {
-        self.covariance_matrix.clone()
+        &self.covariance_matrix
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use approx_eq::assert_approx_eq;
+
+    #[test]
+    fn test_mvn_pdf() {
+        let mu = Vector::new([
+            0.6971976638355714,
+            -0.6676833280983583,
+            -2.0192124253834733,
+            -1.5335621337312673,
+        ]);
+
+        let cov = Matrix::new(
+            [
+                2.247288887309859,
+                0.2995972155043716,
+                0.5845592696474896,
+                -0.13434631148751136,
+                0.2995972155043716,
+                1.3959897541030757,
+                -0.1601386729230161,
+                2.2253865738659315,
+                0.5845592696474896,
+                -0.1601386729230161,
+                3.977276244924999,
+                -1.977313729867125,
+                -0.13434631148751136,
+                2.2253865738659315,
+                -1.977313729867125,
+                8.06177161880807,
+            ],
+            4,
+            4,
+        );
+
+        let mvn = MVN::new(mu, cov);
+
+        let x1 = Vector::new([
+            0.050102652382139026,
+            -0.0521232079055611,
+            0.6617157383972537,
+            -0.8086304981120899,
+        ]);
     }
 }

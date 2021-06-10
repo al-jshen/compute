@@ -59,6 +59,7 @@ impl Distribution1D for Exponential {
 }
 
 impl Continuous for Exponential {
+	type PDFType = f64;
     /// Calculates the [probability density
     /// function](https://en.wikipedia.org/wiki/Probability_density_function) for the given Exponential
     /// distribution at `x`.

@@ -85,6 +85,7 @@ impl Distribution1D for Gamma {
 }
 
 impl Continuous for Gamma {
+	type PDFType = f64;
     /// Calculates the probability density function for the given Gamma function at `x`.
     ///
     /// # Remarks

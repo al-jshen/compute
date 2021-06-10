@@ -55,24 +55,25 @@ pub trait DistributionND: Distribution<Output = Vector> {
 
 /// Provides a trait for computing the mean of a distribution where there is a closed-form
 /// expression.
-pub trait Mean: Distribution {
+pub trait Mean {
     type MeanType;
     /// Calculates the mean of the distribution.
     fn mean(&self) -> Self::MeanType;
 }
 
 /// Provides a trait for computing the variance of a distribution where there is a closed-form
-/// solution. Requires the `Mean` trait to be implemented because of the definition of variance.
-pub trait Variance: Mean {
+/// solution.
+pub trait Variance {
     type VarianceType;
     fn var(&self) -> Self::VarianceType;
 }
 
 /// Provides a trait for interacting with continuous probability distributions.
-pub trait Continuous: Distribution {
+pub trait Continuous {
+    type PDFType;
     /// Calculates the [probability density
     /// function](https://en.wikipedia.org/wiki/Probability_density_function) at some value `x`.
-    fn pdf(&self, x: Self::Output) -> f64;
+    fn pdf(&self, x: Self::PDFType) -> f64;
 }
 
 /// Provides a trait for interacting with discrete probability distributions.

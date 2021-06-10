@@ -48,6 +48,7 @@ impl Distribution1D for T {
 }
 
 impl Continuous for T {
+	type PDFType = f64;
     /// Calculates the probability density function for the given T distribution at `x`.
     fn pdf(&self, x: f64) -> f64 {
         gamma((self.dof + 1.) / 2.)

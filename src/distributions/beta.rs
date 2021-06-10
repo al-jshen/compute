@@ -72,6 +72,7 @@ impl Distribution1D for Beta {
 }
 
 impl Continuous for Beta {
+	type PDFType = f64;
     /// Calculates the probability density function for the given Beta function at `x`.
     ///
     /// # Remarks

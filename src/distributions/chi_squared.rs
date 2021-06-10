@@ -49,6 +49,7 @@ impl Distribution1D for ChiSquared {
 }
 
 impl Continuous for ChiSquared {
+	type PDFType = f64;
     /// Calculates the probability density function for the given Chi square distribution at `x`.
     ///
     /// # Remarks

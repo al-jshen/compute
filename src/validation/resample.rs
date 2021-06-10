@@ -1,6 +1,6 @@
 //! Algorithms for data resampling.
 
-use crate::distributions::{DiscreteUniform, Distribution};
+use crate::distributions::{DiscreteUniform, Distribution, Distribution1D};
 
 /// Given an array of data, returns `n_bootstrap` vectors, where each has elements that are drawn
 /// from the original array with replacement, and the length of each vector is the same as the

@@ -40,6 +40,7 @@ impl Default for Binomial {
 }
 
 impl Distribution for Binomial {
+    type Output = f64;
     /// Samples from the given Binomial distribution. For `np <= 30`, this is done with an inversion algorithm.
     /// Otherwise, this is done with the BTPE algorithm from Kachitvichyanukul and Schmeiser 1988.
     fn sample(&self) -> f64 {
@@ -59,7 +60,9 @@ impl Distribution for Binomial {
 
         res as f64
     }
+}
 
+impl Distribution1D for Binomial {
     fn update(&mut self, params: &[f64]) {
         self.set_n(params[0] as u64);
         self.set_p(params[1]);

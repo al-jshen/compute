@@ -41,11 +41,16 @@ impl Default for DiscreteUniform {
         Self::new(0, 1)
     }
 }
+
 impl Distribution for DiscreteUniform {
+    type Output = f64;
     /// Samples from the given discrete uniform distribution.
     fn sample(&self) -> f64 {
         fastrand::i64(self.lower..=self.upper) as f64
     }
+}
+
+impl Distribution1D for DiscreteUniform {
     fn update(&mut self, params: &[f64]) {
         self.set_lower(params[0] as i64).set_upper(params[1] as i64);
     }

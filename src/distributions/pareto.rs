@@ -43,11 +43,15 @@ impl Default for Pareto {
 }
 
 impl Distribution for Pareto {
+    type Output = f64;
     /// Samples from the given Pareto distribution using inverse transform sampling.
     fn sample(&self) -> f64 {
         let u = fastrand::f64();
         self.minval / u.powf(1. / self.alpha)
     }
+}
+
+impl Distribution1D for Pareto {
     fn update(&mut self, params: &[f64]) {
         assert!(params.len() == 2);
         self.set_alpha(params[0]).set_minval(params[1]);

@@ -35,10 +35,14 @@ impl Default for ChiSquared {
 }
 
 impl Distribution for ChiSquared {
+    type Output = f64;
     /// Samples from the given Chi square distribution.
     fn sample(&self) -> f64 {
         self.sampler.sample()
     }
+}
+
+impl Distribution1D for ChiSquared {
     fn update(&mut self, params: &[f64]) {
         self.set_dof(params[0] as usize);
     }

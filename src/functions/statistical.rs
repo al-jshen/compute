@@ -71,7 +71,7 @@ pub fn erf(x: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::distributions::{Distribution, Exponential, Uniform};
+    use crate::distributions::{Distribution, Distribution1D, Exponential, Uniform};
     use approx_eq::assert_approx_eq;
 
     #[test]

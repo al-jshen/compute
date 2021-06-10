@@ -34,7 +34,9 @@ impl Default for Poisson {
         Self::new(1.)
     }
 }
+
 impl Distribution for Poisson {
+    type Output = f64;
     /// Samples from the given Poisson distribution. For `lambda < 10.0`, this is done with the direct (multiplication) method,
     /// and for `lambda >= 10.0`, this is done the PTRS transformed rejection method from [Hoermann](https://doi.org/10.1016/0167-6687(93)90997-4).
     fn sample(&self) -> f64 {
@@ -44,6 +46,9 @@ impl Distribution for Poisson {
             sample_ptrs(self.lambda)
         }
     }
+}
+
+impl Distribution1D for Poisson {
     fn update(&mut self, params: &[f64]) {
         self.set_lambda(params[0]);
     }

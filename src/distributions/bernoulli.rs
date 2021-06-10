@@ -35,6 +35,7 @@ impl Default for Bernoulli {
 }
 
 impl Distribution for Bernoulli {
+    type Output = f64;
     /// Samples from the given Bernoulli distribution.
     fn sample(&self) -> f64 {
         if self.p == 1. {
@@ -49,6 +50,9 @@ impl Distribution for Bernoulli {
             0.
         }
     }
+}
+
+impl Distribution1D for Bernoulli {
     fn update(&mut self, params: &[f64]) {
         self.set_p(params[0]);
     }

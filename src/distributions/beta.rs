@@ -57,11 +57,15 @@ impl Default for Beta {
 }
 
 impl Distribution for Beta {
+    type Output = f64;
     /// Samples from the given Beta distribution using the Gamma distribution.
     fn sample(&self) -> f64 {
         let x = self.alpha_gen.sample();
         x / (x + self.beta_gen.sample())
     }
+}
+
+impl Distribution1D for Beta {
     fn update(&mut self, params: &[f64]) {
         self.set_alpha(params[0]).set_beta(params[1]);
     }

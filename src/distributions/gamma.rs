@@ -51,6 +51,7 @@ impl Default for Gamma {
 }
 
 impl Distribution for Gamma {
+    type Output = f64;
     /// Samples from the given Gamma distribution.
     ///
     /// # Remarks
@@ -75,6 +76,9 @@ impl Distribution for Gamma {
             }
         }
     }
+}
+
+impl Distribution1D for Gamma {
     fn update(&mut self, params: &[f64]) {
         self.set_alpha(params[0]).set_beta(params[1]);
     }

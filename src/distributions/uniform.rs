@@ -42,11 +42,16 @@ impl Default for Uniform {
         Self::new(0., 1.)
     }
 }
+
 impl Distribution for Uniform {
+    type Output = f64;
     /// Samples from the given Uniform distribution.
     fn sample(&self) -> f64 {
         (self.upper - self.lower) * fastrand::f64() + self.lower
     }
+}
+
+impl Distribution1D for Uniform {
     fn update(&mut self, params: &[f64]) {
         self.set_lower(params[0]).set_upper(params[1]);
     }

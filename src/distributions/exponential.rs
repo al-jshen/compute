@@ -41,6 +41,7 @@ impl Default for Exponential {
 }
 
 impl Distribution for Exponential {
+    type Output = f64;
     /// Samples from the given Exponential distribution.
     ///
     /// # Remarks
@@ -49,6 +50,9 @@ impl Distribution for Exponential {
     fn sample(&self) -> f64 {
         -self.rng.sample().ln() / self.lambda
     }
+}
+
+impl Distribution1D for Exponential {
     fn update(&mut self, params: &[f64]) {
         self.set_lambda(params[0]);
     }

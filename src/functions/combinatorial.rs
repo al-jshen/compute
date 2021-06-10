@@ -32,7 +32,7 @@ pub fn binom_coeff_alt(n: u64, k: u64) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::distributions::{DiscreteUniform, Distribution};
+    use crate::distributions::{DiscreteUniform, Distribution, Distribution1D};
 
     #[test]
     fn test_binom_methods() {

@@ -8,6 +8,8 @@ pub struct T {
     dof: f64,
 }
 
+pub type StudentsT = T;
+
 impl T {
     /// Create a new t distribution with
     ///
@@ -31,11 +33,15 @@ impl Default for T {
 }
 
 impl Distribution for T {
+    type Output = f64;
     /// Samples from the given T distribution.
     fn sample(&self) -> f64 {
         (self.dof / 2.).sqrt() * Normal::default().sample()
             / Gamma::new(self.dof / 2., 1.).sample().sqrt()
     }
+}
+
+impl Distribution1D for T {
     fn update(&mut self, params: &[f64]) {
         self.set_dof(params[0]);
     }

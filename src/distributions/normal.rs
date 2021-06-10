@@ -47,6 +47,7 @@ impl Default for Normal {
 }
 
 impl Distribution for Normal {
+    type Output = f64;
     /// Sample from the given Normal distribution.
     fn sample(&self) -> f64 {
         loop {
@@ -76,6 +77,9 @@ impl Distribution for Normal {
             }
         }
     }
+}
+
+impl Distribution1D for Normal {
     fn update(&mut self, params: &[f64]) {
         self.set_mu(params[0]).set_sigma(params[1]);
     }

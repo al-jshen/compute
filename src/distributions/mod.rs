@@ -8,6 +8,7 @@ mod chi_squared;
 mod discreteuniform;
 mod exponential;
 mod gamma;
+// mod multivariatenormal;
 mod normal;
 mod pareto;
 mod poisson;
@@ -18,8 +19,13 @@ use crate::linalg::{Matrix, Vector};
 
 /// The primary trait defining a probability distribution.
 pub trait Distribution: Send + Sync {
+    type Output;
     /// Samples from the given probability distribution.
-    fn sample(&self) -> f64;
+    fn sample(&self) -> Self::Output;
+}
+
+/// A trait defining a one dimensional distribution.
+pub trait Distribution1D: Distribution<Output = f64> {
     /// Generates a vector of `n` randomly sampled values from the given probability distribution.
     fn sample_vec(&self, n: usize) -> Vector {
         (0..n).map(|_| self.sample()).collect()
@@ -37,24 +43,24 @@ pub trait Distribution: Send + Sync {
 /// expression.
 pub trait Mean: Distribution {
     /// Calculates the mean of the distribution.
-    fn mean(&self) -> f64;
+    fn mean(&self) -> Self::Output;
 }
 
 /// Provides a trait for computing the variance of a distribution where there is a closed-form
 /// solution. Requires the `Mean` trait to be implemented because of the definition of variance.
 pub trait Variance: Mean {
-    fn var(&self) -> f64;
+    fn var(&self) -> Self::Output;
 }
 
 /// Provides a trait for interacting with continuous probability distributions.
 pub trait Continuous: Distribution {
     /// Calculates the [probability density
     /// function](https://en.wikipedia.org/wiki/Probability_density_function) at some value `x`.
-    fn pdf(&self, x: f64) -> f64;
+    fn pdf(&self, x: Self::Output) -> f64;
 }
 
 /// Provides a trait for interacting with discrete probability distributions.
-pub trait Discrete: Distribution {
+pub trait Discrete: Distribution1D {
     /// Calculates the [probability mass function](https://en.wikipedia.org/wiki/Probability_mass_function) at some value `x`.
     fn pmf(&self, x: i64) -> f64;
 }
@@ -66,6 +72,7 @@ pub use self::chi_squared::ChiSquared;
 pub use self::discreteuniform::DiscreteUniform;
 pub use self::exponential::Exponential;
 pub use self::gamma::Gamma;
+// pub use self::multivariatenormal::*;
 pub use self::normal::Normal;
 pub use self::pareto::Pareto;
 pub use self::poisson::Poisson;

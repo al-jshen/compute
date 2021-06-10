@@ -86,10 +86,14 @@ impl Distribution1D for Normal {
 }
 
 impl Continuous for Normal {
-	type PDFType = f64;
+    type PDFType = f64;
     /// Calculates the probability density function of the given Normal distribution at `x`.
     fn pdf(&self, x: f64) -> f64 {
         1. / (self.sigma * (2. * PI).sqrt()) * (-0.5 * ((x - self.mu) / self.sigma).powi(2)).exp()
+    }
+
+    fn ln_pdf(&self, x: Self::PDFType) -> f64 {
+        -0.5 * ((x - self.mu) / self.sigma).powi(2) - (self.sigma * (2. * PI).sqrt()).ln()
     }
 }
 

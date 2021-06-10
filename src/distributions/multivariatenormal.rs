@@ -74,10 +74,27 @@ impl<'a> Continuous for &'a MVN {
             .enumerate()
             .map(|(i, v)| v - self.mean[i])
             .collect();
+
         let numerator =
             (-0.5 * &x_minus_mu.t_dot(&self.inverse_covariance_matrix.dot(&x_minus_mu))).exp();
         let denominator = ((2. * PI).powi(x.len() as i32) * self.covariance_determinant).sqrt();
+
         numerator / denominator
+    }
+
+    fn ln_pdf(&self, x: Self::PDFType) -> f64 {
+        assert!(self.covariance_matrix.is_positive_definite());
+        assert_eq!(x.len(), self.mean.len());
+
+        let x_minus_mu: Vector = x
+            .iter()
+            .enumerate()
+            .map(|(i, v)| v - self.mean[i])
+            .collect();
+
+        -0.5 * (self.covariance_determinant.ln()
+            + &x_minus_mu.t_dot(&self.inverse_covariance_matrix.dot(&x_minus_mu))
+            + x.len() as f64 * (2. * PI).ln())
     }
 }
 
@@ -97,6 +114,7 @@ impl<'a> Variance for &'a MVN {
 
 #[cfg(test)]
 mod tests {
+    use super::Continuous;
     use super::*;
     use approx_eq::assert_approx_eq;
 
@@ -140,5 +158,21 @@ mod tests {
             0.6617157383972537,
             -0.8086304981120899,
         ]);
+        let x2 = Vector::new([
+            0.8416518707855118,
+            -1.1531229014478865,
+            1.7008635367302818,
+            -0.6559951109477243,
+        ]);
+        let x3 = Vector::new([
+            0.6545389674230797,
+            1.739584646246535,
+            -0.4158677788241667,
+            1.2753434275913207,
+        ]);
+
+        assert_approx_eq!(0.0008500500589160902, (&mvn).pdf(&x1));
+        assert_approx_eq!(0.0001612231592518467, (&mvn).pdf(&x2));
+        assert_approx_eq!(0.00025701999301292773, (&mvn).pdf(&x3));
     }
 }

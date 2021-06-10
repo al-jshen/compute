@@ -3,7 +3,6 @@
 use autodiff::F1;
 
 mod adam;
-// mod irls;
 mod lm;
 mod sgd;
 
@@ -28,6 +27,5 @@ pub enum GradFn {
 }
 
 pub use self::adam::*;
-// pub use self::irls::*;
 pub use self::lm::*;
 pub use self::sgd::*;

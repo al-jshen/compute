@@ -74,6 +74,9 @@ pub trait Continuous {
     /// Calculates the [probability density
     /// function](https://en.wikipedia.org/wiki/Probability_density_function) at some value `x`.
     fn pdf(&self, x: Self::PDFType) -> f64;
+    fn ln_pdf(&self, x: Self::PDFType) -> f64 {
+        (&self).pdf(x).ln()
+    }
 }
 
 /// Provides a trait for interacting with discrete probability distributions.

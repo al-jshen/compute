@@ -10,7 +10,7 @@ use super::{GradFn, Optimizer};
 ///
 /// # Example
 ///
-/// ```ignore
+/// ```rust
 /// use compute::optimize::{LM, Optimizer};
 /// use compute::prelude::F1;
 ///
@@ -39,6 +39,7 @@ use super::{GradFn, Optimizer};
 ///
 /// assert!((opt[0] - 0.).abs() < 0.01);
 /// assert!((opt[1] - 11.).abs() < 0.01);
+///
 /// ```
 
 #[derive(Debug, Clone, Copy)]

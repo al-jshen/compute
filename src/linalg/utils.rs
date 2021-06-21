@@ -420,6 +420,11 @@ pub fn matmul(
 
     #[cfg(not(feature = "blas"))]
     {
+        // if transposing both, use the identity A^T.B^T = (A.B)^T
+        if transpose_a && transpose_b {
+            return transpose(&matmul(a, b, rows_a, rows_b, false, false), cols_a);
+        }
+
         let m = if transpose_a { cols_a } else { rows_a };
         let l = if transpose_a { rows_a } else { cols_a };
         let n = if transpose_b { rows_b } else { cols_b };

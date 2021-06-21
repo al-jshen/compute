@@ -9,7 +9,7 @@ pub enum Broadcast {
     Invalid,
 }
 
-fn calc_broadcast_shape(m1: &Matrix, m2: &Matrix) -> [Broadcast; 2] {
+pub(crate) fn calc_broadcast_shape(m1: &Matrix, m2: &Matrix) -> [Broadcast; 2] {
     if m1.shape() == m2.shape() {
         [Broadcast::None, Broadcast::None]
     } else if m1.shape().contains(&1) {
@@ -55,7 +55,7 @@ fn calc_broadcast_shape(m1: &Matrix, m2: &Matrix) -> [Broadcast; 2] {
 
 macro_rules! broadcast_op {
     ($op: tt, $fnname: ident, $matmatfn: ident) => {
-        pub fn $fnname(m1: &Matrix, m2: &Matrix) -> Matrix {
+        pub(crate) fn $fnname(m1: &Matrix, m2: &Matrix) -> Matrix {
             let b = calc_broadcast_shape(m1, m2);
             match b {
                 [Broadcast::None, Broadcast::None] => {

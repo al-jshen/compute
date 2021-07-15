@@ -534,6 +534,24 @@ pub fn sum(x: &[f64]) -> f64 {
     }
 }
 
+/// Calculates the logarithm of the sum of the exponentials in a stable manner.
+/// Applies the [LogSumExp](https://en.wikipedia.org/wiki/LogSumExp) operator to the array.
+pub fn logsumexp(x: &[f64]) -> f64 {
+    let xmax = max(x);
+    x.iter().map(|v| (v - xmax).exp()).sum::<f64>().ln() + xmax
+    // let xmax = x.max();
+    // (x - xmax).exp().sum().ln() + xmax
+}
+
+/// Calculates the logarithm of the mean of the exponentials in a stable manner.
+/// Applies the LogMeanExp operator (like the LogSumExp, but mean instead of sum) to the array.
+pub fn logmeanexp(x: &[f64]) -> f64 {
+    let xmax = max(x);
+    (x.iter().map(|v| (v - xmax).exp()).sum::<f64>() / x.len() as f64).ln() + xmax
+    // let xmax = x.max();
+    // (x - xmax).exp().mean().ln() + xmax
+}
+
 /// Calculates the product of a vector.
 pub fn prod(x: &[f64]) -> f64 {
     x.iter().product()
@@ -559,6 +577,7 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64 {
         for i in 0..chunks {
             let idx = i * 8;
             assert!(n > idx + 7);
+
             s += x[idx] * y[idx]
                 + x[idx + 1] * y[idx + 1]
                 + x[idx + 2] * y[idx + 2]

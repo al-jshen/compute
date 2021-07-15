@@ -40,7 +40,7 @@ makefn_vops_binary!(vsub, -);
 makefn_vops_binary!(vmul, *);
 makefn_vops_binary!(vdiv, /);
 
-/// Vector-vector operations.
+/// Vector-vector mutating operations.
 macro_rules! makefn_vops_binary_mut {
     ($opname: ident, $op:tt) => {
         #[doc = "Implements a loop-unrolled version of the `"]

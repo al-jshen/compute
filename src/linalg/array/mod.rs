@@ -10,4 +10,4 @@ pub use broadcast::*;
 pub use dot::*;
 pub use matrix::*;
 pub use vec::*;
-pub use vops::*;
+pub(crate) use vops::*;

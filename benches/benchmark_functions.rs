@@ -6,7 +6,7 @@ use compute::{
 use criterion::{criterion_group, criterion_main, Criterion};
 
 pub fn criterion_mean(c: &mut Criterion) {
-    let v = Normal::new(0., 100.).sample_vec(1e6 as usize);
+    let v = Normal::new(0., 100.).sample_n(1e6 as usize);
     c.bench_function("logit 1e6", |b| b.iter(|| v.iter().map(|x| logistic(*x))));
     c.bench_function("logit 1e6", |b| b.iter(|| v.iter().map(|x| logit(*x))));
     c.bench_function("gamma 1e6", |b| b.iter(|| v.iter().map(|x| gamma(*x))));
@@ -15,7 +15,7 @@ pub fn criterion_mean(c: &mut Criterion) {
 
 pub fn criterion_binomial(c: &mut Criterion) {
     let n: Vec<u64> = DiscreteUniform::new(5, 100)
-        .sample_vec(1000)
+        .sample_n(1000)
         .iter()
         .map(|x| *x as u64)
         .collect();

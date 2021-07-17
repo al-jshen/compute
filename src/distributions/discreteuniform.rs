@@ -46,7 +46,7 @@ impl Distribution for DiscreteUniform {
     type Output = f64;
     /// Samples from the given discrete uniform distribution.
     fn sample(&self) -> f64 {
-        fastrand::i64(self.lower..=self.upper) as f64
+        alea::i64_in_range(self.lower, self.upper) as f64
     }
 }
 

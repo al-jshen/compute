@@ -46,7 +46,7 @@ impl Distribution for Pareto {
     type Output = f64;
     /// Samples from the given Pareto distribution using inverse transform sampling.
     fn sample(&self) -> f64 {
-        let u = fastrand::f64();
+        let u = alea::f64();
         self.minval / u.powf(1. / self.alpha)
     }
 }
@@ -59,7 +59,7 @@ impl Distribution1D for Pareto {
 }
 
 impl Continuous for Pareto {
-	type PDFType = f64;
+    type PDFType = f64;
     /// Calculates the probability density function for the given Pareto function at `x`.
     ///
     /// # Remarks

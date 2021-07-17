@@ -44,7 +44,7 @@ impl Distribution for Bernoulli {
             return 0.;
         }
 
-        if self.p > fastrand::f64() {
+        if self.p > alea::f64() {
             1.
         } else {
             0.

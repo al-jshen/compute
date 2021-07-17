@@ -51,7 +51,7 @@ impl Distribution for Normal {
     /// Sample from the given Normal distribution.
     fn sample(&self) -> f64 {
         loop {
-            let u = fastrand::u64(u64::MIN..u64::MAX);
+            let u = alea::u64();
 
             let i = (u & 0x7F) as usize;
             let j = ((u >> 8) & 0xFFFFFF) as u32;
@@ -64,11 +64,11 @@ impl Distribution for Normal {
 
             let (x, y) = if i < 127 {
                 let x = j as f64 * W[i];
-                let y = Y[i + 1] + (Y[i] - Y[i + 1]) * fastrand::f64();
+                let y = Y[i + 1] + (Y[i] - Y[i + 1]) * alea::f64();
                 (x, y)
             } else {
-                let x = R - (-fastrand::f64()).ln_1p() / R;
-                let y = (-R * (x - 0.5 * R)).exp() * fastrand::f64();
+                let x = R - (-alea::f64()).ln_1p() / R;
+                let y = (-R * (x - 0.5 * R)).exp() * alea::f64();
                 (x, y)
             };
 

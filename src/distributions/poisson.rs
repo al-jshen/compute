@@ -87,10 +87,10 @@ impl Variance for Poisson {
 fn sample_mult(lambda: f64) -> f64 {
     let limit: f64 = (-lambda).exp();
     let mut count = 0.;
-    let mut product: f64 = fastrand::f64();
+    let mut product: f64 = alea::f64();
     while product > limit {
         count += 1.;
-        product *= fastrand::f64();
+        product *= alea::f64();
     }
     count
 }
@@ -105,8 +105,8 @@ fn sample_ptrs(lam: f64) -> f64 {
     let vr = 0.9277 - 3.6224 / (b - 2.);
 
     loop {
-        let U = fastrand::f64() - 0.5;
-        let V = fastrand::f64();
+        let U = alea::f64() - 0.5;
+        let V = alea::f64();
         let us = 0.5 - U.abs();
         let k = f64::floor((2. * a / us + b) * U + lam + 0.43);
         if (us >= 0.07) && (V <= vr) {

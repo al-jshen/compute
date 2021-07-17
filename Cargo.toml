@@ -13,7 +13,7 @@ categories = ["science"]
 keywords = ["statistics", "compute", "data"]
 
 [dependencies]
-fastrand = "1"
+alea = "0.2"
 approx_eq = "0.1"
 autodiff = "0.3"
 impl_ops = "0.1"

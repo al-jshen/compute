@@ -73,7 +73,7 @@ pub fn binomial_inversion(n: u64, p: f64) -> u64 {
     let s = p / (1. - p);
     let a = ((n + 1) as f64) * s;
     let mut r = (1. - p).powi(n as i32);
-    let mut u = fastrand::f64();
+    let mut u = alea::f64();
     let mut x: u64 = 0;
     while u > r as f64 {
         u -= r;

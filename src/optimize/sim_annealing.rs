@@ -26,7 +26,7 @@ where
             (-(current_energy - prop_energy) / temp).exp()
         };
         println!("{}", move_prob);
-        if move_prob >= fastrand::f64() {
+        if move_prob >= alea::f64() {
             current_state = prop_state;
         }
     }

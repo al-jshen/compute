@@ -47,7 +47,7 @@ impl Distribution for Uniform {
     type Output = f64;
     /// Samples from the given Uniform distribution.
     fn sample(&self) -> f64 {
-        (self.upper - self.lower) * fastrand::f64() + self.lower
+        (self.upper - self.lower) * alea::f64() + self.lower
     }
 }
 
@@ -58,7 +58,7 @@ impl Distribution1D for Uniform {
 }
 
 impl Continuous for Uniform {
-	type PDFType = f64;
+    type PDFType = f64;
     /// Calculates the [probability density
     /// function](https://en.wikipedia.org/wiki/Probability_density_function) for the given Uniform
     /// distribution at `x`.

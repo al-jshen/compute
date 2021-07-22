@@ -6,7 +6,6 @@ pub mod linalg;
 pub mod optimize;
 pub mod predict;
 pub mod prelude;
-pub mod signal;
 pub mod statistics;
 pub mod timeseries;
 pub mod validation;

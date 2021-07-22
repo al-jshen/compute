@@ -52,5 +52,5 @@ fn t(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, t);
+criterion_group!(benches, generate, discrete_uniform, poisson, binomial, t);
 criterion_main!(benches);

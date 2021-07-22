@@ -50,7 +50,7 @@ impl Default for Gumbel {
 impl Distribution for Gumbel {
     type Output = f64;
     /// Samples from the given Gumbel distribution.
-    fn sample(&self) -> f64 {
+    fn sample(&self) -> Self::Output {
         self.mu - self.beta * (-self.uniform_gen.sample().ln()).ln()
     }
 }
@@ -64,15 +64,16 @@ impl Distribution1D for Gumbel {
 impl Continuous for Gumbel {
     type PDFType = f64;
     /// Calculates the probability density function for the given Gumbel function at `x`.
-    fn pdf(&self, x: f64) -> f64 {
+    fn pdf(&self, x: f64) -> Self::PDFType {
         let z = (x - self.mu) / self.beta;
+        1. / self.beta * (-(z + (-z).exp())).exp()
     }
 }
 
 impl Mean for Gumbel {
     type MeanType = f64;
     /// Calculates the mean of the given Gumbel distribution.
-    fn mean(&self) -> f64 {
+    fn mean(&self) -> Self::MeanType {
         self.mu + self.beta * EULER_MASCHERONI
     }
 }
@@ -80,7 +81,7 @@ impl Mean for Gumbel {
 impl Variance for Gumbel {
     type VarianceType = f64;
     /// Calculates the variance of the given Gumbel distribution.
-    fn var(&self) -> f64 {
+    fn var(&self) -> Self::VarianceType {
         PISQ6 * self.beta.powi(2)
     }
 }

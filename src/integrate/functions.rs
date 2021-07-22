@@ -1,6 +1,7 @@
 //! Algorithms for computing integrals of 1D functions.
 
 #![allow(unused_variables)]
+use crate::linalg::Matrix;
 use approx_eq::rel_diff;
 
 /// Integrate a function `f` from `a` to `b` using the [trapezoid rule](https://en.wikipedia.org/wiki/Trapezoidal_rule) with `n` partitions.
@@ -18,30 +19,33 @@ pub fn romberg<F>(f: F, a: f64, b: f64, eps: f64, nmax: usize) -> f64
 where
     F: Fn(f64) -> f64,
 {
-    let mut r: Vec<Vec<f64>> = vec![vec![0.; nmax]; nmax];
+    // let mut r: Vec<Vec<f64>> = vec![vec![0.; nmax]; nmax];
+    let mut r = Matrix::zeros(nmax, nmax);
 
-    r[0][0] = (b - a) / 2. * (f(a) + f(b));
+    r[[0, 0]] = (b - a) / 2. * (f(a) + f(b));
 
     for n in 1..nmax {
         let hn = (b - a) / 2_f64.powi(n as i32);
         let s: f64 = (1..=2_u32.pow((n - 1) as u32))
             .map(|k| f(a + (2 * k - 1) as f64 * hn))
             .sum();
-        r[n][0] = 0.5 * r[n - 1][0] + hn * s;
+        r[[n, 0]] = 0.5 * r[n - 1][0] + hn * s;
     }
 
     for n in 1..nmax {
         for m in 1..=n {
-            r[n][m] = r[n][m - 1] + (r[n][m - 1] - r[n - 1][m - 1]) / (4_f64.powi(m as i32) - 1.);
+            r[[n, m]] =
+                r[[n, m - 1]] + (r[[n, m - 1]] - r[[n - 1, m - 1]]) / (4_f64.powi(m as i32) - 1.);
         }
         if n > 1
-            && (rel_diff(r[n][n], r[n - 1][n - 1]) < eps || (r[n][n] - r[n - 1][n - 1]).abs() < eps)
+            && (rel_diff(r[[n, n]], r[[n - 1, n - 1]]) < eps
+                || (r[[n, n]] - r[[n - 1, n - 1]]).abs() < eps)
         {
-            return r[n][n];
+            return r[[n, n]];
         }
     }
 
-    r[nmax - 1][nmax - 1]
+    r[[nmax - 1, nmax - 1]]
 }
 
 ///// Given upper and lower limits of integration, this function calculates the nodes `x` and weights

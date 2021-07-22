@@ -8,7 +8,11 @@ macro_rules! makefn_vops_binary {
             assert_eq!(v1.len(), v2.len());
             let n = v1.len();
 
-            let mut v = vec![0.; n];
+            // let mut v = vec![0.; n];
+            let mut v = Vec::with_capacity(n);
+            unsafe {
+                v.set_len(n);
+            }
             let chunks = (n - (n % 8)) / 8;
 
             // unroll
@@ -88,7 +92,12 @@ macro_rules! makefn_vops_unary {
         pub(crate) fn $opname(v1: &[f64]) -> Vec<f64> {
             let n = v1.len();
 
-            let mut v = vec![0.; n];
+            // let mut v = vec![0.; n];
+            let mut v = Vec::with_capacity(n);
+            unsafe {
+                v.set_len(n);
+            }
+
             let chunks = (n - (n % 8)) / 8;
 
             // unroll
@@ -146,7 +155,7 @@ makefn_vops_unary!(vround, round);
 makefn_vops_unary!(vsignum, signum);
 
 /// Single vector operations with a single argument.
-macro_rules! makefn_vops_unary_with_arg {
+macro_rules! makefn_vops_unary_with_arg_i {
     ($opname: ident, $op:ident, $argtype: ident) => {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
@@ -154,7 +163,79 @@ macro_rules! makefn_vops_unary_with_arg {
         pub(crate) fn $opname(v1: &[f64], arg: $argtype) -> Vec<f64> {
             let n = v1.len();
 
-            let mut v = vec![0.; n];
+            // let mut v = vec![0.; n];
+            let mut v = Vec::with_capacity(n);
+            unsafe {
+                v.set_len(n);
+            }
+            let chunks = (n - (n % 8)) / 8;
+
+            if arg == 2 {
+                // unroll
+                for i in 0..chunks {
+                    let idx = i * 8;
+                    assert!(n > idx + 7);
+                    v[idx] = v1[idx] * v1[idx];
+                    v[idx + 1] = v1[idx + 1] * v1[idx + 1];
+                    v[idx + 2] = v1[idx + 2] * v1[idx + 2];
+                    v[idx + 3] = v1[idx + 3] * v1[idx + 3];
+                    v[idx + 4] = v1[idx + 4] * v1[idx + 4];
+                    v[idx + 5] = v1[idx + 5] * v1[idx + 5];
+                    v[idx + 6] = v1[idx + 6] * v1[idx + 6];
+                    v[idx + 7] = v1[idx + 7] * v1[idx + 7];
+                }
+            } else if arg == 3 {
+                for i in 0..chunks {
+                    let idx = i * 8;
+                    assert!(n > idx + 7);
+                    v[idx] = v1[idx] * v1[idx] * v1[idx];
+                    v[idx + 1] = v1[idx + 1] * v1[idx + 1] * v1[idx + 1];
+                    v[idx + 2] = v1[idx + 2] * v1[idx + 2] * v1[idx + 2];
+                    v[idx + 3] = v1[idx + 3] * v1[idx + 3] * v1[idx + 3];
+                    v[idx + 4] = v1[idx + 4] * v1[idx + 4] * v1[idx + 4];
+                    v[idx + 5] = v1[idx + 5] * v1[idx + 5] * v1[idx + 5];
+                    v[idx + 6] = v1[idx + 6] * v1[idx + 6] * v1[idx + 6];
+                    v[idx + 7] = v1[idx + 7] * v1[idx + 7] * v1[idx + 7];
+                }
+            } else {
+                // unroll
+                for i in 0..chunks {
+                    let idx = i * 8;
+                    assert!(n > idx + 7);
+                    v[idx] = v1[idx].$op(arg);
+                    v[idx + 1] = v1[idx + 1].$op(arg);
+                    v[idx + 2] = v1[idx + 2].$op(arg);
+                    v[idx + 3] = v1[idx + 3].$op(arg);
+                    v[idx + 4] = v1[idx + 4].$op(arg);
+                    v[idx + 5] = v1[idx + 5].$op(arg);
+                    v[idx + 6] = v1[idx + 6].$op(arg);
+                    v[idx + 7] = v1[idx + 7].$op(arg);
+                }
+            }
+
+            // do the rest
+            for j in (chunks * 8)..n {
+                v[j] = v1[j].$op(arg);
+            }
+
+            v
+        }
+    };
+}
+
+macro_rules! makefn_vops_unary_with_arg_f {
+    ($opname: ident, $op:ident, $argtype: ident) => {
+        #[doc = "Implements a loop-unrolled version of the `"]
+        #[doc = stringify!($op)]
+        #[doc = "` function to be applied element-wise to a vector."]
+        pub(crate) fn $opname(v1: &[f64], arg: $argtype) -> Vec<f64> {
+            let n = v1.len();
+
+            // let mut v = vec![0.; n];
+            let mut v = Vec::with_capacity(n);
+            unsafe {
+                v.set_len(n);
+            }
             let chunks = (n - (n % 8)) / 8;
 
             // unroll
@@ -181,8 +262,8 @@ macro_rules! makefn_vops_unary_with_arg {
     };
 }
 
-makefn_vops_unary_with_arg!(vpowi, powi, i32);
-makefn_vops_unary_with_arg!(vpowf, powf, f64);
+makefn_vops_unary_with_arg_i!(vpowi, powi, i32);
+makefn_vops_unary_with_arg_f!(vpowf, powf, f64);
 
 /// Vector-scalar operations.
 macro_rules! makefn_vsops {
@@ -194,7 +275,11 @@ macro_rules! makefn_vsops {
         pub(crate) fn $opname(v1: &[f64], scalar: f64) -> Vec<f64> {
             let n = v1.len();
 
-            let mut v = vec![0.; n];
+            // let mut v = vec![0.; n];
+            let mut v = Vec::with_capacity(n);
+            unsafe {
+                v.set_len(n);
+            }
             let chunks = (n - (n % 8)) / 8;
 
             // unroll
@@ -275,7 +360,11 @@ macro_rules! makefn_svops {
         pub(crate) fn $opname(scalar: f64, v1: &[f64]) -> Vec<f64> {
             let n = v1.len();
 
-            let mut v = vec![0.; n];
+            // let mut v = vec![0.; n];
+            let mut v = Vec::with_capacity(n);
+            unsafe {
+                v.set_len(n);
+            }
             let chunks = (n - (n % 8)) / 8;
 
             // unroll

@@ -7,7 +7,11 @@ use crate::linalg::{dot, is_square};
 pub fn forward_substitution(l: &[f64], b: &[f64]) -> Vec<f64> {
     let n = is_square(l).unwrap();
     assert_eq!(b.len(), n);
-    let mut x = vec![0.; n];
+    // let mut x = vec![0.; n];
+    let mut x = Vec::with_capacity(n);
+    unsafe {
+        x.set_len(n);
+    }
     for i in 0..n {
         x[i] = (b[i] - dot(&l[(i * n)..(i * n + i)], &x[..i])) / l[i * n + i];
     }
@@ -19,7 +23,10 @@ pub fn forward_substitution(l: &[f64], b: &[f64]) -> Vec<f64> {
 pub fn backward_substitution(u: &[f64], b: &[f64]) -> Vec<f64> {
     let n = is_square(u).unwrap();
     assert_eq!(b.len(), n);
-    let mut x = vec![0.; n];
+    let mut x = Vec::with_capacity(n);
+    unsafe {
+        x.set_len(n);
+    }
     for i in (0..n).rev() {
         x[i] = (b[i] - dot(&u[(i * n + i + 1)..(i * n + n)], &x[i + 1..])) / u[i * n + i];
     }

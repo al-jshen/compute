@@ -35,6 +35,14 @@ impl Vector {
         }
     }
 
+    pub fn empty(n: usize) -> Self {
+        let mut v = Vec::with_capacity(n);
+        unsafe {
+            v.set_len(n);
+        }
+        Self { v }
+    }
+
     pub fn zeros(n: usize) -> Self {
         Self { v: vec![0.; n] }
     }

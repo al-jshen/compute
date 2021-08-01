@@ -8,11 +8,10 @@ use autodiff::F1;
 /// details about the algorithm.
 #[derive(Debug, Clone, Copy)]
 pub struct Adam {
-    stepsize: f64,    // step size
-    beta1: f64,       // exponential decay rate for first moment
-    beta2: f64,       // exponential decay rate for second moment
-    epsilon: f64,     // small number to prevent division by zero
-    batchsize: usize, // batch size to use for gradients
+    stepsize: f64, // step size
+    beta1: f64,    // exponential decay rate for first moment
+    beta2: f64,    // exponential decay rate for second moment
+    epsilon: f64,  // small number to prevent division by zero
 }
 
 impl Adam {
@@ -21,13 +20,12 @@ impl Adam {
     /// beta1: exponential decay rate for first moment
     /// beta2: exponential decay rate for second moment
     /// epsilon: small number to prevent division by zero
-    pub fn new(stepsize: f64, beta1: f64, beta2: f64, epsilon: f64, batchsize: usize) -> Self {
+    pub fn new(stepsize: f64, beta1: f64, beta2: f64, epsilon: f64) -> Self {
         Adam {
             stepsize,
             beta1,
             beta2,
             epsilon,
-            batchsize,
         }
     }
 
@@ -45,7 +43,6 @@ impl Default for Adam {
             beta1: 0.9,
             beta2: 0.999,
             epsilon: 1e-8,
-            batchsize: 16,
         }
     }
 }

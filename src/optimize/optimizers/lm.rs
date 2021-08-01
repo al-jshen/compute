@@ -14,20 +14,25 @@ use super::Optimizer;
 ///
 /// ```rust
 /// use compute::optimize::{LM, Optimizer};
-/// use compute::prelude::F1;
+/// use compute::prelude::{F1, Vector};
 ///
 /// // pairs of points (x_i, y_i)
-/// let x = vec![1., 2., 3., 4., 5., 6., 7., 8., 9.];
-/// let y = vec![11., 22., 33., 44., 55., 66., 77., 88., 99.];
+/// let x = Vector::from([1., 2., 3., 4., 5., 6., 7., 8., 9.]);
+/// let y = Vector::from([11., 22., 33., 44., 55., 66., 77., 88., 99.]);
 ///
 /// // define a function to optimize:
-/// // function must have signature Fn(&[F1]) -> F1,
-/// // with f(x, params).
-/// //
-/// // so the first argument in the (function input) list must be x
-/// // and the rest of the arguments in the list are parameters to optimize
-/// // the output of the function is f(x, params)
-/// let eq_line = |x: &[F1]| x[0] * x[2] + x[1]; // x * b + a
+/// // function must have signature Fn(&[F1], &[&[f64]]) -> F1,
+/// // i.e., f(parameters, data) where parameters are parameters to optimize
+/// // and data are data to be used in the function
+///
+/// // here we define a function m * x + b, with x: f64
+/// fn equation_line(params: &[F1], data: &[&[f64]]) -> F1 {
+///     assert!(data.len() == 1);
+///     assert!(data[0].len() == 1);
+///     assert!(params.len() == 2);
+///
+///     return data[0][0] * params[0] + params[1];
+/// }
 ///
 /// // create an instance of the optimizer
 /// let lm = LM::default();
@@ -36,12 +41,17 @@ use super::Optimizer;
 /// let params = [1., 2.];
 ///
 /// // run for max of 50 steps and find the best parameters
-/// let opt = lm.optimize(&x, &y, eq_line, &params, 50);
-/// println!("{:?}", opt);
+/// // and the associated estimated covariance matrix.
+/// // the standard deviations of the parameters can be obtained from the
+/// // square root of the diagonal elements of the covariance matrix.
+/// let (popt, pcov) = lm.optimize(equation_line, &params, &[&x, &y], 50);
+/// let perr = pcov.diag().sqrt();
 ///
-/// assert!((opt[0] - 0.).abs() < 0.01);
-/// assert!((opt[1] - 11.).abs() < 0.01);
+/// println!("{}", popt);
+/// println!("{}", pcov);
 ///
+/// assert!((popt[0] - 11.).abs() < 0.01);
+/// assert!((popt[1] - 0.).abs() < 0.01);
 /// ```
 
 #[derive(Debug, Clone, Copy)]

@@ -27,14 +27,14 @@ macro_rules! makefn_vops_binary {
                     let b_pd = _mm256_loadu_pd(j.as_ptr());
                     let c_pd = $unsafeop(a_pd, b_pd);
                     _mm256_storeu_pd(
-                        (v.as_mut_ptr() as *mut f64).offset((idx * 8) as isize),
+                        (v.as_mut_ptr() as *mut f64).add((idx * 8)),
                         c_pd,
                     );
                     let a_pd = _mm256_loadu_pd(i.as_ptr().offset(4));
                     let b_pd = _mm256_loadu_pd(j.as_ptr().offset(4));
                     let c_pd = $unsafeop(a_pd, b_pd);
                     _mm256_storeu_pd(
-                        (v.as_mut_ptr() as *mut f64).offset((idx * 8 + 4) as isize),
+                        (v.as_mut_ptr() as *mut f64).add((idx * 8 + 4)),
                         c_pd,
                     );
                 });

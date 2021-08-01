@@ -61,7 +61,7 @@ pub fn shuffle_two(arr1: &[f64], arr2: &[f64]) -> (Vec<f64>, Vec<f64>) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::distributions::{Distribution, Normal};
+    use crate::distributions::Normal;
     use crate::statistics::{max, mean, min, std};
     use approx_eq::assert_approx_eq;
 

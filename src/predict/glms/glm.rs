@@ -1,3 +1,4 @@
+use crate::linalg::Vector;
 use crate::prelude::{
     diag, invert_matrix, is_design, is_matrix, matmul, mean, solve, sum, svmul, vadd, vdiv, vmul,
     vsqrt, vsub,
@@ -288,7 +289,7 @@ impl GLM {
     }
 
     /// Use the fitted model to make predictions on some new data.
-    pub fn predict(&self, x: &[f64]) -> Result<Vec<f64>, &str> {
+    pub fn predict(&self, x: &[f64]) -> Result<Vector, &str> {
         let coef = self.coef()?;
         let n = is_matrix(x, self.p.unwrap()).unwrap();
         assert!(is_design(x, n), "x is not a valid design matrix");

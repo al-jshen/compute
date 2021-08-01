@@ -1,8 +1,5 @@
 use super::DiffFn;
-use crate::linalg::{
-    diag, dot, inf_norm, matmul, norm, solve, svmul, vadd, xtx, Dot, Matrix, Solve, Vector,
-};
-use crate::statistics::max;
+use crate::linalg::{Dot, Matrix, Solve, Vector};
 use autodiff::F1;
 
 use super::Optimizer;
@@ -91,7 +88,6 @@ impl Optimizer for LM {
         F: DiffFn,
     {
         let mut params = parameters.iter().map(|&x| F1::var(x)).collect::<Vec<_>>();
-        let params_vec = Vector::from(parameters);
         let param_len = params.len();
         assert!(data.len() == 2, "data must contain two slices (x and y)");
         let (xs, ys) = (data[0], data[1]);
@@ -171,20 +167,16 @@ impl Optimizer for LM {
                 // good step, accept the new parameters and update all variables
                 params.copy_from_slice(&new_params);
 
-                let new_grad: Vec<Vector> = xs
+                let new_grad = xs
                     .iter()
-                    .zip(ys)
-                    .map(|(&x, y)| {
+                    .map(|&x| {
                         let (_, grad) = f.eval(&new_params, &[&[x]]);
                         grad
                     })
-                    .collect();
+                    .flatten()
+                    .collect::<Vector>();
 
-                jacobian = Matrix::new(
-                    new_grad.into_iter().flatten().collect::<Vector>(),
-                    n as i32,
-                    param_len as i32,
-                );
+                jacobian = Matrix::new(new_grad, n as i32, param_len as i32);
 
                 jtj = jacobian.t_dot(&jacobian);
                 jtr = jacobian.t_dot(&new_res).to_matrix();

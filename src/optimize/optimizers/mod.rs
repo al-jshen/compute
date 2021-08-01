@@ -1,8 +1,6 @@
 //! Various optimization algorithms (eg. Adam, SGD, Levenberg-Marquardt).
 
 use super::DiffFn;
-use crate::linalg::Vector;
-use autodiff::F1;
 
 mod adam;
 // mod lbfgs;

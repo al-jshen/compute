@@ -6,6 +6,35 @@ use autodiff::F1;
 
 /// Implements the Adam optimizer. See [Kingma and Ba 2014](https://arxiv.org/abs/1412.6980) for
 /// details about the algorithm.
+///
+/// # Example
+///
+/// ```rust
+/// // optimize the [Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function)
+/// // with fixed parameters `a = 1` and `b = 100`.
+/// // the minimum value is at (1, 1), which is what we will try to recover
+///
+/// use compute::optimize::{Optimizer, Adam};
+/// use compute::prelude::{F1, Float};
+///
+/// fn rosenbrock(p: &[F1], d: &[&[f64]]) -> F1 {
+///     assert_eq!(p.len(), 2);
+///     assert_eq!(d.len(), 1);
+///     assert_eq!(d[0].len(), 2);
+///
+///     let (x, y) = (p[0], p[1]);
+///     let (a, b) = (d[0][0], d[0][1]);
+///
+///     (a - x).powi(2) + b * (y - x.powi(2)).powi(2)
+/// }
+///
+/// let init = [0., 0.];
+/// let mut optim = Adam::default();
+/// optim.set_stepsize(5e-3);
+/// let popt = optim.optimize(rosenbrock, &init, &[&[1., 100.]], 5000);
+/// assert!((popt[0] - 1.).abs() < 1e-3);
+/// assert!((popt[1] - 1.).abs() < 1e-3);
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct Adam {
     stepsize: f64, // step size

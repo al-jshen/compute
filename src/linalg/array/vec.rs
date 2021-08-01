@@ -152,6 +152,12 @@ impl FromIterator<f64> for Vector {
     }
 }
 
+impl Extend<f64> for Vector {
+    fn extend<T: IntoIterator<Item = f64>>(&mut self, iter: T) {
+        self.v.extend(iter);
+    }
+}
+
 impl Deref for Vector {
     type Target = Vec<f64>;
 

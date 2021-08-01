@@ -40,6 +40,11 @@ impl Matrix {
         Self::new(Vector::ones(nrows * ncols), nrows as i32, ncols as i32)
     }
 
+    /// Make an empty matrix with a given size
+    pub fn empty_size(nrows: usize, ncols: usize) -> Self {
+        Self::new(Vector::empty_n(nrows * ncols), nrows as i32, ncols as i32)
+    }
+
     /// Make an identity matrix with size `dims`.
     pub fn eye(dims: usize) -> Self {
         let mut m = Self::zeros(dims, dims);

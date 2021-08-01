@@ -1,5 +1,5 @@
 use crate::linalg::*;
-use crate::optimize::{optimizers::GradFn, optimizers::Optimizer};
+use crate::optimize::optimizers::Optimizer;
 use autodiff::{Float, F1};
 
 /// Implements a [polynomial regressor](https://en.wikipedia.org/wiki/Polynomial_regression).
@@ -19,25 +19,6 @@ impl PolynomialRegressor {
         }
     }
 
-    /// Fit the polynomial regressor to some observed data `y` given some explanatory variables `x`
-    /// using the given optimizer. See [Optimizer](/compute/optimize/trait.Optimizer.html).
-    pub fn fit_with_optimizer<O>(
-        &mut self,
-        x: &[f64],
-        y: &[f64],
-        optimizer: O,
-        maxsteps: usize,
-    ) -> &mut Self
-    where
-        O: Optimizer,
-    {
-        let resid_fn = match optimizer.grad_fn_type() {
-            GradFn::Residual => |x: &[F1]| (x[0] - (x[1] * x[3] + x[2])).powi(2),
-            GradFn::Predictive => |x: &[F1]| (x[0] * x[2] + x[1]),
-        };
-        self.coef = optimizer.optimize(x, y, resid_fn, &self.coef, maxsteps);
-        self
-    }
     /// Update the coefficients of the polynomial regressor.
     fn update(&mut self, params: &[f64]) -> &mut Self {
         self.coef = params.to_owned();
@@ -77,17 +58,6 @@ impl PolynomialRegressor {
         self.update(&coeffs)
     }
 }
-
-// fn predict(coeffs: &[f64], x: &[f64]) -> Vec<f64> {
-//     x.iter()
-//         .map(|val| {
-//             (0..coeffs.len())
-//                 .into_iter()
-//                 .map(|ith| coeffs[ith] * val.powi(ith as i32))
-//                 .sum::<f64>()
-//         })
-//         .collect::<Vec<_>>()
-// }
 
 #[cfg(test)]
 mod tests {

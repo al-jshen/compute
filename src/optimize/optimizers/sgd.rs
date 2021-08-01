@@ -1,18 +1,15 @@
-use super::GradFn;
+use super::DiffFn;
 use super::Optimizer;
-use crate::optimize::gradient::gradient;
-use crate::validation::shuffle_two;
+use crate::linalg::Vector;
 use approx_eq::rel_diff;
 use autodiff::F1;
 
 /// Implements the Stochastic Gradient Descent optimizer with (Nesterov) momentum.
 #[derive(Debug, Clone, Copy)]
 pub struct SGD {
-    stepsize: f64,    // step size
-    momentum: f64,    // momentum
-    nesterov: bool,   // whether to use Nesterov accelerated gradient
-    batchsize: usize, // batch size to use for gradients
-    gradfn: GradFn,   // gradient function type
+    stepsize: f64,  // step size
+    momentum: f64,  // momentum
+    nesterov: bool, // whether to use Nesterov accelerated gradient
 }
 
 impl SGD {
@@ -21,15 +18,16 @@ impl SGD {
     /// stepsize: step size
     /// momentum: momentum factor
     /// nesterov: whether to use Nesterov momentum
-    /// batchsize: size of each mini-batch
-    pub fn new(stepsize: f64, momentum: f64, nesterov: bool, batchsize: usize) -> Self {
+    pub fn new(stepsize: f64, momentum: f64, nesterov: bool) -> Self {
         Self {
             stepsize,
             momentum,
             nesterov,
-            batchsize,
-            gradfn: GradFn::Residual,
         }
+    }
+    pub fn set_stepsize(&mut self, stepsize: f64) {
+        assert!(stepsize > 0., "stepsize must be positive");
+        self.stepsize = stepsize;
     }
 }
 
@@ -39,30 +37,26 @@ impl Default for SGD {
             stepsize: 1e-5,
             momentum: 0.9,
             nesterov: true,
-            batchsize: 16,
-            gradfn: GradFn::Residual,
         }
     }
 }
 
 impl Optimizer for SGD {
+    type Output = Vector;
     /// Run the optimization algorithm, given a vector of parameters to optimize and a function which calculates the residuals.
     fn optimize<F>(
         &self,
-        xs: &[f64],
-        ys: &[f64],
         f: F,
         parameters: &[f64],
+        data: &[&[f64]],
         maxsteps: usize,
-    ) -> Vec<f64>
+    ) -> Self::Output
     where
-        F: Fn(&[F1]) -> F1 + Copy,
+        F: DiffFn,
     {
-        assert_eq!(xs.len(), ys.len());
-        let n = xs.len();
         let param_len = parameters.len();
-        let mut params = parameters.to_vec();
-        let mut update_vec = vec![0.; param_len];
+        let mut params = parameters.iter().map(|&x| F1::var(x)).collect::<Vec<_>>();
+        let mut update_vec = Vector::zeros(param_len);
 
         let mut t: usize = 0;
         let mut converged = false;
@@ -71,44 +65,33 @@ impl Optimizer for SGD {
             t += 1;
             let prev_params = params.clone();
 
-            let (xshuf, yshuf) = shuffle_two(xs, ys);
+            let (_, grad) = if self.nesterov {
+                let future_params = params
+                    .iter()
+                    .zip(&update_vec)
+                    .map(|(p, u)| *p - self.momentum * u)
+                    .collect::<Vec<_>>();
+                f.eval(&future_params, data)
+            } else {
+                f.eval(&params, data)
+            };
 
-            for batch in (0..n).collect::<Vec<_>>().chunks(self.batchsize) {
-                let mut grad = vec![0.; param_len];
-                for i in 0..batch.len() {
-                    let g_i = if self.nesterov {
-                        let future_params = (0..param_len)
-                            .map(|j| params[j] - self.momentum * update_vec[j])
-                            .collect::<Vec<_>>();
-                        gradient(f, &[yshuf[i], xshuf[i]], &future_params)
-                    } else {
-                        gradient(f, &[yshuf[i], xshuf[i]], &params)
-                    };
-                    for k in 0..param_len {
-                        grad[k] += g_i[k];
-                    }
-                }
-                for p in 0..param_len {
-                    update_vec[p] = self.momentum * update_vec[p] + self.stepsize * grad[p];
-                    params[p] -= update_vec[p]
-                }
-                // println!("{:?}", params);
+            for p in 0..param_len {
+                update_vec[p] = self.momentum * update_vec[p] + self.stepsize * grad[p];
+                params[p] -= update_vec[p]
             }
+            // println!("{:?}", params);
 
             if crate::statistics::max(
                 &(0..param_len)
-                    .map(|i| rel_diff(params[i], prev_params[i]))
+                    .map(|i| rel_diff(params[i].x, prev_params[i].x))
                     .collect::<Vec<_>>(),
             ) < f64::EPSILON
             {
                 converged = true;
             }
         }
-        params
-    }
-
-    fn grad_fn_type(&self) -> GradFn {
-        self.gradfn
+        Vector::from(params.iter().map(|x| x.x).collect::<Vec<_>>())
     }
 }
 
@@ -142,13 +125,19 @@ mod tests {
             -235., -237.5, -240., -242.5,
         ];
 
-        let fres = |x: &[F1]| (x[0] - (x[1] * x[3] + x[2])).powi(2);
+        fn fn_resid(params: &[F1], data: &[&[f64]]) -> F1 {
+            let (x, y) = (data[0], data[1]);
+            x.iter()
+                .zip(y)
+                .map(|(&xv, &yv)| ((params[0] + xv * params[1]) - yv).powi(2))
+                .sum()
+        }
 
-        let optim = SGD::new(1e-5, 0.9, true, 4);
-        let est_params = optim.optimize(&x, &y, fres, &[1., 1.], 1000);
+        let optim = SGD::new(2e-6, 0.9, true);
+        let est_params = optim.optimize(fn_resid, &[1., 1.], &[&x, &y], 10000);
 
         for i in 0..2 {
-            assert_approx_eq!(est_params[i], coeffs[i], 0.015);
+            assert_approx_eq!(est_params[i], coeffs[i], 0.01);
         }
     }
 }

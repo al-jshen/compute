@@ -13,7 +13,7 @@ To use the latest stable version in your Rust program, add the following to your
 ```rust
 // Cargo.toml
 [dependencies]
-compute = "0.1"
+compute = "0.2"
 ```
 
 For the latest version, add the following to your `Cargo.toml` file:
@@ -27,7 +27,7 @@ There are many functions which rely on linear algebra methods. You can either us
 
 ```rust
 // example with BLAS only
-compute = {version = "0.1", features = ["blas"]}
+compute = {version = "0.2", features = ["blas"]}
 ```
 
 ## Examples
@@ -50,6 +50,20 @@ println!("{}", p.sample()); // sample single value
 println!("{}", p.pmf(2));  // probability mass function
 ```
 
+### Linear algebra
+
+```rust
+use compute::linalg::*;
+
+let x = arange(1., 4., 0.1).ln_1p().reshape(-1, 3);  // automatic shape detection
+let y = Vector::from([1., 2., 3.]);  // vector struct
+let pd = x.t().dot(x);               // transpose and matrix multiply
+let jitter = Matrix::eye(3) * 1e-6;  // elementwise operations
+let c = (pd + jitter).cholesky();    // matrix decompositions
+let s = c.solve(&y.exp());           // linear solvers
+println!("{}", s);
+```
+
 ### Polynomial Regression and GLMs
 
 ```rust
@@ -69,6 +83,37 @@ glm.set_penalty(1.);                                   // L2 penalty
 glm.fit(&xd, &y, 25).unwrap();                         // fit with scoring algorithm (MLE), cap iterations at 25
 println!("{:?}", glm.coef().unwrap());                          // get estimated coefficients
 println!("{:?}", glm.coef().coef_covariance_matrix().unwrap()); // get covariance matrix for estimated coefficients
+```
+
+### Optimization
+
+```rust
+use compute::prelude::*;
+
+// define a function using a consistent optimization interface
+fn rosenbrock(p: &[F1], d: &[&[f64]]) -> F1 {
+    assert_eq!(p.len(), 2);
+    assert_eq!(d.len(), 1);
+    assert_eq!(d[0].len(), 2);
+
+    let (x, y) = (p[0], p[1]);
+    let (a, b) = (d[0][0], d[0][1]);
+
+    (a - x).powi(2) + b * (y - x.powi(2)).powi(2)
+}
+
+// set up and run optimizer
+
+let init = [0., 0.];
+
+let mut optim = Adam::default();
+optim.set_stepsize(5e-3);
+let popt = optim.optimize(rosenbrock, &init, &[&[1., 100.]], 5000);
+println!("{}", popt);
+
+let optim = SGD::new(2e-4, 0.9, true); // SGD with Nesterov momentum
+let popt = optim.optimize(rosenbrock, &init, &[&[1., 100.]], 5000); // same function call
+println!("{}", popt);
 ```
 
 ### Time series models
@@ -93,24 +138,6 @@ let f = |x: f64| x.sqrt() + x.sin() - (3. * x).cos() - x.powi(2);
 println!("{}", trapz(f, 0., 1., 100));        // trapezoid integration with 100 segments
 println!("{}", quad5(f, 0., 1.));             // gaussian quadrature integration
 println!("{}", romberg(f, 0., 1., 1e-8, 10)); // romberg integration with tolerance and max steps
-```
-
-### Linear algebra
-
-```rust
-use compute::linalg::*;
-
-let x = vec![
-  2., 3.,
-  4., 5.,
-];
-let y = vec![
-5., 2.,
-6., 1.,
-];
-println!("{:?}", lu(&x));                            // calculate LU decomposition for x
-println!("{:?}", solve_sys(&x, &y));                 // solve 2x2 system of equations (each column of y is a system)
-println!("{:?}", matmul(&x, &y, 2, 2, false, true)); // matrix multiply, transposing y
 ```
 
 ### Data summary functions

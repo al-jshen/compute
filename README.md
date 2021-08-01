@@ -64,25 +64,30 @@ let s = c.solve(&y.exp());           // linear solvers
 println!("{}", s);
 ```
 
-### Polynomial Regression and GLMs
+### Linear models
 
 ```rust
 use compute::prelude::*;
 
-let x = vec![1., 2., 3., 4.];
-let xd = design(&x, x.len()); // make a design matrix
-let y = vec![3., 5., 7., 9.];
+let x = vec![
+    0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00, 3.25, 3.50, 4.00,
+    4.25, 4.50, 4.75, 5.00, 5.50,
+];
+let y = vec![
+    0., 0., 0., 0., 0., 0., 1., 0., 1., 0., 1., 0., 1., 0., 1., 1., 1., 1., 1., 1.,
+];
+let n = y.len();
+let xd = design(&x, n);
 
-let mut clf = PolynomialRegressor::new(2); // degree 2 (i.e. quadratic)
-clf.fit(&x, &y);                           // linear least squares fitting
-println!("{:?}", clf.coef);                // get model coefficients
+let mut glm = GLM::new(ExponentialFamily::Bernoulli); // logistic regression
+glm.set_penalty(1.);                                  // L2 penalty
+glm.fit(&xd, &y, 25).unwrap();                        // with fit scoring algorithm (MLE)
+let coef = glm.coef().unwrap();                       // get estimated parameters
+let errors = glm.coef_standard_error().unwrap();      // get errors on parameters
 
-let y_bin = vec![0., 0., 1., 1.];
-let mut glm = GLM::new(ExponentialFamily::Bernoulli);  // logistic regression
-glm.set_penalty(1.);                                   // L2 penalty
-glm.fit(&xd, &y, 25).unwrap();                         // fit with scoring algorithm (MLE), cap iterations at 25
-println!("{:?}", glm.coef().unwrap());                          // get estimated coefficients
-println!("{:?}", glm.coef().coef_covariance_matrix().unwrap()); // get covariance matrix for estimated coefficients
+println!("{:?}", coef);
+println!("{:?}", errors);
+
 ```
 
 ### Optimization

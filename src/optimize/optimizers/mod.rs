@@ -6,16 +6,23 @@ use autodiff::F1;
 
 mod adam;
 // mod lbfgs;
-// mod lm;
+mod lm;
 mod sgd;
 
 pub trait Optimizer {
-    fn optimize<F>(&self, f: F, parameters: &[f64], data: &[&[f64]], maxsteps: usize) -> Vector
+    type Output;
+    fn optimize<F>(
+        &self,
+        f: F,
+        parameters: &[f64],
+        data: &[&[f64]],
+        maxsteps: usize,
+    ) -> Self::Output
     where
         F: DiffFn;
 }
 
 pub use self::adam::*;
 // pub use self::lbfgs::*;
-// pub use self::lm::*;
+pub use self::lm::*;
 pub use self::sgd::*;

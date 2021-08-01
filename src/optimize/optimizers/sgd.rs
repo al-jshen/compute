@@ -43,8 +43,15 @@ impl Default for SGD {
 }
 
 impl Optimizer for SGD {
+    type Output = Vector;
     /// Run the optimization algorithm, given a vector of parameters to optimize and a function which calculates the residuals.
-    fn optimize<F>(&self, f: F, parameters: &[f64], data: &[&[f64]], maxsteps: usize) -> Vector
+    fn optimize<F>(
+        &self,
+        f: F,
+        parameters: &[f64],
+        data: &[&[f64]],
+        maxsteps: usize,
+    ) -> Self::Output
     where
         F: DiffFn,
     {
@@ -59,7 +66,7 @@ impl Optimizer for SGD {
             t += 1;
             let prev_params = params.clone();
 
-            let (val, grad) = if self.nesterov {
+            let (_, grad) = if self.nesterov {
                 let future_params = params
                     .iter()
                     .zip(&update_vec)

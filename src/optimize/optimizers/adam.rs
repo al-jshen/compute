@@ -48,8 +48,15 @@ impl Default for Adam {
 }
 
 impl Optimizer for Adam {
+    type Output = Vector;
     /// Run the optimization algorithm, given a vector of parameters to optimize and a function which calculates the residuals.
-    fn optimize<F>(&self, f: F, parameters: &[f64], data: &[&[f64]], maxsteps: usize) -> Vector
+    fn optimize<F>(
+        &self,
+        f: F,
+        parameters: &[f64],
+        data: &[&[f64]],
+        maxsteps: usize,
+    ) -> Self::Output
     where
         F: DiffFn,
     {
@@ -65,7 +72,7 @@ impl Optimizer for Adam {
             t += 1;
             let prev_params = params.clone();
 
-            let (val, grad) = f.eval(&params, data);
+            let (_, grad) = f.eval(&params, data);
 
             // println!("{:?}", grad);
 

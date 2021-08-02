@@ -15,7 +15,7 @@ keywords = ["statistics", "compute", "data"]
 [dependencies]
 alea = "0.2"
 approx_eq = "0.1"
-autodiff = "0.3"
+reverse = { version = "0.1", features = ["diff"] }
 impl_ops = "0.1"
 
 [features]

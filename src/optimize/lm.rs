@@ -1,11 +1,6 @@
-use super::DiffFn;
-use crate::linalg::{
-    diag, dot, inf_norm, matmul, norm, solve, svmul, vadd, xtx, Dot, Matrix, Solve, Vector,
-};
-use crate::statistics::max;
-use autodiff::F1;
-
 use super::Optimizer;
+use crate::linalg::{Dot, Matrix, Solve, Vector};
+use reverse::*;
 
 /// Implements a [Levenberg-Marquardt optimizer](https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm)
 /// for solving (non-linear) least squares problems.
@@ -13,20 +8,21 @@ use super::Optimizer;
 /// # Example
 ///
 /// ```rust
-/// use compute::optimize::{LM, Optimizer};
-/// use compute::prelude::{F1, Vector};
+/// use compute::prelude::{LM, Optimizer, Vector};
+/// use reverse::*;
 ///
 /// // pairs of points (x_i, y_i)
 /// let x = Vector::from([1., 2., 3., 4., 5., 6., 7., 8., 9.]);
 /// let y = Vector::from([11., 22., 33., 44., 55., 66., 77., 88., 99.]);
 ///
 /// // define a function to optimize:
-/// // function must have signature Fn(&[F1], &[&[f64]]) -> F1,
-/// // i.e., f(parameters, data) where parameters are parameters to optimize
+/// // f(parameters, data) where parameters are parameters to optimize
 /// // and data are data to be used in the function
 ///
 /// // here we define a function m * x + b, with x: f64
-/// fn equation_line(params: &[F1], data: &[&[f64]]) -> F1 {
+/// // we also use the #[differentiable] macro on the function
+/// #[differentiable]
+/// fn equation_line(params: &[f64], data: &[&[f64]]) -> f64 {
 ///     assert!(data.len() == 1);
 ///     assert!(data[0].len() == 1);
 ///     assert!(params.len() == 2);
@@ -54,11 +50,12 @@ use super::Optimizer;
 /// assert!((popt[1] - 0.).abs() < 0.01);
 /// ```
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct LM {
     pub eps1: f64, // tolerance for norm of residuals
     pub eps2: f64, // tolerance for change in parameters
     pub tau: f64,  // initial scaling for damping factor
+    graph: Graph,  // graph for computing gradients
 }
 
 impl Default for LM {
@@ -67,6 +64,7 @@ impl Default for LM {
             eps1: 1e-6,
             eps2: 1e-6,
             tau: 1e-2,
+            graph: Graph::new(),
         }
     }
 }
@@ -74,7 +72,12 @@ impl Default for LM {
 impl LM {
     /// Create a new Levenberg-Marquardt optimizer.
     pub fn new(eps1: f64, eps2: f64, tau: f64) -> Self {
-        LM { eps1, eps2, tau }
+        LM {
+            eps1,
+            eps2,
+            tau,
+            graph: Graph::new(),
+        }
     }
 }
 
@@ -88,10 +91,14 @@ impl Optimizer for LM {
         maxsteps: usize,
     ) -> (Vector, Matrix)
     where
-        F: DiffFn,
+        F: for<'a> Fn(&[Var<'a>], &[&[f64]]) -> Var<'a>,
     {
-        let mut params = parameters.iter().map(|&x| F1::var(x)).collect::<Vec<_>>();
-        let params_vec = Vector::from(parameters);
+        self.graph.clear();
+        let mut params = parameters
+            .into_iter()
+            .copied()
+            .map(|x| self.graph.add_var(x))
+            .collect::<Vec<_>>();
         let param_len = params.len();
         assert!(data.len() == 2, "data must contain two slices (x and y)");
         let (xs, ys) = (data[0], data[1]);
@@ -101,9 +108,9 @@ impl Optimizer for LM {
         let (mut res, grad): (Vector, Vec<Vector>) = xs
             .iter()
             .zip(ys)
-            .map(|(&x, y)| {
-                let (val, grad) = f.eval(&params, &[&[x]]);
-                (y - val, grad)
+            .map(|(&x, &y)| {
+                let val = f(&params, &[&[x]]);
+                ((y - val).val(), Vector::from(val.grad().wrt(&params)))
             })
             .unzip();
 
@@ -137,7 +144,8 @@ impl Optimizer for LM {
             let delta = damped.solve(jtr.data());
 
             stop = delta.norm()
-                <= self.eps2 * (params.iter().map(|x| x.x).collect::<Vector>().norm() + self.eps2);
+                <= self.eps2
+                    * (params.iter().map(|x| x.val()).collect::<Vector>().norm() + self.eps2);
             if stop {
                 break;
             }
@@ -147,14 +155,14 @@ impl Optimizer for LM {
             let new_params = params
                 .iter()
                 .zip(&delta)
-                .map(|(x, d)| *x + F1::cst(*d))
+                .map(|(&x, &d)| x + d)
                 .collect::<Vec<_>>();
 
             let new_res: Vector = xs
                 .iter()
                 .zip(ys)
                 .map(|(&x, y)| {
-                    let (val, _) = f.eval(&new_params, &[&[x]]);
+                    let val = f(&new_params, &[&[x]]).val();
                     y - val
                 })
                 .collect();
@@ -173,10 +181,9 @@ impl Optimizer for LM {
 
                 let new_grad: Vec<Vector> = xs
                     .iter()
-                    .zip(ys)
-                    .map(|(&x, y)| {
-                        let (_, grad) = f.eval(&new_params, &[&[x]]);
-                        grad
+                    .map(|&x| {
+                        let res = f(&new_params, &[&[x]]);
+                        Vector::from(res.grad().wrt(&new_params))
                     })
                     .collect();
 
@@ -201,10 +208,17 @@ impl Optimizer for LM {
                 mu *= nu;
                 nu *= 2.;
             }
+
+            // clear gradients and intermediate variables
+            self.graph.clear();
+            params = params
+                .iter()
+                .map(|x| self.graph.add_var(x.val()))
+                .collect::<Vec<_>>();
         }
 
         (
-            Vector::new(params.iter().map(|x| x.x).collect::<Vec<_>>()),
+            Vector::new(params.iter().map(|x| x.val()).collect::<Vec<_>>()),
             res.t_dot(&res) / (n - param_len) as f64 * jtj.inv(),
         )
     }

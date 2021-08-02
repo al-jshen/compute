@@ -1,15 +1,45 @@
-use super::DiffFn;
 use super::Optimizer;
 use crate::linalg::Vector;
 use approx_eq::rel_diff;
-use autodiff::F1;
+use reverse::*;
 
 /// Implements the Stochastic Gradient Descent optimizer with (Nesterov) momentum.
-#[derive(Debug, Clone, Copy)]
+///
+/// # Examples
+///
+/// ```rust
+/// // optimize the [Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function)
+/// // with fixed parameters `a = 1` and `b = 100`.
+/// // the minimum value is at (1, 1), which is what we will try to recover
+///
+/// use compute::optimize::*;
+/// use approx_eq::assert_approx_eq;
+///
+/// #[differentiable]
+/// fn rosenbrock(p: &[f64], d: &[&[f64]]) -> f64 {
+///     assert_eq!(p.len(), 2);
+///     assert_eq!(d.len(), 1);
+///     assert_eq!(d[0].len(), 2);
+///
+///     let (x, y) = (p[0], p[1]);
+///     let (a, b) = (d[0][0], d[0][1]);
+///
+///     (a - x).powi(2) + b * (y - x.powi(2)).powi(2)
+/// }
+///
+/// let init = [0., 0.];
+/// let optim = SGD::new(1e-3, 0.9, true);
+/// let popt = optim.optimize(rosenbrock, &init, &[&[1., 100.]], 10000);
+///
+/// assert_approx_eq!(popt[0], 1.);
+/// assert_approx_eq!(popt[1], 1.);
+/// ```
+#[derive(Debug, Clone)]
 pub struct SGD {
     stepsize: f64,  // step size
     momentum: f64,  // momentum
     nesterov: bool, // whether to use Nesterov accelerated gradient
+    graph: Graph,   // graph for computing gradients
 }
 
 impl SGD {
@@ -23,6 +53,7 @@ impl SGD {
             stepsize,
             momentum,
             nesterov,
+            graph: Graph::new(),
         }
     }
     pub fn set_stepsize(&mut self, stepsize: f64) {
@@ -37,6 +68,7 @@ impl Default for SGD {
             stepsize: 1e-5,
             momentum: 0.9,
             nesterov: true,
+            graph: Graph::new(),
         }
     }
 }
@@ -52,10 +84,14 @@ impl Optimizer for SGD {
         maxsteps: usize,
     ) -> Self::Output
     where
-        F: DiffFn,
+        F: for<'a> Fn(&[Var<'a>], &[&[f64]]) -> Var<'a>,
     {
+        self.graph.clear();
         let param_len = parameters.len();
-        let mut params = parameters.iter().map(|&x| F1::var(x)).collect::<Vec<_>>();
+        let mut params = parameters
+            .iter()
+            .map(|&x| self.graph.add_var(x))
+            .collect::<Vec<_>>();
         let mut update_vec = Vector::zeros(param_len);
 
         let mut t: usize = 0;
@@ -65,33 +101,42 @@ impl Optimizer for SGD {
             t += 1;
             let prev_params = params.clone();
 
-            let (_, grad) = if self.nesterov {
+            let grad = if self.nesterov {
                 let future_params = params
                     .iter()
                     .zip(&update_vec)
                     .map(|(p, u)| *p - self.momentum * u)
                     .collect::<Vec<_>>();
-                f.eval(&future_params, data)
+                let res = f(&future_params, data);
+                eprintln!("t = {:?}, res = {}", t, res.val());
+                res.grad().wrt(&future_params)
             } else {
-                f.eval(&params, data)
+                f(&params, data).grad().wrt(&params)
             };
 
             for p in 0..param_len {
                 update_vec[p] = self.momentum * update_vec[p] + self.stepsize * grad[p];
-                params[p] -= update_vec[p]
+                params[p] = params[p] - update_vec[p]
             }
             // println!("{:?}", params);
 
             if crate::statistics::max(
                 &(0..param_len)
-                    .map(|i| rel_diff(params[i].x, prev_params[i].x))
+                    .map(|i| rel_diff(params[i].val(), prev_params[i].val()))
                     .collect::<Vec<_>>(),
             ) < f64::EPSILON
             {
                 converged = true;
             }
+
+            // clear gradients and intermediate variables
+            self.graph.clear();
+            params = params
+                .iter()
+                .map(|&x| self.graph.add_var(x.val()))
+                .collect::<Vec<_>>();
         }
-        Vector::from(params.iter().map(|x| x.x).collect::<Vec<_>>())
+        Vector::from(params.iter().map(|x| x.val()).collect::<Vec<_>>())
     }
 }
 
@@ -99,7 +144,6 @@ impl Optimizer for SGD {
 mod tests {
     use super::*;
     use approx_eq::assert_approx_eq;
-    use autodiff::Float;
 
     #[test]
     fn test_sgd_slr() {
@@ -125,7 +169,8 @@ mod tests {
             -235., -237.5, -240., -242.5,
         ];
 
-        fn fn_resid(params: &[F1], data: &[&[f64]]) -> F1 {
+        #[differentiable]
+        fn fn_resid(params: &[f64], data: &[&[f64]]) -> f64 {
             let (x, y) = (data[0], data[1]);
             x.iter()
                 .zip(y)

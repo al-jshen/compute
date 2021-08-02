@@ -93,10 +93,11 @@ println!("{:?}", errors);
 ### Optimization
 
 ```rust
-use compute::prelude::*;
+use compute::optimize::*;
 
 // define a function using a consistent optimization interface
-fn rosenbrock(p: &[F1], d: &[&[f64]]) -> F1 {
+#[differentiable]
+fn rosenbrock(p: &[f64], d: &[&[f64]]) -> f64 {
     assert_eq!(p.len(), 2);
     assert_eq!(d.len(), 1);
     assert_eq!(d[0].len(), 2);
@@ -108,17 +109,11 @@ fn rosenbrock(p: &[F1], d: &[&[f64]]) -> F1 {
 }
 
 // set up and run optimizer
-
 let init = [0., 0.];
+let optim = Adam::with_stepsize(5e-4);
+let popt = optim.optimize(rosenbrock, &init, &[&[1., 100.]], 10000);
 
-let mut optim = Adam::default();
-optim.set_stepsize(5e-3);
-let popt = optim.optimize(rosenbrock, &init, &[&[1., 100.]], 5000);
-println!("{}", popt);
-
-let optim = SGD::new(2e-4, 0.9, true); // SGD with Nesterov momentum
-let popt = optim.optimize(rosenbrock, &init, &[&[1., 100.]], 5000); // same function call
-println!("{}", popt);
+println!("{:?}", popt);
 ```
 
 ### Time series models

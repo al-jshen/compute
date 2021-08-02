@@ -1,7 +1,26 @@
-//! A module for optimization.
+//! Various optimization algorithms (eg. Adam, SGD, Levenberg-Marquardt).
 
-pub mod gradient;
-pub mod optimizers;
+mod adam;
+// mod lbfgs;
+mod lm;
+mod sgd;
 
-pub use self::gradient::*;
-pub use self::optimizers::*;
+pub trait Optimizer {
+    type Output;
+    fn optimize<F>(
+        &self,
+        f: F,
+        parameters: &[f64],
+        data: &[&[f64]],
+        maxsteps: usize,
+    ) -> Self::Output
+    where
+        F: for<'a> Fn(&[Var<'a>], &[&[f64]]) -> Var<'a>;
+}
+
+pub use self::adam::*;
+// pub use self::lbfgs::*;
+pub use self::lm::*;
+pub use self::sgd::*;
+// re-export reverse
+pub use reverse::*;

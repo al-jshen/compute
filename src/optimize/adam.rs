@@ -1,23 +1,23 @@
 use super::Optimizer;
-use crate::optimize::gradient::DiffFn;
 use crate::prelude::Vector;
 use approx_eq::rel_diff;
-use autodiff::F1;
+use reverse::*;
 
 /// Implements the Adam optimizer. See [Kingma and Ba 2014](https://arxiv.org/abs/1412.6980) for
 /// details about the algorithm.
 ///
-/// # Example
+/// # Examples
 ///
 /// ```rust
 /// // optimize the [Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function)
 /// // with fixed parameters `a = 1` and `b = 100`.
 /// // the minimum value is at (1, 1), which is what we will try to recover
 ///
-/// use compute::optimize::{Optimizer, Adam};
-/// use compute::prelude::{F1, Float};
+/// use compute::optimize::*;
+/// use approx_eq::assert_approx_eq;
 ///
-/// fn rosenbrock(p: &[F1], d: &[&[f64]]) -> F1 {
+/// #[differentiable]
+/// fn rosenbrock(p: &[f64], d: &[&[f64]]) -> f64 {
 ///     assert_eq!(p.len(), 2);
 ///     assert_eq!(d.len(), 1);
 ///     assert_eq!(d[0].len(), 2);
@@ -29,18 +29,19 @@ use autodiff::F1;
 /// }
 ///
 /// let init = [0., 0.];
-/// let mut optim = Adam::default();
-/// optim.set_stepsize(5e-3);
-/// let popt = optim.optimize(rosenbrock, &init, &[&[1., 100.]], 5000);
-/// assert!((popt[0] - 1.).abs() < 1e-3);
-/// assert!((popt[1] - 1.).abs() < 1e-3);
+/// let optim = Adam::with_stepsize(5e-4);
+/// let popt = optim.optimize(rosenbrock, &init, &[&[1., 100.]], 10000);
+///
+/// assert_approx_eq!(popt[0], 1.);
+/// assert_approx_eq!(popt[1], 1.);
 /// ```
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Adam {
     stepsize: f64, // step size
     beta1: f64,    // exponential decay rate for first moment
     beta2: f64,    // exponential decay rate for second moment
     epsilon: f64,  // small number to prevent division by zero
+    graph: Graph,  // computational graph for gradients
 }
 
 impl Adam {
@@ -50,29 +51,30 @@ impl Adam {
     /// beta2: exponential decay rate for second moment
     /// epsilon: small number to prevent division by zero
     pub fn new(stepsize: f64, beta1: f64, beta2: f64, epsilon: f64) -> Self {
+        assert!(beta1 > 0., "beta1 must be positive");
+        assert!(beta2 > 0., "beta2 must be positive");
         Adam {
             stepsize,
             beta1,
             beta2,
             epsilon,
+            graph: Graph::new(),
         }
     }
-
     pub fn set_stepsize(&mut self, stepsize: f64) {
-        assert!(stepsize > 0., "stepsize must be positive");
         self.stepsize = stepsize;
+    }
+    pub fn with_stepsize(stepsize: f64) -> Self {
+        let mut adam = Self::default();
+        adam.set_stepsize(stepsize);
+        adam
     }
 }
 
 impl Default for Adam {
     /// Uses the defaults recommended by Kingma and Ba 2014
     fn default() -> Self {
-        Adam {
-            stepsize: 0.001,
-            beta1: 0.9,
-            beta2: 0.999,
-            epsilon: 1e-8,
-        }
+        Self::new(0.001, 0.9, 0.999, 1e-8)
     }
 }
 
@@ -87,9 +89,13 @@ impl Optimizer for Adam {
         maxsteps: usize,
     ) -> Self::Output
     where
-        F: DiffFn,
+        F: for<'a> Fn(&[Var<'a>], &[&[f64]]) -> Var<'a>,
     {
-        let mut params = parameters.iter().map(|&x| F1::var(x)).collect::<Vec<_>>();
+        self.graph.clear();
+        let mut params = parameters
+            .iter()
+            .map(|&x| self.graph.add_var(x))
+            .collect::<Vec<_>>();
         let param_len = params.len();
 
         let mut t: usize = 0;
@@ -99,33 +105,41 @@ impl Optimizer for Adam {
 
         while t < maxsteps && !converged {
             t += 1;
+
             let prev_params = params.clone();
 
-            let (_, grad) = f.eval(&params, data);
+            let res = f(&params, data);
 
-            // println!("{:?}", grad);
+            eprintln!("t = {:?}, res = {}", t, res.val());
+
+            let grad = res.grad().wrt(&params);
 
             for p in 0..param_len {
                 m[p] = self.beta1 * m[p] + (1. - self.beta1) * grad[p]; // biased first moment estimate
                 v[p] = self.beta2 * v[p] + (1. - self.beta2) * grad[p] * grad[p]; // biased second moment estimate
                 let mhat = m[p] / (1. - self.beta1.powi(t as i32)); // bias-corrected first moment estimate
                 let vhat = v[p] / (1. - self.beta2.powi(t as i32)); // bias-corrected second moment estimate
-                params[p] -= self.stepsize * mhat / (vhat.sqrt() + self.epsilon);
+                params[p] = params[p] - self.stepsize * mhat / (vhat.sqrt() + self.epsilon);
             }
-
-            // println!("{:?}", params);
 
             if crate::statistics::max(
                 &(0..param_len)
-                    .map(|i| rel_diff(params[i].x, prev_params[i].x))
+                    .map(|i| rel_diff(params[i].val(), prev_params[i].val()))
                     .collect::<Vec<_>>(),
             ) < f64::EPSILON
             {
                 converged = true;
             }
+
+            // clear gradients and intermediate variables
+            self.graph.clear();
+            params = params
+                .iter()
+                .map(|&x| self.graph.add_var(x.val()))
+                .collect::<Vec<_>>();
         }
 
-        Vector::new(params.iter().map(|x| x.x).collect::<Vec<_>>())
+        Vector::new(params.iter().map(|x| x.val()).collect::<Vec<_>>())
     }
 }
 
@@ -133,7 +147,6 @@ impl Optimizer for Adam {
 mod tests {
     use super::*;
     use approx_eq::assert_approx_eq;
-    use autodiff::Float;
 
     #[test]
     fn test_adam_slr() {
@@ -159,7 +172,8 @@ mod tests {
             -235., -237.5, -240., -242.5,
         ];
 
-        fn fn_resid(params: &[F1], data: &[&[f64]]) -> F1 {
+        #[reverse::differentiable]
+        fn fn_resid(params: &[f64], data: &[&[f64]]) -> f64 {
             let (x, y) = (data[0], data[1]);
             x.iter()
                 .zip(y)
@@ -174,5 +188,32 @@ mod tests {
         for i in 0..2 {
             assert_approx_eq!(est_params[i], coeffs[i], 0.01);
         }
+    }
+
+    #[test]
+    // #[ignore]
+    fn test_adam_rosenbrock() {
+        // optimize the [Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function)
+        // with fixed parameters `a = 1` and `b = 100`.
+        // the minimum value is at (1, 1), which is what we will try to recover
+
+        #[differentiable]
+        fn rosenbrock(p: &[f64], d: &[&[f64]]) -> f64 {
+            assert_eq!(p.len(), 2);
+            assert_eq!(d.len(), 1);
+            assert_eq!(d[0].len(), 2);
+
+            let (x, y) = (p[0], p[1]);
+            let (a, b) = (d[0][0], d[0][1]);
+
+            (a - x).powi(2) + b * (y - x.powi(2)).powi(2)
+        }
+
+        let init = [0., 0.];
+        let optim = Adam::with_stepsize(5e-4);
+        let popt = optim.optimize(rosenbrock, &init, &[&[1., 100.]], 10000);
+
+        assert_approx_eq!(popt[0], 1.);
+        assert_approx_eq!(popt[1], 1.);
     }
 }

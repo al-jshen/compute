@@ -99,6 +99,7 @@ impl Optimizer for LM {
             .copied()
             .map(|x| self.graph.add_var(x))
             .collect::<Vec<_>>();
+
         let param_len = params.len();
         assert!(data.len() == 2, "data must contain two slices (x and y)");
         let (xs, ys) = (data[0], data[1]);
@@ -179,19 +180,16 @@ impl Optimizer for LM {
                 // good step, accept the new parameters and update all variables
                 params.copy_from_slice(&new_params);
 
-                let new_grad: Vec<Vector> = xs
+                let new_grad = xs
                     .iter()
                     .map(|&x| {
                         let res = f(&new_params, &[&[x]]);
                         Vector::from(res.grad().wrt(&new_params))
                     })
-                    .collect();
+                    .flatten()
+                    .collect::<Vector>();
 
-                jacobian = Matrix::new(
-                    new_grad.into_iter().flatten().collect::<Vector>(),
-                    n as i32,
-                    param_len as i32,
-                );
+                jacobian = Matrix::new(new_grad, n as i32, param_len as i32);
 
                 jtj = jacobian.t_dot(&jacobian);
                 jtr = jacobian.t_dot(&new_res).to_matrix();

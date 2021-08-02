@@ -54,15 +54,15 @@ impl RQKernel {
     }
 }
 
-/// Periodic kernel.
-struct PeriodicKernel {
-    /// output variance parameter
-    var: f64,
-    /// period parameter
-    p: f64,
-    /// length scale parameter
-    length_scale: f64,
-}
+// /// Periodic kernel.
+// struct PeriodicKernel {
+//     /// output variance parameter
+//     var: f64,
+//     /// period parameter
+//     p: f64,
+//     /// length scale parameter
+//     length_scale: f64,
+// }
 
 macro_rules! impl_kernel_f64_for_rbf {
     ($t1: ty) => {

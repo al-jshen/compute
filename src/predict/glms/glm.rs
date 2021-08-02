@@ -53,6 +53,12 @@ impl GLM {
         self
     }
 
+    /// Set the model coefficients.
+    pub fn set_coef(&mut self, coefs: &[f64]) -> &mut Self {
+        self.coef = Some(coefs.to_vec());
+        self
+    }
+
     /// Set the sample weights (usually measurement errors).
     pub fn set_weights(&mut self, weights: &[f64]) -> &mut Self {
         self.weights = Some(weights.to_vec());

@@ -96,8 +96,7 @@ println!("{:?}", errors);
 use compute::optimize::*;
 
 // define a function using a consistent optimization interface
-#[differentiable]
-fn rosenbrock(p: &[f64], d: &[&[f64]]) -> f64 {
+fn rosenbrock<'a>(p: &[Var<'a>], d: &[&[f64]]) -> Var<'a> {
     assert_eq!(p.len(), 2);
     assert_eq!(d.len(), 1);
     assert_eq!(d[0].len(), 2);

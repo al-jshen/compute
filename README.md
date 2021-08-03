@@ -4,7 +4,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/compute.svg?style=for-the-badge&color=fc8d62&logo=rust)](https://crates.io/crates/compute)
 [![Documentation](https://img.shields.io/badge/docs.rs-compute-5E81AC?style=for-the-badge&labelColor=555555&logoColor=white)](https://docs.rs/compute)
-![License](https://img.shields.io/crates/l/compute?label=License&style=for-the-badge)
+![License](https://img.shields.io/crates/l/compute?label=License&style=for-the-badge&color=62a69b)
 
 A crate for scientific and statistical computing. For a list of what this crate provides, see [`FEATURES.md`](FEATURES.md). For more detailed explanations, see the [documentation](https://docs.rs/compute).
 

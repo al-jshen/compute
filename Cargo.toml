@@ -1,6 +1,6 @@
 [package]
 name = "compute"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Jeff Shen <jshen2014@hotmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -15,7 +15,7 @@ keywords = ["statistics", "compute", "data"]
 [dependencies]
 alea = "0.2"
 approx_eq = "0.1"
-reverse = { version = "0.1", features = ["diff"] }
+reverse = "0.2"
 impl_ops = "0.1"
 
 [features]

@@ -16,8 +16,7 @@ use reverse::*;
 /// use compute::optimize::*;
 /// use approx_eq::assert_approx_eq;
 ///
-/// #[differentiable]
-/// fn rosenbrock(p: &[f64], d: &[&[f64]]) -> f64 {
+/// fn rosenbrock<'a>(p: &[Var<'a>], d: &[&[f64]]) -> Var<'a> {
 ///     assert_eq!(p.len(), 2);
 ///     assert_eq!(d.len(), 1);
 ///     assert_eq!(d[0].len(), 2);
@@ -41,7 +40,7 @@ pub struct Adam {
     beta1: f64,    // exponential decay rate for first moment
     beta2: f64,    // exponential decay rate for second moment
     epsilon: f64,  // small number to prevent division by zero
-    graph: Graph,  // computational graph for gradients
+    tape: Tape,    // tape for gradients
 }
 
 impl Adam {
@@ -58,7 +57,7 @@ impl Adam {
             beta1,
             beta2,
             epsilon,
-            graph: Graph::new(),
+            tape: Tape::new(),
         }
     }
     pub fn set_stepsize(&mut self, stepsize: f64) {
@@ -91,10 +90,10 @@ impl Optimizer for Adam {
     where
         F: for<'a> Fn(&[Var<'a>], &[&[f64]]) -> Var<'a>,
     {
-        self.graph.clear();
+        self.tape.clear();
         let mut params = parameters
             .iter()
-            .map(|&x| self.graph.add_var(x))
+            .map(|&x| self.tape.add_var(x))
             .collect::<Vec<_>>();
         let param_len = params.len();
 
@@ -132,10 +131,10 @@ impl Optimizer for Adam {
             }
 
             // clear gradients and intermediate variables
-            self.graph.clear();
+            self.tape.clear();
             params = params
                 .iter()
-                .map(|&x| self.graph.add_var(x.val()))
+                .map(|&x| self.tape.add_var(x.val()))
                 .collect::<Vec<_>>();
         }
 
@@ -172,8 +171,7 @@ mod tests {
             -235., -237.5, -240., -242.5,
         ];
 
-        #[reverse::differentiable]
-        fn fn_resid(params: &[f64], data: &[&[f64]]) -> f64 {
+        fn fn_resid<'a>(params: &[Var<'a>], data: &[&[f64]]) -> Var<'a> {
             let (x, y) = (data[0], data[1]);
             x.iter()
                 .zip(y)
@@ -197,8 +195,7 @@ mod tests {
         // with fixed parameters `a = 1` and `b = 100`.
         // the minimum value is at (1, 1), which is what we will try to recover
 
-        #[differentiable]
-        fn rosenbrock(p: &[f64], d: &[&[f64]]) -> f64 {
+        fn rosenbrock<'a>(p: &[Var<'a>], d: &[&[f64]]) -> Var<'a> {
             assert_eq!(p.len(), 2);
             assert_eq!(d.len(), 1);
             assert_eq!(d[0].len(), 2);

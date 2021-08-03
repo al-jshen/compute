@@ -15,8 +15,7 @@ use reverse::*;
 /// use compute::optimize::*;
 /// use approx_eq::assert_approx_eq;
 ///
-/// #[differentiable]
-/// fn rosenbrock(p: &[f64], d: &[&[f64]]) -> f64 {
+/// fn rosenbrock<'a>(p: &[Var<'a>], d: &[&[f64]]) -> Var<'a> {
 ///     assert_eq!(p.len(), 2);
 ///     assert_eq!(d.len(), 1);
 ///     assert_eq!(d[0].len(), 2);
@@ -39,7 +38,7 @@ pub struct SGD {
     stepsize: f64,  // step size
     momentum: f64,  // momentum
     nesterov: bool, // whether to use Nesterov accelerated gradient
-    graph: Graph,   // graph for computing gradients
+    tape: Tape,     // tape for computing gradients
 }
 
 impl SGD {
@@ -53,7 +52,7 @@ impl SGD {
             stepsize,
             momentum,
             nesterov,
-            graph: Graph::new(),
+            tape: Tape::new(),
         }
     }
     pub fn set_stepsize(&mut self, stepsize: f64) {
@@ -68,7 +67,7 @@ impl Default for SGD {
             stepsize: 1e-5,
             momentum: 0.9,
             nesterov: true,
-            graph: Graph::new(),
+            tape: Tape::new(),
         }
     }
 }
@@ -86,11 +85,11 @@ impl Optimizer for SGD {
     where
         F: for<'a> Fn(&[Var<'a>], &[&[f64]]) -> Var<'a>,
     {
-        self.graph.clear();
+        self.tape.clear();
         let param_len = parameters.len();
         let mut params = parameters
             .iter()
-            .map(|&x| self.graph.add_var(x))
+            .map(|&x| self.tape.add_var(x))
             .collect::<Vec<_>>();
         let mut update_vec = Vector::zeros(param_len);
 
@@ -130,10 +129,10 @@ impl Optimizer for SGD {
             }
 
             // clear gradients and intermediate variables
-            self.graph.clear();
+            self.tape.clear();
             params = params
                 .iter()
-                .map(|&x| self.graph.add_var(x.val()))
+                .map(|&x| self.tape.add_var(x.val()))
                 .collect::<Vec<_>>();
         }
         Vector::from(params.iter().map(|x| x.val()).collect::<Vec<_>>())
@@ -169,8 +168,7 @@ mod tests {
             -235., -237.5, -240., -242.5,
         ];
 
-        #[differentiable]
-        fn fn_resid(params: &[f64], data: &[&[f64]]) -> f64 {
+        fn fn_resid<'a>(params: &[Var<'a>], data: &[&[f64]]) -> Var<'a> {
             let (x, y) = (data[0], data[1]);
             x.iter()
                 .zip(y)

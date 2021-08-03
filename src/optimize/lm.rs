@@ -19,10 +19,7 @@ use reverse::*;
 /// // f(parameters, data) where parameters are parameters to optimize
 /// // and data are data to be used in the function
 ///
-/// // here we define a function m * x + b, with x: f64
-/// // we also use the #[differentiable] macro on the function
-/// #[differentiable]
-/// fn equation_line(params: &[f64], data: &[&[f64]]) -> f64 {
+/// fn equation_line<'a>(params: &[Var<'a>], data: &[&[f64]]) -> Var<'a> {
 ///     assert!(data.len() == 1);
 ///     assert!(data[0].len() == 1);
 ///     assert!(params.len() == 2);
@@ -55,7 +52,7 @@ pub struct LM {
     pub eps1: f64, // tolerance for norm of residuals
     pub eps2: f64, // tolerance for change in parameters
     pub tau: f64,  // initial scaling for damping factor
-    graph: Graph,  // graph for computing gradients
+    tape: Tape,    // tape for computing gradients
 }
 
 impl Default for LM {
@@ -64,7 +61,7 @@ impl Default for LM {
             eps1: 1e-6,
             eps2: 1e-6,
             tau: 1e-2,
-            graph: Graph::new(),
+            tape: Tape::new(),
         }
     }
 }
@@ -76,7 +73,7 @@ impl LM {
             eps1,
             eps2,
             tau,
-            graph: Graph::new(),
+            tape: Tape::new(),
         }
     }
 }
@@ -93,11 +90,11 @@ impl Optimizer for LM {
     where
         F: for<'a> Fn(&[Var<'a>], &[&[f64]]) -> Var<'a>,
     {
-        self.graph.clear();
+        self.tape.clear();
         let mut params = parameters
             .into_iter()
             .copied()
-            .map(|x| self.graph.add_var(x))
+            .map(|x| self.tape.add_var(x))
             .collect::<Vec<_>>();
 
         let param_len = params.len();
@@ -208,10 +205,10 @@ impl Optimizer for LM {
             }
 
             // clear gradients and intermediate variables
-            self.graph.clear();
+            self.tape.clear();
             params = params
                 .iter()
-                .map(|x| self.graph.add_var(x.val()))
+                .map(|x| self.tape.add_var(x.val()))
                 .collect::<Vec<_>>();
         }
 

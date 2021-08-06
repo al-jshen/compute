@@ -50,7 +50,8 @@ impl Distribution for Binomial {
             return self.n as f64;
         }
 
-        let p = if self.p <= 0.5 { self.p } else { 1. - self.p };
+        let switch = self.p > 0.5;
+        let p = if switch { 1. - self.p } else { self.p };
 
         let res = if p * self.n as f64 <= 30. {
             binomial_inversion(self.n, p)
@@ -58,7 +59,11 @@ impl Distribution for Binomial {
             binomial_btpe(self.n, p)
         };
 
-        res as f64
+        if switch {
+            (self.n - res) as f64
+        } else {
+            res as f64
+        }
     }
 }
 

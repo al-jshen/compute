@@ -20,6 +20,7 @@
   - gamma, digamma, beta
   - logistic, logit, (general) boxcox transform, softmax
   - binomial coefficients
+  - linear interpolation (with extrapolation)
 - statistical methods
   - (sample) covariance, mean, variance, min, max
 - time series models
@@ -37,10 +38,6 @@
     - vector-vector, scalar-vector, vector-scalar operations with loop unrolling
   - decompositions and solvers
     - LU, Cholesky
-- signal processing
-  - convolutions
-  - filters
-    - Savitzky-Golay (LOESS)
 
 ## Planned features
 

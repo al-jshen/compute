@@ -14,6 +14,7 @@ use reverse::*;
 ///
 /// use compute::optimize::*;
 /// use approx_eq::assert_approx_eq;
+/// use reverse::Var;
 ///
 /// fn rosenbrock<'a>(p: &[Var<'a>], d: &[&[f64]]) -> Var<'a> {
 ///     assert_eq!(p.len(), 2);

@@ -7,4 +7,3 @@ pub use crate::predict::*;
 pub use crate::statistics::*;
 pub use crate::timeseries::*;
 pub use crate::validation::*;
-pub use reverse::*;

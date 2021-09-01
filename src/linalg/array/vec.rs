@@ -43,6 +43,16 @@ impl Vector {
         Self { v }
     }
 
+    pub fn sort(&mut self) {
+        self.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    }
+
+    pub fn sorted(&self) -> Self {
+        let mut x = self.clone();
+        x.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        x
+    }
+
     pub fn zeros(n: usize) -> Self {
         Self { v: vec![0.; n] }
     }

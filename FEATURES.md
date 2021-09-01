@@ -11,7 +11,7 @@
   - trapezoid, Romberg, 5-point Gauss-Legendre quadrature
 - basic statistical distributions
   - continuous
-    - (Multivariate) Normal, Beta, Gamma, Chi Squared, Student's T, Uniform, Exponential, Pareto
+    - (Multivariate) Normal, Beta, Gamma, Chi Squared, Student's T, Uniform, Exponential, Pareto, Gumbel
   - discrete
     - Bernoulli, Binomial, Poisson, Discrete Uniform
   - sampling, PDFs/PMFs

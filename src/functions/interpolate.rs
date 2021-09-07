@@ -1,6 +1,17 @@
 use crate::prelude::Vector;
 
-pub fn interp1d_linear(x: &[f64], y: &[f64], tgt: &[f64], extrapolate: bool) -> Vector {
+pub enum ExtrapolationMode {
+    Panic,
+    Fill(f64),
+    Extrapolate,
+}
+
+pub fn interp1d_linear(
+    x: &[f64],
+    y: &[f64],
+    tgt: &[f64],
+    extrapolate: ExtrapolationMode,
+) -> Vector {
     // Performs linear interpolation on an array of values, given some (x, y) pairs.
     // Assumes that x is sorted (in ascending order).
     //
@@ -45,23 +56,24 @@ pub fn interp1d_linear(x: &[f64], y: &[f64], tgt: &[f64], extrapolate: bool) -> 
 
         // out of bounds, optionally extrapolate
         if (idx == 0 || idx > n) {
-            // don't extrapolate, just panic
-            if !extrapolate {
-                panic!("target out of bounds, need to extrapolate!");
-            }
-            // extrapolate linearly
-            else {
-                // extrapolate left
-                if (idx == 0) {
-                    /* print("extrapolating left ", tgt[i]); */
-                    let slope = (y[1] - y[0]) / (x[1] - x[0]);
-                    interp.push(-slope * (x[0] - tgt[i]) + y[0]);
-                }
-                // extrapolate right
-                else if (idx > n) {
-                    /* print("extrapolating right ", tgt[i]); */
-                    let slope = (y[n] - y[n - 1]) / (x[n] - x[n - 1]);
-                    interp.push(slope * (tgt[i] - x[n]) + y[n]);
+            match extrapolate {
+                ExtrapolationMode::Panic => panic!(
+                    "Target out of bounds, need to extrapolate, but extrapolation mode is panic!"
+                ),
+                ExtrapolationMode::Fill(v) => interp.push(v),
+                ExtrapolationMode::Extrapolate => {
+                    // extrapolate left
+                    if (idx == 0) {
+                        /* print("extrapolating left ", tgt[i]); */
+                        let slope = (y[1] - y[0]) / (x[1] - x[0]);
+                        interp.push(-slope * (x[0] - tgt[i]) + y[0]);
+                    }
+                    // extrapolate right
+                    else if (idx > n) {
+                        /* print("extrapolating right ", tgt[i]); */
+                        let slope = (y[n] - y[n - 1]) / (x[n] - x[n - 1]);
+                        interp.push(slope * (tgt[i] - x[n]) + y[n]);
+                    }
                 }
             }
         }
@@ -89,7 +101,7 @@ mod test {
         let x = Vector::from([0., 0.5, 1., 1.5, 2., 2.5, 3.]);
         let y = x.exp().cos() + x.sin();
         let xnew = arange(-2., 6., 0.2);
-        let ynew = interp1d_linear(&x, &y, &xnew, true);
+        let ynew = interp1d_linear(&x, &y, &xnew, ExtrapolationMode::Extrapolate);
 
         let ynew_true = Vector::from([
             1.09519, 1.0397, 0.984215, 0.928726, 0.873237, 0.817748, 0.762259, 0.70677, 0.651281,
@@ -107,7 +119,7 @@ mod test {
         let x = arange(-1., 4., 0.2);
         let y = (-x.exp()).cos();
         let xnew = arange(-2., 6., 0.2);
-        let ynew = interp1d_linear(&x, &y, &xnew, true);
+        let ynew = interp1d_linear(&x, &y, &xnew, ExtrapolationMode::Extrapolate);
 
         let ynew_true = Vector::from([
             1.09485857,

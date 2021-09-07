@@ -11,7 +11,7 @@
   - trapezoid, Romberg, 5-point Gauss-Legendre quadrature
 - basic statistical distributions
   - continuous
-    - (Multivariate) Normal, Beta, Gamma, Chi Squared, Student's T, Uniform, Exponential, Pareto
+    - (Multivariate) Normal, Beta, Gamma, Chi Squared, Student's T, Uniform, Exponential, Pareto, Gumbel
   - discrete
     - Bernoulli, Binomial, Poisson, Discrete Uniform
   - sampling, PDFs/PMFs
@@ -20,6 +20,7 @@
   - gamma, digamma, beta
   - logistic, logit, (general) boxcox transform, softmax
   - binomial coefficients
+  - linear interpolation (with extrapolation)
 - statistical methods
   - (sample) covariance, mean, variance, min, max
 - time series models
@@ -37,10 +38,6 @@
     - vector-vector, scalar-vector, vector-scalar operations with loop unrolling
   - decompositions and solvers
     - LU, Cholesky
-- signal processing
-  - convolutions
-  - filters
-    - Savitzky-Golay (LOESS)
 
 ## Planned features
 

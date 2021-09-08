@@ -1,58 +1,57 @@
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use std::arch::x86_64::*;
 
+// /// Vector-vector operations.
+// #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+// macro_rules! makefn_vops_binary_simd {
+//     ($opname: ident, $op: tt, $unsafeop: tt) => {
+//         #[doc = "Implements a loop-unrolled version of the `"]
+//         #[doc = stringify!($op)]
+//         #[doc = "` function to be applied element-wise to two vectors."]
+//         pub(crate) fn $opname(v1: &[f64], v2: &[f64]) -> Vec<f64> {
+//             assert_eq!(v1.len(), v2.len());
+//             let n = v1.len();
+
+//             // let mut v = vec![0.; n];
+//             let mut v = Vec::with_capacity(n);
+//             unsafe {
+//                 v.set_len(n);
+//             }
+//             let chunks = (n - (n % 8)) / 8;
+
+//             #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+//             unsafe {
+//                 (v1.chunks_exact(8).zip(v2.chunks_exact(8)))
+//                 .enumerate()
+//                 .for_each(|(idx, (i, j))| {
+//                     let a_pd = _mm256_loadu_pd(i.as_ptr());
+//                     let b_pd = _mm256_loadu_pd(j.as_ptr());
+//                     let c_pd = $unsafeop(a_pd, b_pd);
+//                     _mm256_storeu_pd(
+//                         (v.as_mut_ptr() as *mut f64).add((idx * 8)),
+//                         c_pd,
+//                     );
+//                     let a_pd = _mm256_loadu_pd(i.as_ptr().offset(4));
+//                     let b_pd = _mm256_loadu_pd(j.as_ptr().offset(4));
+//                     let c_pd = $unsafeop(a_pd, b_pd);
+//                     _mm256_storeu_pd(
+//                         (v.as_mut_ptr() as *mut f64).add((idx * 8 + 4)),
+//                         c_pd,
+//                     );
+//                 });
+//             }
+
+//             // do the rest
+//             for j in (chunks * 8)..n {
+//                 v[j] = v1[j] $op v2[j];
+//             }
+
+//             v
+//         }
+//     }
+// }
+
 /// Vector-vector operations.
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-macro_rules! makefn_vops_binary_simd {
-    ($opname: ident, $op: tt, $unsafeop: tt) => {
-        #[doc = "Implements a loop-unrolled version of the `"]
-        #[doc = stringify!($op)]
-        #[doc = "` function to be applied element-wise to two vectors."]
-        pub(crate) fn $opname(v1: &[f64], v2: &[f64]) -> Vec<f64> {
-            assert_eq!(v1.len(), v2.len());
-            let n = v1.len();
-
-            // let mut v = vec![0.; n];
-            let mut v = Vec::with_capacity(n);
-            unsafe {
-                v.set_len(n);
-            }
-            let chunks = (n - (n % 8)) / 8;
-
-            #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-            unsafe {
-                (v1.chunks_exact(8).zip(v2.chunks_exact(8)))
-                .enumerate()
-                .for_each(|(idx, (i, j))| {
-                    let a_pd = _mm256_loadu_pd(i.as_ptr());
-                    let b_pd = _mm256_loadu_pd(j.as_ptr());
-                    let c_pd = $unsafeop(a_pd, b_pd);
-                    _mm256_storeu_pd(
-                        (v.as_mut_ptr() as *mut f64).add((idx * 8)),
-                        c_pd,
-                    );
-                    let a_pd = _mm256_loadu_pd(i.as_ptr().offset(4));
-                    let b_pd = _mm256_loadu_pd(j.as_ptr().offset(4));
-                    let c_pd = $unsafeop(a_pd, b_pd);
-                    _mm256_storeu_pd(
-                        (v.as_mut_ptr() as *mut f64).add((idx * 8 + 4)),
-                        c_pd,
-                    );
-                });
-            }
-
-            // do the rest
-            for j in (chunks * 8)..n {
-                v[j] = v1[j] $op v2[j];
-            }
-
-            v
-        }
-    }
-}
-
-/// Vector-vector operations.
-#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 macro_rules! makefn_vops_binary {
     ($opname: ident, $op: tt) => {
         #[doc = "Implements a loop-unrolled version of the `"]
@@ -96,22 +95,18 @@ macro_rules! makefn_vops_binary {
     }
 }
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-makefn_vops_binary_simd!(vadd, +, _mm256_add_pd);
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-makefn_vops_binary_simd!(vsub, -, _mm256_sub_pd);
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-makefn_vops_binary_simd!(vmul, *, _mm256_mul_pd);
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-makefn_vops_binary_simd!(vdiv, /, _mm256_div_pd);
+// #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+// makefn_vops_binary_simd!(vadd, +, _mm256_add_pd);
+// #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+// makefn_vops_binary_simd!(vsub, -, _mm256_sub_pd);
+// #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+// makefn_vops_binary_simd!(vmul, *, _mm256_mul_pd);
+// #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+// makefn_vops_binary_simd!(vdiv, /, _mm256_div_pd);
 
-#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 makefn_vops_binary!(vadd, +);
-#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 makefn_vops_binary!(vsub, -);
-#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 makefn_vops_binary!(vmul, *);
-#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 makefn_vops_binary!(vdiv, /);
 
 /// Vector-vector mutating operations.

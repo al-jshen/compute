@@ -2,6 +2,7 @@
 use std::arch::x86_64::*;
 
 /// Vector-vector operations.
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 macro_rules! makefn_vops_binary_simd {
     ($opname: ident, $op: tt, $unsafeop: tt) => {
         #[doc = "Implements a loop-unrolled version of the `"]
@@ -51,6 +52,7 @@ macro_rules! makefn_vops_binary_simd {
 }
 
 /// Vector-vector operations.
+#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 macro_rules! makefn_vops_binary {
     ($opname: ident, $op: tt) => {
         #[doc = "Implements a loop-unrolled version of the `"]

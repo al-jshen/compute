@@ -1,5 +1,5 @@
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-use std::arch::x86_64::*;
+// #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+// use std::arch::x86_64::*;
 
 // /// Vector-vector operations.
 // #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]

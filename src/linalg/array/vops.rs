@@ -68,7 +68,6 @@ macro_rules! makefn_vops_binary {
             }
             let chunks = (n - (n % 8)) / 8;
 
-            #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
             {
                 // unroll
                 for i in 0..chunks {

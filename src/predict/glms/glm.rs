@@ -218,6 +218,8 @@ impl GLM {
             if n_iter >= max_iter || is_converged {
                 break;
             }
+
+            println!("{:?}", coef);
         }
 
         self.coef = Some(coef);
@@ -334,7 +336,7 @@ mod tests {
         let xd = design(&x, n);
 
         let mut glm = GLM::new(ExponentialFamily::Bernoulli);
-        glm.fit(&xd, &y, 25).unwrap();
+        glm.fit(&xd, &y, 50).unwrap();
         let coef = glm.coef().unwrap();
         let errors = glm.coef_standard_error().unwrap();
         assert_approx_eq!(coef[0], -4.0777, 1e-3);

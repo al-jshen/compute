@@ -2,7 +2,7 @@
 use std::arch::x86_64::*;
 
 /// Vector-vector operations.
-macro_rules! makefn_vops_binary {
+macro_rules! makefn_vops_binary_simd {
     ($opname: ident, $op: tt, $unsafeop: tt) => {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
@@ -40,6 +40,33 @@ macro_rules! makefn_vops_binary {
                 });
             }
 
+            // do the rest
+            for j in (chunks * 8)..n {
+                v[j] = v1[j] $op v2[j];
+            }
+
+            v
+        }
+    }
+}
+
+/// Vector-vector operations.
+macro_rules! makefn_vops_binary {
+    ($opname: ident, $op: tt) => {
+        #[doc = "Implements a loop-unrolled version of the `"]
+        #[doc = stringify!($op)]
+        #[doc = "` function to be applied element-wise to two vectors."]
+        pub(crate) fn $opname(v1: &[f64], v2: &[f64]) -> Vec<f64> {
+            assert_eq!(v1.len(), v2.len());
+            let n = v1.len();
+
+            // let mut v = vec![0.; n];
+            let mut v = Vec::with_capacity(n);
+            unsafe {
+                v.set_len(n);
+            }
+            let chunks = (n - (n % 8)) / 8;
+
             #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
             {
                 // unroll
@@ -67,9 +94,22 @@ macro_rules! makefn_vops_binary {
     }
 }
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+makefn_vops_binary_simd!(vadd, +, _mm256_add_pd);
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+makefn_vops_binary_simd!(vsub, -, _mm256_sub_pd);
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+makefn_vops_binary_simd!(vmul, *, _mm256_mul_pd);
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+makefn_vops_binary_simd!(vdiv, /, _mm256_div_pd);
+
+#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 makefn_vops_binary!(vadd, +, _mm256_add_pd);
+#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 makefn_vops_binary!(vsub, -, _mm256_sub_pd);
+#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 makefn_vops_binary!(vmul, *, _mm256_mul_pd);
+#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 makefn_vops_binary!(vdiv, /, _mm256_div_pd);
 
 /// Vector-vector mutating operations.

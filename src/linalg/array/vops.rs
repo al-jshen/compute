@@ -106,13 +106,13 @@ makefn_vops_binary_simd!(vmul, *, _mm256_mul_pd);
 makefn_vops_binary_simd!(vdiv, /, _mm256_div_pd);
 
 #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-makefn_vops_binary!(vadd, +, _mm256_add_pd);
+makefn_vops_binary!(vadd, +);
 #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-makefn_vops_binary!(vsub, -, _mm256_sub_pd);
+makefn_vops_binary!(vsub, -);
 #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-makefn_vops_binary!(vmul, *, _mm256_mul_pd);
+makefn_vops_binary!(vmul, *);
 #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-makefn_vops_binary!(vdiv, /, _mm256_div_pd);
+makefn_vops_binary!(vdiv, /);
 
 /// Vector-vector mutating operations.
 macro_rules! makefn_vops_binary_mut {

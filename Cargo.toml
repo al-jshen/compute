@@ -17,6 +17,8 @@ alea = "0.2"
 approx_eq = "0.1"
 reverse = "0.2"
 impl_ops = "0.1"
+serde = { version = "1.0.130", features = ["derive"] }
+serde_derive = "1.0.130"
 
 [features]
 blas = ["blas_crate", "accelerate-src", "openblas-src"]

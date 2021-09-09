@@ -2,13 +2,14 @@ use super::{vops::*, Matrix};
 use crate::linalg::{logmeanexp, logsumexp, norm, prod, sum};
 use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, var};
 use approx_eq::rel_diff;
+use serde::{Deserialize, Serialize};
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
 use std::iter::{FromIterator, IntoIterator};
 use std::ops::{self, Deref, DerefMut, Neg};
 
 /// A row-major ordering vector struct with various useful methods.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Vector {
     v: Vec<f64>,
 }

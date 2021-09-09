@@ -1,11 +1,11 @@
+use serde::{Deserialize, Serialize};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use std::{
     fmt::{Display, Formatter, Result},
     mem::swap,
     ops::{Index, IndexMut, Neg},
     panic,
 };
-
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use crate::prelude::{transpose, Dot};
 
@@ -14,7 +14,7 @@ use super::vops::*;
 use super::{broadcast_add, broadcast_div, broadcast_mul, broadcast_sub, Vector};
 
 /// Matrix struct.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Matrix {
     data: Vector,
     pub nrows: usize,

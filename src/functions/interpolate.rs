@@ -48,14 +48,14 @@ pub fn interp1d_linear(
         // find the closest supplied x (lower and upper)
         let mut idx = 0;
         for j in 0..n - 1 {
-            if (x[j] > tgt[i]) {
+            if x[j] > tgt[i] {
                 break;
             }
             idx += 1;
         }
 
         // out of bounds, optionally extrapolate
-        if (idx == 0 || idx > n) {
+        if idx == 0 || idx > n {
             match extrapolate {
                 ExtrapolationMode::Panic => panic!(
                     "Target out of bounds, need to extrapolate, but extrapolation mode is panic!"
@@ -63,13 +63,13 @@ pub fn interp1d_linear(
                 ExtrapolationMode::Fill(v) => interp.push(v),
                 ExtrapolationMode::Extrapolate => {
                     // extrapolate left
-                    if (idx == 0) {
+                    if idx == 0 {
                         /* print("extrapolating left ", tgt[i]); */
                         let slope = (y[1] - y[0]) / (x[1] - x[0]);
                         interp.push(-slope * (x[0] - tgt[i]) + y[0]);
                     }
                     // extrapolate right
-                    else if (idx > n) {
+                    else if idx > n {
                         /* print("extrapolating right ", tgt[i]); */
                         let slope = (y[n] - y[n - 1]) / (x[n] - x[n - 1]);
                         interp.push(slope * (tgt[i] - x[n]) + y[n]);

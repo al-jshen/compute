@@ -2,7 +2,7 @@ use crate::prelude::Vector;
 
 pub enum ExtrapolationMode {
     Panic,
-    Fill(f64),
+    Fill(f64, f64),
     Extrapolate,
 }
 
@@ -81,7 +81,13 @@ pub fn interp1d_linear_unchecked(
                 ExtrapolationMode::Panic => panic!(
                     "Target out of bounds, need to extrapolate, but extrapolation mode is panic!"
                 ),
-                ExtrapolationMode::Fill(v) => interp.push(v),
+                ExtrapolationMode::Fill(left, right) => {
+                    if idx == 0 {
+                        interp.push(left);
+                    } else if idx > n {
+                        interp.push(right);
+                    }
+                }
                 ExtrapolationMode::Extrapolate => {
                     // extrapolate left
                     if idx == 0 {

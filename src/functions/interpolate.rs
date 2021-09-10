@@ -35,6 +35,31 @@ pub fn interp1d_linear(
         }
     }
 
+    interp1d_linear_unchecked(x, y, tgt, extrapolate)
+}
+
+pub fn interp1d_linear_unchecked(
+    x: &[f64],
+    y: &[f64],
+    tgt: &[f64],
+    extrapolate: ExtrapolationMode,
+) -> Vector {
+    // Performs linear interpolation on an array of values, given some (x, y) pairs.
+    // Assumes, but does not check, that x is sorted (in ascending order).
+    //
+    // Inputs:
+    //   x --- 1d array of x values
+    //   y --- 1d array of y values, which must be the same size as x
+    //   tgt - x values to apply interpolation to
+    //   extrapolate -- bool indicating whether to extrapolate for points outside the range of x
+    //
+    // Outputs:
+    //   interp - interpolated (extrapolated) y values corresponding to the input tgt values
+
+    assert_eq!(x.len(), y.len(), "x and y must have the same size");
+
+    let n = x.len();
+
     let k = tgt.len();
 
     // // interpolated values

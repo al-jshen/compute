@@ -45,7 +45,7 @@ pub fn interp1d_linear_unchecked(
     extrapolate: ExtrapolationMode,
 ) -> Vector {
     // Performs linear interpolation on an array of values, given some (x, y) pairs.
-    // Assumes, but does not check, that x is sorted (in ascending order).
+    // Assumes, and does not check, that x is sorted (in ascending order).
     //
     // Inputs:
     //   x --- 1d array of x values
@@ -64,10 +64,6 @@ pub fn interp1d_linear_unchecked(
 
     // // interpolated values
     let mut interp = Vector::with_capacity(k);
-
-    // // sort x and y values
-    let x = Vector::from(x);
-    let y = Vector::from(y);
 
     for i in 0..k {
         // find the closest supplied x (lower and upper)

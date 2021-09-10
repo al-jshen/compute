@@ -2,6 +2,7 @@ use super::{vops::*, Matrix};
 use crate::linalg::{logmeanexp, logsumexp, norm, prod, sum};
 use crate::statistics::{argmax, argmin, max, mean, min, sample_std, sample_var, std, var};
 use approx_eq::rel_diff;
+use rayon::iter::FromParallelIterator;
 use serde::{Deserialize, Serialize};
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
@@ -160,6 +161,15 @@ impl FromIterator<f64> for Vector {
         Self {
             v: Vec::from_iter(iter),
         }
+    }
+}
+
+impl FromParallelIterator<f64> for Vector {
+    fn from_par_iter<I>(par_iter: I) -> Self
+    where
+        I: rayon::iter::IntoParallelIterator<Item = f64>,
+    {
+        Vector::from(Vec::from_par_iter(par_iter))
     }
 }
 

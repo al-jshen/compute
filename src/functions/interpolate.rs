@@ -38,6 +38,7 @@ pub fn interp1d_linear(
     interp1d_linear_unchecked(x, y, tgt, extrapolate)
 }
 
+#[inline(always)]
 pub fn interp1d_linear_unchecked(
     x: &[f64],
     y: &[f64],

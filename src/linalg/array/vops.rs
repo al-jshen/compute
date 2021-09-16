@@ -57,6 +57,7 @@ macro_rules! makefn_vops_binary {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
         #[doc = "` function to be applied element-wise to two vectors."]
+        #[inline(always)]
         pub(crate) fn $opname(v1: &[f64], v2: &[f64]) -> Vec<f64> {
             assert_eq!(v1.len(), v2.len());
             let n = v1.len();
@@ -114,6 +115,7 @@ macro_rules! makefn_vops_binary_mut {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
         #[doc = "` function to be applied element-wise to two vectors."]
+        #[inline(always)]
         pub(crate) fn $opname(v1: &mut [f64], v2: &[f64]) {
             assert_eq!(v1.len(), v2.len());
             let n = v1.len();
@@ -153,6 +155,7 @@ macro_rules! makefn_vops_unary {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
         #[doc = "` function to be applied element-wise to a vector."]
+        #[inline(always)]
         pub(crate) fn $opname(v1: &[f64]) -> Vec<f64> {
             let n = v1.len();
 
@@ -224,6 +227,7 @@ macro_rules! makefn_vops_unary_with_arg_i {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
         #[doc = "` function to be applied element-wise to a vector."]
+        #[inline(always)]
         pub(crate) fn $opname(v1: &[f64], arg: $argtype) -> Vec<f64> {
             let n = v1.len();
 
@@ -292,6 +296,7 @@ macro_rules! makefn_vops_unary_with_arg_f {
         #[doc = "Implements a loop-unrolled version of the `"]
         #[doc = stringify!($op)]
         #[doc = "` function to be applied element-wise to a vector."]
+        #[inline(always)]
         pub(crate) fn $opname(v1: &[f64], arg: $argtype) -> Vec<f64> {
             let n = v1.len();
 
@@ -336,6 +341,7 @@ macro_rules! makefn_vsops {
         #[doc = stringify!($op)]
         #[doc = "` function to be applied element-wise between"]
         #[doc = "a vector and a scalar (in that order)."]
+        #[inline(always)]
         pub(crate) fn $opname(v1: &[f64], scalar: f64) -> Vec<f64> {
             let n = v1.len();
 
@@ -382,6 +388,7 @@ macro_rules! makefn_vsops_mut {
         #[doc = stringify!($op)]
         #[doc = "` function to be applied element-wise between"]
         #[doc = "a vector and a scalar (in that order)."]
+        #[inline(always)]
         pub(crate) fn $opname(v1: &mut [f64], scalar: f64) {
             let n = v1.len();
 
@@ -421,6 +428,7 @@ macro_rules! makefn_svops {
         #[doc = stringify!($op)]
         #[doc = "` function to be applied element-wise between"]
         #[doc = "a scalar and a vector (in that order)."]
+        #[inline(always)]
         pub(crate) fn $opname(scalar: f64, v1: &[f64]) -> Vec<f64> {
             let n = v1.len();
 

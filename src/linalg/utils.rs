@@ -43,6 +43,7 @@ pub fn linspace(start: f64, stop: f64, num: usize) -> Vector {
 }
 
 /// Checks whether a 1D array is a valid matrix representation given the number of rows.
+#[inline(always)]
 pub fn is_matrix(m: &[f64], nrows: usize) -> Result<usize, String> {
     let ncols = m.len() / nrows;
     if nrows * ncols == m.len() {
@@ -53,6 +54,7 @@ pub fn is_matrix(m: &[f64], nrows: usize) -> Result<usize, String> {
 }
 
 /// Checks whether a 1D array is a valid square matrix.
+#[inline(always)]
 pub fn is_square(m: &[f64]) -> Result<usize, String> {
     let n = (m.len() as f32).sqrt();
     if n % 1. == 0. {
@@ -63,6 +65,7 @@ pub fn is_square(m: &[f64]) -> Result<usize, String> {
 }
 
 /// Checks whether a 1D array is a valid design matrix, given its number of rows.
+#[inline(always)]
 pub fn is_design(m: &[f64], nrows: usize) -> bool {
     let mut is_design = true;
     let ncols = is_matrix(m, nrows).unwrap();
@@ -75,6 +78,7 @@ pub fn is_design(m: &[f64], nrows: usize) -> bool {
 }
 
 /// Checks whether a 1D array is a valid symmetric matrix.
+#[inline(always)]
 pub fn is_symmetric(m: &[f64]) -> bool {
     let n = is_square(m).unwrap();
     for i in 0..n {
@@ -88,6 +92,7 @@ pub fn is_symmetric(m: &[f64]) -> bool {
 }
 
 /// Checks whether a 1d array is a valid positive definite matrix.
+#[inline(always)]
 pub fn is_positive_definite(m: &[f64]) -> bool {
     if !is_symmetric(m) {
         return false;
@@ -353,6 +358,7 @@ pub fn matmul_blocked(
 }
 
 /// Multiply two matrices together, optionally transposing one or both of them.
+#[inline(always)]
 pub fn matmul(
     a: &[f64],
     b: &[f64],
@@ -491,6 +497,7 @@ pub fn toeplitz(x: &[f64]) -> Vec<f64> {
 }
 
 /// Calculates the sum of a vector.
+#[inline(always)]
 pub fn sum(x: &[f64]) -> f64 {
     let n = x.len();
 
@@ -559,6 +566,7 @@ pub fn prod(x: &[f64]) -> f64 {
 
 /// Calculates the dot product of two equal-length vectors. When the feature "blas" is enabled,
 /// uses `ddot` from BLAS. Otherwise, uses a length-8 unrolled loop.
+#[inline(always)]
 pub fn dot(x: &[f64], y: &[f64]) -> f64 {
     assert_eq!(x.len(), y.len());
 

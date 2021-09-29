@@ -12,7 +12,7 @@ use std::ops::{self, Deref, DerefMut, Neg};
 /// A row-major ordering vector struct with various useful methods.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Vector {
-    v: Vec<f64>,
+    pub v: Vec<f64>,
 }
 
 impl Vector {

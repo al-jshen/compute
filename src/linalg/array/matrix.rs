@@ -16,7 +16,7 @@ use super::{broadcast_add, broadcast_div, broadcast_mul, broadcast_sub, Vector};
 /// Matrix struct.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Matrix {
-    data: Vector,
+    pub data: Vector,
     pub nrows: usize,
     pub ncols: usize,
 }

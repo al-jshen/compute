@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::convert::TryInto;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use std::{
     fmt::{Display, Formatter, Result},
@@ -249,10 +250,9 @@ impl Matrix {
     }
 
     /// Make a new matrix with the given number of rows and columns.
-    pub fn new<T, I>(data: T, nrows: I, ncols: I) -> Self
+    pub fn new<T, I>(data: T, nrows: impl TryInto<i32>, ncols: impl TryInto<i32>) -> Self
     where
         T: Into<Vector>,
-        I: Into<i32>,
     {
         let v = data.into();
         let len = v.len();
@@ -263,7 +263,17 @@ impl Matrix {
             ncols: len,
         };
 
-        m.reshape_mut(nrows.into(), ncols.into());
+        let nrows = match nrows.try_into() {
+            Ok(v) => v,
+            Err(_) => panic!("Could not understand nrows value."),
+        };
+
+        let ncols = match ncols.try_into() {
+            Ok(v) => v,
+            Err(_) => panic!("Could not understand ncols value."),
+        };
+
+        m.reshape_mut(nrows, ncols);
 
         m
     }

@@ -40,8 +40,17 @@ impl Matrix {
         Self::new(Vector::ones(nrows * ncols), nrows as i32, ncols as i32)
     }
 
-    /// Make an empty matrix with a given size
-    pub fn empty_size(nrows: usize, ncols: usize) -> Self {
+    /// Make an empty matrix with a certain capacity.
+    pub fn with_capacity(nrows: usize, ncols: usize) -> Self {
+        Self::new(
+            Vector::with_capacity(nrows * ncols),
+            nrows as i32,
+            ncols as i32,
+        )
+    }
+
+    /// Make a matrix with a given shape, initialized with garbage values.
+    pub fn with_shape(nrows: usize, ncols: usize) -> Self {
         Self::new(Vector::empty_n(nrows * ncols), nrows as i32, ncols as i32)
     }
 

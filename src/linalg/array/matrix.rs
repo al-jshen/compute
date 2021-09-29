@@ -249,9 +249,10 @@ impl Matrix {
     }
 
     /// Make a new matrix with the given number of rows and columns.
-    pub fn new<T>(data: T, nrows: i32, ncols: i32) -> Self
+    pub fn new<T, I>(data: T, nrows: I, ncols: I) -> Self
     where
         T: Into<Vector>,
+        I: Into<i32>,
     {
         let v = data.into();
         let len = v.len();
@@ -262,7 +263,7 @@ impl Matrix {
             ncols: len,
         };
 
-        m.reshape_mut(nrows, ncols);
+        m.reshape_mut(nrows.into(), ncols.into());
 
         m
     }

@@ -250,7 +250,7 @@ impl Matrix {
     }
 
     /// Make a new matrix with the given number of rows and columns.
-    pub fn new<T, I>(data: T, nrows: impl TryInto<i32>, ncols: impl TryInto<i32>) -> Self
+    pub fn new<T>(data: T, nrows: impl TryInto<i32>, ncols: impl TryInto<i32>) -> Self
     where
         T: Into<Vector>,
     {

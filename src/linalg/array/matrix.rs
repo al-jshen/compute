@@ -487,6 +487,18 @@ impl Matrix {
         let total_rows = self.nrows * n;
         Matrix::new(self.data.repeat(n), total_rows as i32, self.ncols as i32)
     }
+
+    /// Find the position of the smallest element in the matrix. Returns (row, column).
+    pub fn argmin(&self) -> (usize, usize) {
+        let am = self.data.argmin();
+        (am / self.ncols, am % self.ncols)
+    }
+
+    /// Find the position of the largest element in the matrix. Returns (row, column).
+    pub fn argmax(&self) -> (usize, usize) {
+        let am = self.data.argmax();
+        (am / self.ncols, am % self.ncols)
+    }
 }
 
 pub trait Solve<T> {
@@ -1012,5 +1024,36 @@ mod tests {
             &Vector::new([0.21181290359830895, 0.6039812818017399, 1.4062476574275615]),
             1e-10
         ));
+    }
+
+    #[test]
+    fn test_matrix_argminmax() {
+        let m = Matrix::new(
+            [
+                -0.17927735,
+                -0.81302638,
+                -0.55424756,
+                0.68613317,
+                -1.30208559,
+                1.37481722,
+                -1.33316703,
+                1.4921796,
+                -1.67213512,
+                -1.42828313,
+                -0.47680709,
+                1.30341714,
+                -0.03714731,
+                -1.74367455,
+                0.49485946,
+                -1.03130816,
+            ],
+            4,
+            4,
+        );
+        let argmin = m.argmin();
+        let argmax = m.argmax();
+
+        assert_eq!(argmin, (3, 1));
+        assert_eq!(argmax, (1, 3));
     }
 }

@@ -3,9 +3,7 @@ use crate::linalg::Vector;
 // Given the edges of some intervals, return the centers of the intervals. If `edges` is length n,
 // then the resulting vector will be length n - 1.
 pub fn hist_bin_centers(edges: &[f64]) -> Vector {
-    let diff = (1..edges.len())
-        .map(|i| edges[i] - edges[i - 1])
-        .collect::<Vector>();
+    let diff = Vector::from(edges).diff();
 
     diff.into_iter()
         .scan((edges[0] + edges[1]) / 2., |acc, x| {

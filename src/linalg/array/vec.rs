@@ -83,6 +83,12 @@ impl Vector {
         }
         true
     }
+
+    pub fn diff(&self) -> Vector {
+        (1..self.len())
+            .map(|i| self[i] - self[i - 1])
+            .collect::<Vector>()
+    }
 }
 
 impl Default for Vector {

@@ -1,4 +1,5 @@
-use compute::distributions::{Distribution, Normal};
+use compute::distributions::{Distribution1D, Normal};
+use compute::linalg::*;
 use compute::statistics::*;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
@@ -10,5 +11,14 @@ pub fn criterion_mean(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, criterion_mean);
+pub fn criterion_hist_bins(c: &mut Criterion) {
+    let bin10 = linspace(0., 10., 10);
+    let bin100 = linspace(0., 10., 100);
+    c.bench_function("hist bin edges 10", |b| b.iter(|| hist_bin_centers(&bin10)));
+    c.bench_function("hist bin edges 100", |b| {
+        b.iter(|| hist_bin_centers(&bin100))
+    });
+}
+
+criterion_group!(benches, criterion_hist_bins);
 criterion_main!(benches);
